@@ -3,6 +3,8 @@
 ## Custom:
 *.iml
 /.idea/
+*.ipr
+*.iws
 
 ### C++ ###
 # Prerequisites
