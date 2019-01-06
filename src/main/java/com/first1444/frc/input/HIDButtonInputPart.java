@@ -43,36 +43,36 @@ class HIDButtonInputPart extends SimpleControllerPart implements InputPart {
 
 	@Override
 	public AxisType getAxisType() {
-        return AxisType.DIGITAL;
+		return AxisType.DIGITAL;
 	}
 
 	@Override
 	public boolean isDeadzone() {
-        return !isDown();
+		return !isDown();
 	}
 
 	@Override
 	public double getPosition() {
-        return getDigitalPosition();
+		return getDigitalPosition();
 	}
 
 	@Override
 	public boolean isDown() {
-        return hid.getRawButton(buttonCode);
+		return hid.getRawButton(buttonCode);
 	}
 
 	@Override
 	public boolean isPressed() {
-        if(pressed != null){
-        	return pressed;
+		if(pressed != null){
+			return pressed;
 		}
 		return pressed = hid.getRawButtonPressed(buttonCode);
 	}
 
 	@Override
 	public boolean isReleased() {
-        if(released != null){
-        	return released;
+		if(released != null){
+			return released;
 		}
 		return released = hid.getRawButtonReleased(buttonCode);
 	}
@@ -87,6 +87,6 @@ class HIDButtonInputPart extends SimpleControllerPart implements InputPart {
 		if(hid.getButtonCount() > buttonCode){
 			return false;
 		}
-        return HIDUtil.isConnected(hid);
+		return HIDUtil.isConnected(hid);
 	}
 }

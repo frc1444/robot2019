@@ -1,0 +1,38 @@
+package com.first1444.frc.robot2019.sensors;
+
+import edu.wpi.first.wpilibj.interfaces.Gyro;
+
+public class DummyGyro implements Gyro {
+	private double angle;
+
+	public DummyGyro(double angle) {
+		this.angle = angle;
+	}
+	public void setAngle(double angle){
+		this.angle = angle;
+	}
+
+	@Override
+	public void calibrate() {
+	}
+
+	@Override
+	public void reset() {
+	}
+
+	@Override
+	public double getAngle() {
+		return angle;
+	}
+
+	@Override
+	public double getRate() {
+		return 0;
+	}
+	@Override
+	public void free() {
+	}
+	@Override
+	public void close() throws Exception {
+	}
+}

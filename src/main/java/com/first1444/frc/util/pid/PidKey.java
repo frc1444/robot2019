@@ -26,12 +26,12 @@ public enum PidKey implements ValueKey {
 
 	@Override
 	public String getName() {
-        return name;
+		return name;
 	}
 
 	@Override
 	public ValueType getValueType() {
-        return type;
+		return type;
 	}
 	public Object getDefaultValue(){
 		return defaultValue;

@@ -62,6 +62,6 @@ class HIDRumble extends SimpleControllerPart implements ControllerRumble {
 
 	@Override
 	public boolean isConnected() {
-        return HIDUtil.isConnected(hid);
+		return HIDUtil.isConnected(hid);
 	}
 }

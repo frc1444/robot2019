@@ -2,7 +2,8 @@ package com.first1444.frc.robot2019.actions;
 
 import com.first1444.frc.robot2019.Robot;
 import com.first1444.frc.robot2019.input.RobotInput;
-import com.first1444.frc.robot2019.subsystems.Drive;
+import com.first1444.frc.robot2019.subsystems.swerve.SwerveDrive;
+import com.first1444.frc.robot2019.subsystems.swerve.SwerveModule;
 import me.retrodaredevil.action.SimpleAction;
 
 /**
@@ -25,7 +26,7 @@ public class TeleopAction extends SimpleAction {
 	@Override
 	protected void onUpdate() {
 		super.onUpdate();
-		final Drive drive = robot.getDrive();
+        final SwerveDrive drive = robot.getDrive();
 	}
 
 	@Override

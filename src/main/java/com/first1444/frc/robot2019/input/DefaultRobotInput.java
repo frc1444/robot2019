@@ -36,16 +36,16 @@ public class DefaultRobotInput extends SimpleControllerInput implements RobotInp
 
 	@Override
 	public JoystickPart getMovementJoy() {
-        return controller.getLeftJoy();
+		return controller.getLeftJoy();
 	}
 
 	@Override
 	public InputPart getMovementSpeed() {
-        return movementSpeed;
+		return movementSpeed;
 	}
 
 	@Override
 	public boolean isConnected() {
-        return controller.isConnected() && joystick.isConnected();
+		return controller.isConnected() && joystick.isConnected();
 	}
 }

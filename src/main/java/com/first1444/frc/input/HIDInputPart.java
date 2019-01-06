@@ -43,7 +43,7 @@ class HIDInputPart extends AutoCachingInputPart {
 			double value = hid.getRawAxis(code) * (inverted ? -1 : 1); // a value from -1 to 1
 			return getAxisType().isFull() ? value : (value + 1.0) / 2.0;
 		}
-        return (hid.getRawButton(code) == !inverted) ? 1 : 0;
+		return (hid.getRawButton(code) == !inverted) ? 1 : 0;
 	}
 
 	@Override

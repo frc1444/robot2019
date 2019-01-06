@@ -25,7 +25,7 @@ class ValueMapBase<T extends Enum<T> & ValueKey> implements ValueMap<T>{
 
 	@Override
 	public double getDouble(T key) {
-        checkKey(key, ValueType.DOUBLE);
+		checkKey(key, ValueType.DOUBLE);
 		return (double) map.get(key);
 	}
 

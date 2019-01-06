@@ -15,7 +15,7 @@ class HIDPOVJoystickPart extends SimpleControllerPart implements JoystickPart {
 	private final InputPart xAxis = new JoystickAxisFollowerPart(this, false);
 	private final InputPart yAxis = new JoystickAxisFollowerPart(this, true);
 
-    private final GenericHID hid;
+	private final GenericHID hid;
 	private final int povCode;
 
 	private double x, y;
@@ -28,7 +28,7 @@ class HIDPOVJoystickPart extends SimpleControllerPart implements JoystickPart {
 	 * @param povCode The index of the POV - starting at 0
 	 */
 	public HIDPOVJoystickPart(GenericHID hid, int povCode){
-        this.hid = hid;
+		this.hid = hid;
 		this.povCode = povCode;
 	}
 	private void checkUpdated(){
@@ -49,18 +49,18 @@ class HIDPOVJoystickPart extends SimpleControllerPart implements JoystickPart {
 
 	@Override
 	public JoystickType getJoystickType() {
-        return JOYSTICK_TYPE;
+		return JOYSTICK_TYPE;
 	}
 
 	@Override
 	public double getMagnitude() {
 		checkUpdated();
-        return (x != 0 || y != 0) ? 1 : 0;
+		return (x != 0 || y != 0) ? 1 : 0;
 	}
 
 	@Override
 	public double getCorrectMagnitude() {
-        return getMagnitude();
+		return getMagnitude();
 	}
 
 	@Override
@@ -85,13 +85,13 @@ class HIDPOVJoystickPart extends SimpleControllerPart implements JoystickPart {
 	@Override
 	public double getAngle() {
 		checkUpdated();
-        return 90 - pov;
+		return 90 - pov;
 	}
 
 	@Override
 	public double getAngleRadians() {
 		checkUpdated();
-        return Math.toRadians(90 - pov);
+		return Math.toRadians(90 - pov);
 	}
 
 	@Override
@@ -123,12 +123,12 @@ class HIDPOVJoystickPart extends SimpleControllerPart implements JoystickPart {
 		if(hid.getPOVCount() >= povCode){
 			return false;
 		}
-        return HIDUtil.isConnected(hid);
+		return HIDUtil.isConnected(hid);
 	}
 
 	@Override
 	public boolean isDeadzone() {
 		checkUpdated();
-        return x == 0 && y == 0;
+		return x == 0 && y == 0;
 	}
 }

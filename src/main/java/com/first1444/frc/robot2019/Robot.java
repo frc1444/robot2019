@@ -8,18 +8,23 @@
 package com.first1444.frc.robot2019;
 
 import com.first1444.frc.input.WPIInputCreator;
-import com.first1444.frc.robot2019.subsystems.LEDHandler;
 import com.first1444.frc.robot2019.actions.TeleopAction;
 import com.first1444.frc.robot2019.input.DefaultRobotInput;
 import com.first1444.frc.robot2019.input.InputUtil;
 import com.first1444.frc.robot2019.input.RobotInput;
-
-import com.first1444.frc.robot2019.subsystems.Drive;
+import com.first1444.frc.robot2019.sensors.DefaultOrientation;
+import com.first1444.frc.robot2019.sensors.DummyGyro;
+import com.first1444.frc.robot2019.sensors.Orientation;
+import com.first1444.frc.robot2019.subsystems.LEDHandler;
+import com.first1444.frc.robot2019.subsystems.swerve.FourSwerveCollection;
+import com.first1444.frc.robot2019.subsystems.swerve.FourWheelSwerveDrive;
+import com.first1444.frc.robot2019.subsystems.swerve.SwerveDrive;
 import com.first1444.frc.util.pid.PidKey;
 import com.first1444.frc.util.valuemap.ValueMapSendable;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.interfaces.Gyro;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import me.retrodaredevil.action.*;
 import me.retrodaredevil.controller.ControllerManager;
 import me.retrodaredevil.controller.DefaultControllerManager;
@@ -34,10 +39,13 @@ import me.retrodaredevil.controller.MutableControlConfig;
  */
 public class Robot extends TimedRobot {
 
+	private final ShuffleboardMap shuffleboardMap;
+	private final Gyro gyro;
+
 	private final ControllerManager controllerManager;
 	private final RobotInput robotInput;
 
-	private Drive drive;
+	private final SwerveDrive drive;
 
 	/** An {@link Action} that updates certain subsystems only when the robot is enabled*/
 	private final ActionMultiplexer enabledSubsystemUpdater;
@@ -48,9 +56,14 @@ public class Robot extends TimedRobot {
 
 	private final Action teleopAction;
 
-    /** Used to initialize final fields.*/
+	private final SendableChooser<Double> startingOrientation;
+
+	private Orientation orientation = null;
+
+	/** Used to initialize final fields.*/
 	public Robot(){
 		super(TimedRobot.kDefaultPeriod); // same as default constructor, but we can change it if we want
+		shuffleboardMap = new DefaultShuffleboardMap();
 		robotInput = new DefaultRobotInput(
 				InputUtil.createPS4Controller(new WPIInputCreator(new Joystick(0))),
 				InputUtil.createJoystick(new WPIInputCreator(new Joystick(1)))
@@ -61,30 +74,48 @@ public class Robot extends TimedRobot {
 		controllerManager = new DefaultControllerManager(controlConfig);
 		controllerManager.addController(robotInput);
 
-		enabledSubsystemUpdater = new Actions.ActionMultiplexerBuilder()
+		gyro = new DummyGyro(0);
+
+		ValueMapSendable<PidKey> drivePidSendable = new ValueMapSendable<>(PidKey.class);
+		drivePidSendable.getMutableValueMap() // TODO pass this into drive once we set it up
+				.setDouble(PidKey.P, 12)
+				.setDouble(PidKey.I, .03); // etc
+		getShuffleboardMap().getUserTab().add(drivePidSendable);
+		FourWheelSwerveDrive drive = new FourWheelSwerveDrive(
+				this::getOrientation,
+				new FourSwerveCollection(null, null, null, null),
+				20, 20
+		);
+		this.drive = drive;
+		enabledSubsystemUpdater = new Actions.ActionMultiplexerBuilder(
+				drive
+		)
 				.clearAllOnEnd(false)
 				.canRecycle(true)
 				.build();
-		constantSubsystemUpdater = new Actions.ActionMultiplexerBuilder()
+		constantSubsystemUpdater = new Actions.ActionMultiplexerBuilder(
+				new LEDHandler(this)
+		)
 				.clearAllOnEnd(false)
 				.canRecycle(false)
 				.build();
 		actionChooser = Actions.createActionChooser(WhenDone.CLEAR_ACTIVE);
 
 		teleopAction = new TeleopAction(this, robotInput);
+
+		startingOrientation = new SendableChooser<>();
+		startingOrientation.setName("Starting Orientation");
+		startingOrientation.setDefaultOption("forward (90)", 90.0);
+		startingOrientation.addOption("right (0)", 0.0);
+		startingOrientation.addOption("left (180)", 180.0);
+		startingOrientation.addOption("backwards (270)", 270.0);
+		getShuffleboardMap().getUserTab().add(startingOrientation);
 	}
 
-	/** Recommended way to initialize things. Called after constructor is called*/
+	/** Just a second way to initialize things*/
 	@Override
 	public void robotInit() {
-		ValueMapSendable<PidKey> drivePidSendable = new ValueMapSendable<>(PidKey.class);
-		drivePidSendable.getMutableValueMap() // TODO pass this into drive once we set it up
-				.setDouble(PidKey.P, 12)
-				.setDouble(PidKey.I, .03); // etc
-		SmartDashboard.putData(drivePidSendable);
-
-		enabledSubsystemUpdater.add(drive = new Drive());
-		constantSubsystemUpdater.add(new LEDHandler(this));
+		orientation = new DefaultOrientation(gyro, 90);
 	}
 
 	/** Called when robot is disabled and in between switching between modes such as teleop and autonomous*/
@@ -100,11 +131,11 @@ public class Robot extends TimedRobot {
 	@Override
 	public void robotPeriodic() {
 		controllerManager.update(); // update controllers
-        actionChooser.update(); // update Actions that control the subsystems
-        if(isEnabled()){
-        	enabledSubsystemUpdater.update(); // update subsystems when robot is enabled
+		actionChooser.update(); // update Actions that control the subsystems
+		if(isEnabled()){
+			enabledSubsystemUpdater.update(); // update subsystems when robot is enabled
 		}
-        constantSubsystemUpdater.update(); // update subsystems that are always updated
+		constantSubsystemUpdater.update(); // update subsystems that are always updated
 
 	}
 
@@ -117,6 +148,7 @@ public class Robot extends TimedRobot {
 	/** Called first thing when match starts. Autonomous is active for 15 seconds*/
 	@Override
 	public void autonomousInit() {
+		gyro.reset();
 		actionChooser.setNextAction(
 				new Actions.ActionQueueBuilder(
 						Actions.createRunOnce(() -> System.out.println("Autonomous init!")),
@@ -128,6 +160,15 @@ public class Robot extends TimedRobot {
 		);
 	}
 
-	public Drive getDrive(){ return drive; }
+	public SwerveDrive getDrive(){ return drive; }
+	public Orientation getOrientation(){
+		if(orientation == null){
+			throw new IllegalStateException("orientation is null! This should not happen!");
+		}
+		return orientation;
+	}
+	public ShuffleboardMap getShuffleboardMap(){
+		return shuffleboardMap;
+	}
 
 }

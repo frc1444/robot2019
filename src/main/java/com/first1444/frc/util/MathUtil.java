@@ -61,4 +61,13 @@ public final class MathUtil {
 	public static double minDistance(double a, double b, double wrap){
 		return Math.abs(minChange(a, b, wrap));
 	}
+
+	/**
+	 *
+	 * @param wpilibDegrees The degrees to remap to the correct way
+	 * @return
+	 */
+	public static double remapDegrees(double wpilibDegrees){
+		return 90 - wpilibDegrees;
+	}
 }

@@ -24,28 +24,28 @@ public class WPIInputCreator implements ControllerPartCreator {
 
 	@Override
 	public InputPart createDigital(int code) {
-        return new HIDButtonInputPart(hid, code + 1);
+		return new HIDButtonInputPart(hid, code + 1);
 	}
 
 	@Override
 	public JoystickPart createPOV(int povNumber, int xAxis, int yAxis) {
-        return createPOV(povNumber);
+		return createPOV(povNumber);
 	}
 
 	@Override
 	public JoystickPart createPOV(int povNumber) {
-        return new HIDPOVJoystickPart(hid, povNumber);
+		return new HIDPOVJoystickPart(hid, povNumber);
 	}
 
 	@Override
 	public JoystickPart createPOV(int xAxis, int yAxis) {
-        return createJoystick(xAxis, yAxis);
+		return createJoystick(xAxis, yAxis);
 	}
 
 	@Override
 	public JoystickPart createJoystick(int xAxis, int yAxis) {
-        return new TwoAxisJoystickPart(
-        		new HIDInputPart(AxisType.FULL_ANALOG, hid, xAxis, false, true),
+		return new TwoAxisJoystickPart(
+				new HIDInputPart(AxisType.FULL_ANALOG, hid, xAxis, false, true),
 				new HIDInputPart(AxisType.FULL_ANALOG, hid, yAxis, true, true)
 		);
 	}
@@ -53,13 +53,13 @@ public class WPIInputCreator implements ControllerPartCreator {
 	@Override
 	public InputPart createFullAnalog(int axisCode) {
 		System.err.println("Using createFullAnalog(int) method instead of createFullAnalog(int, boolean)!");
-        return createFullAnalog(axisCode, false);
+		return createFullAnalog(axisCode, false);
 	}
 
 	@Override
 	public InputPart createAnalog(int axisCode) {
 		System.err.println("Using createAnalog(int) method instead of createAnalog(int, boolean)!");
-        return createAnalog(axisCode, false);
+		return createAnalog(axisCode, false);
 	}
 
 	@Override
@@ -79,30 +79,30 @@ public class WPIInputCreator implements ControllerPartCreator {
 
 	@Override
 	public InputPart createTrigger(int digitalCode, int analogCode) {
-        return new DigitalAnalogInputPart(
-        		new HIDButtonInputPart(hid, digitalCode + 1),
+		return new DigitalAnalogInputPart(
+				new HIDButtonInputPart(hid, digitalCode + 1),
 				new HIDInputPart(AxisType.ANALOG, hid, analogCode, false, true)
 		);
 	}
 
 	@Override
 	public ControllerRumble createRumble() {
-        return new HIDRumble(hid);
+		return new HIDRumble(hid);
 	}
 
 	@Override
 	public boolean isConnected() {
-        return HIDUtil.isConnected(hid);
+		return HIDUtil.isConnected(hid);
 	}
 
 	@Override
 	public String getName() {
-        return hid.getName();
+		return hid.getName();
 	}
 
 	@Override
 	public String toString() {
-        return String.format("%s{port:%s,axi count:%s,button count:%s,pov count:%s}",
+		return String.format("%s{port:%s,axi count:%s,button count:%s,pov count:%s}",
 				getClass().getSimpleName(), hid.getPort(), hid.getAxisCount(), hid.getButtonCount(), hid.getPOVCount());
 	}
 }
