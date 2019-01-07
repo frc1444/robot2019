@@ -24,7 +24,7 @@ final class OrientationTest {
 	@Test
 	void testDefaultOrientation(){
 		final DummyGyro gyro = new DummyGyro(0);
-		final Orientation o = new DefaultOrientation(gyro, 90, false); // NOTE The isGyroReversed is set to false
+		final Orientation o = new DefaultOrientation(gyro, () -> 90.0, false); // NOTE The isGyroReversed is set to false
 
 		assertEquals(90, o.getOrientation());
 

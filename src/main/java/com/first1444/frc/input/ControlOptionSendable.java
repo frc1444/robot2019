@@ -9,6 +9,7 @@ public class ControlOptionSendable extends SendableBase {
 	private final ControlOption option;
 
 	public ControlOptionSendable(ControlOption option) {
+		super(false);
 		this.option = option;
 
 		setName(option.getLabel());

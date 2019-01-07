@@ -110,12 +110,13 @@ public class Robot extends TimedRobot {
 		startingOrientation.addOption("left (180)", 180.0);
 		startingOrientation.addOption("backwards (270)", 270.0);
 		getShuffleboardMap().getUserTab().add(startingOrientation);
+
+		orientation = new DefaultOrientation(gyro, startingOrientation::getSelected);
 	}
 
 	/** Just a second way to initialize things*/
 	@Override
 	public void robotInit() {
-		orientation = new DefaultOrientation(gyro, 90);
 	}
 
 	/** Called when robot is disabled and in between switching between modes such as teleop and autonomous*/

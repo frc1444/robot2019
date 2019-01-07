@@ -1,31 +1,57 @@
 package com.first1444.frc.robot2019.subsystems.swerve;
 
+import com.ctre.phoenix.motorcontrol.can.BaseMotorController;
+import com.ctre.phoenix.motorcontrol.can.TalonSRX;
+import com.first1444.frc.util.CTREUtil;
 import com.first1444.frc.util.pid.PidKey;
+import com.first1444.frc.util.valuemap.MutableValueMap;
 import com.first1444.frc.util.valuemap.ValueMap;
+import me.retrodaredevil.action.SimpleAction;
 
-public class TalonSwerveModule implements SwerveModule {
-//	private final BaseMotorController
+public class TalonSwerveModule extends SimpleAction implements SwerveModule {
+	private final BaseMotorController drive;
+	private final BaseMotorController steer;
+
+	private final String name;
 	private final ValueMap<PidKey> drivePid;
 	private final ValueMap<PidKey> steerPid;
 
-	public TalonSwerveModule(ValueMap<PidKey> drivePid, ValueMap<PidKey> steerPid) {
+	private double speed;
+	private double targetPositionDegrees;
+
+	public TalonSwerveModule(String name, int driveID, int steerID, MutableValueMap<PidKey> drivePid, MutableValueMap<PidKey> steerPid) {
+		super(true);
+		this.name = name;
+		drive = new TalonSRX(driveID);
+		steer = new TalonSRX(steerID);
 		this.drivePid = drivePid;
 		this.steerPid = steerPid;
+
+		drive.configFactoryDefault();
+		steer.configFactoryDefault();
+
+		drivePid.addListener((key) -> CTREUtil.applyPID(drive, drivePid));
+		steerPid.addListener((key) -> CTREUtil.applyPID(steer, steerPid));
+	}
+
+	@Override
+	protected void onUpdate() {
+		super.onUpdate();
 	}
 
 	@Override
 	public void setSpeed(double speed) {
-
+		this.speed = speed;
 	}
 
 	@Override
 	public double getSpeed() {
-		return 0;
+        return speed;
 	}
 
 	@Override
 	public void setTargetPosition(double positionDegrees) {
-
+		this.targetPositionDegrees = positionDegrees;
 	}
 
 	@Override
@@ -40,6 +66,6 @@ public class TalonSwerveModule implements SwerveModule {
 
 	@Override
 	public String getName() {
-		return null;
+        return name;
 	}
 }
