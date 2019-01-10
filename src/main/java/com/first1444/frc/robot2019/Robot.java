@@ -16,9 +16,7 @@ import com.first1444.frc.robot2019.sensors.DefaultOrientation;
 import com.first1444.frc.robot2019.sensors.DummyGyro;
 import com.first1444.frc.robot2019.sensors.Orientation;
 import com.first1444.frc.robot2019.subsystems.LEDHandler;
-import com.first1444.frc.robot2019.subsystems.swerve.FourSwerveCollection;
-import com.first1444.frc.robot2019.subsystems.swerve.FourWheelSwerveDrive;
-import com.first1444.frc.robot2019.subsystems.swerve.SwerveDrive;
+import com.first1444.frc.robot2019.subsystems.swerve.*;
 import com.first1444.frc.util.pid.PidKey;
 import com.first1444.frc.util.valuemap.ValueMapSendable;
 import edu.wpi.first.wpilibj.Joystick;
@@ -80,10 +78,19 @@ public class Robot extends TimedRobot {
 		drivePidSendable.getMutableValueMap() // TODO pass this into drive once we set it up
 				.setDouble(PidKey.P, 12)
 				.setDouble(PidKey.I, .03); // etc
+
+		ValueMapSendable<PidKey> steerPidSendable = new ValueMapSendable<>(PidKey.class);
+		steerPidSendable.getMutableValueMap()
+				.setDouble(PidKey.P, 12);
 		getShuffleboardMap().getUserTab().add(drivePidSendable);
 		FourWheelSwerveDrive drive = new FourWheelSwerveDrive(
 				this::getOrientation,
-				new FourSwerveCollection(null, null, null, null),
+				new ImmutableFourSwerveCollection(
+						new TalonSwerveModule("front left", 1, 5, drivePidSendable.getMutableValueMap(), steerPidSendable.getMutableValueMap()),
+						new TalonSwerveModule("front right", 2, 6, drivePidSendable.getMutableValueMap(), steerPidSendable.getMutableValueMap()),
+						new TalonSwerveModule("rear left", 3, 7, drivePidSendable.getMutableValueMap(), steerPidSendable.getMutableValueMap()),
+						new TalonSwerveModule("rear right", 4, 8, drivePidSendable.getMutableValueMap(), steerPidSendable.getMutableValueMap())
+				),
 				20, 20
 		);
 		this.drive = drive;

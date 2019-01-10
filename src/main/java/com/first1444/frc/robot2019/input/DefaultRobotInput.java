@@ -40,6 +40,11 @@ public class DefaultRobotInput extends SimpleControllerInput implements RobotInp
 	}
 
 	@Override
+	public InputPart getTurnAmount() {
+        return controller.getRightJoy().getXAxis();
+	}
+
+	@Override
 	public InputPart getMovementSpeed() {
 		return movementSpeed;
 	}

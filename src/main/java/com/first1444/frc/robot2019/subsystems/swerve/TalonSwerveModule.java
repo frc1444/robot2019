@@ -16,8 +16,8 @@ public class TalonSwerveModule extends SimpleAction implements SwerveModule {
 	private final ValueMap<PidKey> drivePid;
 	private final ValueMap<PidKey> steerPid;
 
-	private double speed;
-	private double targetPositionDegrees;
+	private double speed= 0 ;
+	private double targetPositionDegrees = 0;
 
 	public TalonSwerveModule(String name, int driveID, int steerID, MutableValueMap<PidKey> drivePid, MutableValueMap<PidKey> steerPid) {
 		super(true);
@@ -32,20 +32,24 @@ public class TalonSwerveModule extends SimpleAction implements SwerveModule {
 
 		drivePid.addListener((key) -> CTREUtil.applyPID(drive, drivePid));
 		steerPid.addListener((key) -> CTREUtil.applyPID(steer, steerPid));
+		CTREUtil.applyPID(drive, drivePid);
+		CTREUtil.applyPID(steer, steerPid);
 	}
 
 	@Override
 	protected void onUpdate() {
 		super.onUpdate();
+
+		speed = 0;
 	}
 
 	@Override
-	public void setSpeed(double speed) {
+	public void setTargetSpeed(double speed) {
 		this.speed = speed;
 	}
 
 	@Override
-	public double getSpeed() {
+	public double getTargetSpeed() {
         return speed;
 	}
 

@@ -5,4 +5,5 @@ import me.retrodaredevil.action.Action;
 public interface AutonActionCreator {
 	Action createTurnToOrientation(double desiredOrientation);
 	Action createGoStraight(double distanceInches, double angleDegrees);
+	Action createGoStraight(double distanceInches, double angleDegrees, double faceDirectionDegrees);
 }

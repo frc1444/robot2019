@@ -1,24 +1,23 @@
 package com.first1444.frc.robot2019.subsystems.swerve;
 
-//import com.ctre.phoenix.motorcontrol.can.BaseMotorController;
 
 public interface SwerveModule {
 
 	/**
 	 * @param speed A number in range [-1..1] representing the speed as a percentage
 	 */
-	void setSpeed(double speed);
+	void setTargetSpeed(double speed);
 
 	/**
 	 * @return Gets the speed as a percentage
 	 */
-	double getSpeed();
+	double getTargetSpeed();
 
 	void setTargetPosition(double positionDegrees);
 	double getTargetPosition();
 
-	default void set(double speed, double positionDegrees){
-		setSpeed(speed);
+	default void set(double targetSpeed, double positionDegrees){
+		setTargetSpeed(targetSpeed);
 		setTargetPosition(positionDegrees);
 	}
 

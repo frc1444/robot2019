@@ -10,6 +10,8 @@ public interface RobotInput extends ControllerInput {
 	/** @return A JoystickPart representing the direction to move*/
 	JoystickPart getMovementJoy();
 
+	InputPart getTurnAmount();
+
 	/** @return An InputPart that can have a range of [0..1] or [-1..1] representing the speed multiplier */
 	InputPart getMovementSpeed();
 }
