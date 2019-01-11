@@ -18,22 +18,22 @@ public class ImmutableFourSwerveCollection implements FourSwerveCollection {
 
 	@Override
 	public SwerveModule getFrontLeft() {
-		return null;
+        return frontLeft;
 	}
 
 	@Override
 	public SwerveModule getFrontRight() {
-		return null;
+        return frontRight;
 	}
 
 	@Override
 	public SwerveModule getRearLeft() {
-		return null;
+        return rearLeft;
 	}
 
 	@Override
 	public SwerveModule getRearRight() {
-		return null;
+        return rearRight;
 	}
 
 	@Override

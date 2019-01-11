@@ -31,9 +31,6 @@ public class DefaultRobotInput extends SimpleControllerInput implements RobotInp
 		addChildren(false, false, movementSpeed);
 	}
 
-	// implement inputs defined in RobotInput here
-
-
 	@Override
 	public JoystickPart getMovementJoy() {
 		return controller.getLeftJoy();

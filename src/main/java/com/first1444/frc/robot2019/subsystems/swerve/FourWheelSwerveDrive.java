@@ -31,7 +31,7 @@ public class FourWheelSwerveDrive extends SimpleAction implements SwerveDrive{
 	public FourWheelSwerveDrive(Supplier<Orientation> orientationSupplier, FourSwerveCollection swerveCollection, double wheelBase, double trackWidth) {
 		super(true);
         this.orientationSupplier = orientationSupplier;
-		this.swerveCollection = swerveCollection;
+		this.swerveCollection = Objects.requireNonNull(swerveCollection);
 
 		final double diagonal = Math.hypot(wheelBase, trackWidth);
 		cosA = wheelBase / diagonal;
@@ -52,7 +52,7 @@ public class FourWheelSwerveDrive extends SimpleAction implements SwerveDrive{
 	@Override
 	protected void onUpdate() {
 		super.onUpdate();
-		if(x == 0 && y == 0){
+		if(x == 0 && y == 0 && turnAmount == 0){
 			speed = 0;
 			for(SwerveModule module : getModules()){
 				module.setTargetSpeed(0);

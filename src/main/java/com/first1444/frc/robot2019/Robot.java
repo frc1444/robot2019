@@ -43,6 +43,7 @@ public class Robot extends TimedRobot {
 	private final ControllerManager controllerManager;
 	private final RobotInput robotInput;
 
+	private final Orientation orientation;
 	private final SwerveDrive drive;
 
 	/** An {@link Action} that updates certain subsystems only when the robot is enabled*/
@@ -54,9 +55,7 @@ public class Robot extends TimedRobot {
 
 	private final Action teleopAction;
 
-	private final SendableChooser<Double> startingOrientation;
 
-	private Orientation orientation = null;
 
 	/** Used to initialize final fields.*/
 	public Robot(){
@@ -73,6 +72,15 @@ public class Robot extends TimedRobot {
 		controllerManager.addController(robotInput);
 
 		gyro = new DummyGyro(0);
+
+		final SendableChooser<Double> startingOrientation = new SendableChooser<>();
+		startingOrientation.setName("Starting Orientation");
+		startingOrientation.setDefaultOption("forward (90)", 90.0);
+		startingOrientation.addOption("right (0)", 0.0);
+		startingOrientation.addOption("left (180)", 180.0);
+		startingOrientation.addOption("backwards (270)", 270.0);
+		getShuffleboardMap().getUserTab().add(startingOrientation);
+		orientation = new DefaultOrientation(gyro, startingOrientation::getSelected);
 
 		ValueMapSendable<PidKey> drivePidSendable = new ValueMapSendable<>(PidKey.class);
 		drivePidSendable.getMutableValueMap() // TODO pass this into drive once we set it up
@@ -110,15 +118,6 @@ public class Robot extends TimedRobot {
 
 		teleopAction = new TeleopAction(this, robotInput);
 
-		startingOrientation = new SendableChooser<>();
-		startingOrientation.setName("Starting Orientation");
-		startingOrientation.setDefaultOption("forward (90)", 90.0);
-		startingOrientation.addOption("right (0)", 0.0);
-		startingOrientation.addOption("left (180)", 180.0);
-		startingOrientation.addOption("backwards (270)", 270.0);
-		getShuffleboardMap().getUserTab().add(startingOrientation);
-
-		orientation = new DefaultOrientation(gyro, startingOrientation::getSelected);
 	}
 
 	/** Just a second way to initialize things*/
