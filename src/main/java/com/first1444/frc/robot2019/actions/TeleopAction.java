@@ -29,35 +29,35 @@ public class TeleopAction extends SimpleAction {
 	@Override
 	protected void onUpdate() {
 		super.onUpdate();
-        final SwerveDrive drive = robot.getDrive();
+		final SwerveDrive drive = robot.getDrive();
 
-        final JoystickPart joystick = input.getMovementJoy();
-        final double x, y;
-        if(joystick.isDeadzone()){
-        	x = 0;
-        	y = 0;
+		final JoystickPart joystick = input.getMovementJoy();
+		final double x, y;
+		if(joystick.isDeadzone()){
+			x = 0;
+			y = 0;
 		} else {
-        	x = joystick.getX();
-        	y = joystick.getY();
+			x = joystick.getX();
+			y = joystick.getY();
 		}
 
-        final InputPart turnInputPart = input.getTurnAmount();
-        final double turnAmount;
-        if(turnInputPart.isDeadzone()){
-        	turnAmount = 0;
+		final InputPart turnInputPart = input.getTurnAmount();
+		final double turnAmount;
+		if(turnInputPart.isDeadzone()){
+			turnAmount = 0;
 		} else {
-        	turnAmount = turnInputPart.getPosition();
+			turnAmount = turnInputPart.getPosition();
 		}
 
-        final InputPart speedInputPart = input.getMovementSpeed();
-        final double speed;
-        if(speedInputPart.isDeadzone()){
-        	speed = 0;
+		final InputPart speedInputPart = input.getMovementSpeed();
+		final double speed;
+		if(speedInputPart.isDeadzone()){
+			speed = 0;
 		} else {
-        	speed = speedInputPart.getPosition();
+			speed = speedInputPart.getPosition();
 		}
 
-        drive.setControl(x, y, turnAmount, speed, Perspective.DRIVER_STATION);
+		drive.setControl(x, y, turnAmount, speed, Perspective.DRIVER_STATION);
 	}
 
 	@Override

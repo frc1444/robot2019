@@ -2,6 +2,8 @@ package com.first1444.frc.robot2019.subsystems.swerve;
 
 import com.ctre.phoenix.motorcontrol.can.BaseMotorController;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
+import com.ctre.phoenix.motorcontrol.can.TalonSRXConfiguration;
+import com.ctre.phoenix.motorcontrol.can.TalonSRXPIDSetConfiguration;
 import com.first1444.frc.util.CTREUtil;
 import com.first1444.frc.util.pid.PidKey;
 import com.first1444.frc.util.valuemap.MutableValueMap;
@@ -29,6 +31,7 @@ public class TalonSwerveModule extends SimpleAction implements SwerveModule {
 
 		drive.configFactoryDefault();
 		steer.configFactoryDefault();
+//		TalonSRXConfiguration config = new TalonSRXConfiguration();
 
 		drivePid.addListener((key) -> CTREUtil.applyPID(drive, drivePid));
 		steerPid.addListener((key) -> CTREUtil.applyPID(steer, steerPid));
@@ -50,7 +53,7 @@ public class TalonSwerveModule extends SimpleAction implements SwerveModule {
 
 	@Override
 	public double getTargetSpeed() {
-        return speed;
+		return speed;
 	}
 
 	@Override
@@ -70,6 +73,6 @@ public class TalonSwerveModule extends SimpleAction implements SwerveModule {
 
 	@Override
 	public String getName() {
-        return name;
+		return name;
 	}
 }

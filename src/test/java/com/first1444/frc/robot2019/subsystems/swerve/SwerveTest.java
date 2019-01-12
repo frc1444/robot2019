@@ -1,11 +1,7 @@
-package com.first1444.frc.subsystems.swerve;
+package com.first1444.frc.robot2019.subsystems.swerve;
 
 import com.first1444.frc.robot2019.Perspective;
 import com.first1444.frc.robot2019.sensors.Orientation;
-import com.first1444.frc.robot2019.subsystems.swerve.FourSwerveCollection;
-import com.first1444.frc.robot2019.subsystems.swerve.FourWheelSwerveDrive;
-import com.first1444.frc.robot2019.subsystems.swerve.ImmutableFourSwerveCollection;
-import com.first1444.frc.robot2019.subsystems.swerve.SwerveModule;
 import com.first1444.frc.util.MathUtil;
 import org.junit.jupiter.api.Test;
 
@@ -53,7 +49,7 @@ final class SwerveTest {
 		final Orientation orientation = () -> orientationValue; // straight forward
 		final FourSwerveCollection collection = createStraightFourSwerveCollection(expectedSpeed, expectedPosition);
 		final FourWheelSwerveDrive drive = new FourWheelSwerveDrive(() -> orientation, collection, 20, 20);
-		drive.setControl(x, y, 0, speed, Perspective.DRIVER_STATION);
+		drive.setControl(x, y, 0, speed, perspective);
 		drive.update();
 	}
 

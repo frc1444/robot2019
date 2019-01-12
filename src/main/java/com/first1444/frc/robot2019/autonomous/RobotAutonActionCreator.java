@@ -12,12 +12,12 @@ public class RobotAutonActionCreator implements AutonActionCreator {
 
 	@Override
 	public Action createTurnToOrientation(double desiredOrientation) {
-        return new TurnToOrientation(desiredOrientation, robot::getDrive, robot::getOrientation);
+		return new TurnToOrientation(desiredOrientation, robot::getDrive, robot::getOrientation);
 	}
 
 	@Override
 	public Action createGoStraight(double distanceInches, double angleDegrees) {
-        return new GoStraight(distanceInches, angleDegrees, null, robot::getDrive, robot::getOrientation);
+		return new GoStraight(distanceInches, angleDegrees, null, robot::getDrive, robot::getOrientation);
 	}
 
 	@Override

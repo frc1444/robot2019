@@ -93,7 +93,7 @@ public class Robot extends TimedRobot {
 		getShuffleboardMap().getUserTab().add(drivePidSendable);
 		FourWheelSwerveDrive drive = new FourWheelSwerveDrive(
 				this::getOrientation,
-				new ImmutableFourSwerveCollection(
+				new ImmutableActionFourSwerveCollection(
 						new TalonSwerveModule("front left", 1, 5, drivePidSendable.getMutableValueMap(), steerPidSendable.getMutableValueMap()),
 						new TalonSwerveModule("front right", 2, 6, drivePidSendable.getMutableValueMap(), steerPidSendable.getMutableValueMap()),
 						new TalonSwerveModule("rear left", 3, 7, drivePidSendable.getMutableValueMap(), steerPidSendable.getMutableValueMap()),

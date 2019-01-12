@@ -23,14 +23,14 @@ public class FourWheelSwerveDrive extends SimpleAction implements SwerveDrive{
 
 	/**
 	 *
-     * @param orientationSupplier The getter for the orientation
+	 * @param orientationSupplier The getter for the orientation
 	 * @param swerveCollection A collection of 4 swerve modules
 	 * @param wheelBase The distance from the front wheels to the back wheels
 	 * @param trackWidth The distance from the left wheels to the right wheels
 	 */
 	public FourWheelSwerveDrive(Supplier<Orientation> orientationSupplier, FourSwerveCollection swerveCollection, double wheelBase, double trackWidth) {
 		super(true);
-        this.orientationSupplier = orientationSupplier;
+		this.orientationSupplier = orientationSupplier;
 		this.swerveCollection = Objects.requireNonNull(swerveCollection);
 
 		final double diagonal = Math.hypot(wheelBase, trackWidth);
@@ -70,6 +70,9 @@ public class FourWheelSwerveDrive extends SimpleAction implements SwerveDrive{
 		Note when looking at this code, most things are defined in this order: fl, fr, rl, rr. Other swerve drive
 		code may define these in a different order. That may make this code look different or even incorrect but I
 		assure you, it is not.
+
+		Also, in this code, 90 degrees is forward while 0 degrees is to the right. This makes it similar to many
+		coordinate systems in math but may make the code somewhat different.
 		 */
 		final double A = y - turnAmount * sinA;
 		final double B = y + turnAmount * sinA;
@@ -104,7 +107,13 @@ public class FourWheelSwerveDrive extends SimpleAction implements SwerveDrive{
 		swerveCollection.getRearLeft().set(rlSpeed, rlAngle);
 		swerveCollection.getRearRight().set(rrSpeed, rrAngle);
 
-        speed = 0; // reset the speed so it has to be continuously desired that the wheels move
+		speed = 0; // reset the speed so it has to be continuously desired that the wheels move
+		swerveCollection.update();
 	}
 
+	@Override
+	protected void onEnd(boolean peacefullyEnded) {
+		super.onEnd(peacefullyEnded);
+		swerveCollection.end();
+	}
 }

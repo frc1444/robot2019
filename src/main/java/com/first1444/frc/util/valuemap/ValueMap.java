@@ -2,7 +2,7 @@ package com.first1444.frc.util.valuemap;
 
 import java.util.Set;
 
-public interface ValueMap<T extends Enum<? extends ValueKey>> {
+public interface ValueMap<T extends Enum<T> & ValueKey> {
 	Set<T> getValueKeys();
 
 	boolean getBoolean(T key);
