@@ -18,7 +18,7 @@ public class TalonSwerveModule extends SimpleAction implements SwerveModule {
 	private final ValueMap<PidKey> drivePid;
 	private final ValueMap<PidKey> steerPid;
 
-	private double speed= 0 ;
+	private double speed = 0;
 	private double targetPositionDegrees = 0;
 
 	public TalonSwerveModule(String name, int driveID, int steerID, MutableValueMap<PidKey> drivePid, MutableValueMap<PidKey> steerPid) {

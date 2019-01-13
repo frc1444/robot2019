@@ -65,7 +65,7 @@ dependencies {
     */
     
     implementation 'com.github.retrodaredevil:abstract-controller-lib:v1.3.5'
-    implementation 'com.github.retrodaredevil:action-lib:v1.0.0'
+    implementation 'com.github.retrodaredevil:action-lib:v1.0.1'
 }
 
 // Setting up my Jar File. In this case, adding all libraries into the main jar ('fat jar')

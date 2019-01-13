@@ -19,6 +19,7 @@ import com.first1444.frc.robot2019.subsystems.LEDHandler;
 import com.first1444.frc.robot2019.subsystems.swerve.*;
 import com.first1444.frc.util.pid.PidKey;
 import com.first1444.frc.util.valuemap.ValueMapSendable;
+import edu.wpi.cscore.HttpCamera;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.interfaces.Gyro;
@@ -90,7 +91,9 @@ public class Robot extends TimedRobot {
 		ValueMapSendable<PidKey> steerPidSendable = new ValueMapSendable<>(PidKey.class);
 		steerPidSendable.getMutableValueMap()
 				.setDouble(PidKey.P, 12);
-		getShuffleboardMap().getUserTab().add(drivePidSendable);
+		getShuffleboardMap().getUserTab().add("Drive PID", drivePidSendable);
+		getShuffleboardMap().getUserTab().add("Steer PID", steerPidSendable);
+
 		FourWheelSwerveDrive drive = new FourWheelSwerveDrive(
 				this::getOrientation,
 				new ImmutableActionFourSwerveCollection(
@@ -118,6 +121,7 @@ public class Robot extends TimedRobot {
 
 		teleopAction = new TeleopAction(this, robotInput);
 
+//		shuffleboardMap.getUserTab().add(new HttpCamera("Front Camera", "http://10.14.44.11/video/stream.mjpg", HttpCamera.HttpCameraKind.kMJPGStreamer));
 	}
 
 	/** Just a second way to initialize things*/

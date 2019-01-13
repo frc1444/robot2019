@@ -18,6 +18,7 @@ public class DummyGyro implements Gyro {
 
 	@Override
 	public void reset() {
+		System.out.println("Resetting the dummy gyro! Doing nothing!");
 	}
 
 	@Override
@@ -29,10 +30,11 @@ public class DummyGyro implements Gyro {
 	public double getRate() {
 		return 0;
 	}
+
 	@Override
 	public void free() {
 	}
 	@Override
-	public void close() throws Exception {
+	public void close() {
 	}
 }
