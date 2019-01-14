@@ -8,6 +8,8 @@
 package com.first1444.frc.robot2019;
 
 import com.first1444.frc.input.WPIInputCreator;
+import com.first1444.frc.input.sendable.InputPartSendable;
+import com.first1444.frc.input.sendable.JoystickPartSendable;
 import com.first1444.frc.robot2019.actions.TeleopAction;
 import com.first1444.frc.robot2019.input.DefaultRobotInput;
 import com.first1444.frc.robot2019.input.InputUtil;
@@ -16,14 +18,18 @@ import com.first1444.frc.robot2019.sensors.DefaultOrientation;
 import com.first1444.frc.robot2019.sensors.DummyGyro;
 import com.first1444.frc.robot2019.sensors.Orientation;
 import com.first1444.frc.robot2019.subsystems.LEDHandler;
-import com.first1444.frc.robot2019.subsystems.swerve.*;
+import com.first1444.frc.robot2019.subsystems.swerve.FourWheelSwerveDrive;
+import com.first1444.frc.robot2019.subsystems.swerve.ImmutableActionFourSwerveCollection;
+import com.first1444.frc.robot2019.subsystems.swerve.SwerveDrive;
+import com.first1444.frc.robot2019.subsystems.swerve.TalonSwerveModule;
 import com.first1444.frc.util.pid.PidKey;
 import com.first1444.frc.util.valuemap.ValueMapSendable;
-import edu.wpi.cscore.HttpCamera;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.interfaces.Gyro;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import me.retrodaredevil.action.*;
 import me.retrodaredevil.controller.ControllerManager;
 import me.retrodaredevil.controller.DefaultControllerManager;
@@ -69,6 +75,7 @@ public class Robot extends TimedRobot {
 		MutableControlConfig controlConfig = new MutableControlConfig();
 		// *edit values of controlConfig if desired*
 		controlConfig.switchToSquareInputThreshold = 1.2;
+		controlConfig.fullAnalogDeadzone = .075;
 		controllerManager = new DefaultControllerManager(controlConfig);
 		controllerManager.addController(robotInput);
 
@@ -91,8 +98,9 @@ public class Robot extends TimedRobot {
 		ValueMapSendable<PidKey> steerPidSendable = new ValueMapSendable<>(PidKey.class);
 		steerPidSendable.getMutableValueMap()
 				.setDouble(PidKey.P, 12);
-		getShuffleboardMap().getUserTab().add("Drive PID", drivePidSendable);
-		getShuffleboardMap().getUserTab().add("Steer PID", steerPidSendable);
+		getShuffleboardMap().getDevTab().add("Drive PID", drivePidSendable);
+		getShuffleboardMap().getDevTab().add("Steer PID", steerPidSendable);
+//		SmartDashboard.putData("Drive PID Dash", drivePidSendable);
 
 		FourWheelSwerveDrive drive = new FourWheelSwerveDrive(
 				this::getOrientation,
@@ -120,6 +128,11 @@ public class Robot extends TimedRobot {
 		actionChooser = Actions.createActionChooser(WhenDone.CLEAR_ACTIVE);
 
 		teleopAction = new TeleopAction(this, robotInput);
+
+		controllerManager.update(); // update this so when calling get methods don't throw exceptions
+		ShuffleboardTab inputTab = getShuffleboardMap().getDebugTab();
+		inputTab.add("Movement Joy", new JoystickPartSendable(robotInput::getMovementJoy));
+		inputTab.add("Movement Speed", new InputPartSendable(robotInput::getMovementSpeed));
 
 //		shuffleboardMap.getUserTab().add(new HttpCamera("Front Camera", "http://10.14.44.11/video/stream.mjpg", HttpCamera.HttpCameraKind.kMJPGStreamer));
 	}

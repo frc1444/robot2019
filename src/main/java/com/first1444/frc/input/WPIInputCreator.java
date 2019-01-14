@@ -79,10 +79,11 @@ public class WPIInputCreator implements ControllerPartCreator {
 
 	@Override
 	public InputPart createTrigger(int digitalCode, int analogCode) {
-		return new DigitalAnalogInputPart(
-				new HIDButtonInputPart(hid, digitalCode + 1),
-				new HIDInputPart(AxisType.ANALOG, hid, analogCode, false, true)
-		);
+//		return new DigitalAnalogInputPart( // TODO fix in controller-lib
+//				new HIDButtonInputPart(hid, digitalCode + 1),
+//				new HIDInputPart(AxisType.ANALOG, hid, analogCode, false, true)
+//		);
+		return new HIDInputPart(AxisType.ANALOG, hid, analogCode, false, true);
 	}
 
 	@Override

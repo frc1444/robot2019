@@ -1,6 +1,7 @@
 package com.first1444.frc.util.valuemap;
 
 import edu.wpi.first.wpilibj.SendableBase;
+import edu.wpi.first.wpilibj.command.PIDCommand;
 import edu.wpi.first.wpilibj.smartdashboard.SendableBuilder;
 
 public class ValueMapSendable<T extends Enum<T> & ValueKey> extends SendableBase {
@@ -13,6 +14,7 @@ public class ValueMapSendable<T extends Enum<T> & ValueKey> extends SendableBase
 
 	@Override
 	public void initSendable(SendableBuilder builder) {
+//		builder.addStringProperty("Property", () -> "HI", (value) -> { throw new UnsupportedOperationException(); });
 		for(T key : valueMap.getValueKeys()){
 			switch(key.getValueType()){
 				case DOUBLE:
