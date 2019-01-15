@@ -76,7 +76,7 @@ final class SwerveTest {
 		}
 
 		@Override
-		public void setTargetPosition(double positionDegrees) {
+		public void setTargetAngle(double positionDegrees) {
 			final double expected = MathUtil.mod(expectedPosition, 360);
 			final double position = MathUtil.mod(positionDegrees, 360);
 			assertEquals(expected, position, .01);
@@ -87,11 +87,11 @@ final class SwerveTest {
 			throw new UnsupportedOperationException();
 		}
 		@Override
-		public double getTargetPosition() {
+		public double getTargetAngle() {
 			throw new UnsupportedOperationException();
 		}
 		@Override
-		public double getCurrentPosition() {
+		public double getCurrentAngle() {
 			throw new UnsupportedOperationException();
 		}
 		@Override

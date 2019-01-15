@@ -13,15 +13,16 @@ public interface SwerveModule {
 	 */
 	double getTargetSpeed();
 
-	void setTargetPosition(double positionDegrees);
-	double getTargetPosition();
+	void setTargetAngle(double positionDegrees);
+	double getTargetAngle();
+	
+	double getCurrentAngle();
 
 	default void set(double targetSpeed, double positionDegrees){
 		setTargetSpeed(targetSpeed);
-		setTargetPosition(positionDegrees);
+		setTargetAngle(positionDegrees);
 	}
 
-	double getCurrentPosition();
 
 	/**
 	 *

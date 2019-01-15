@@ -1,5 +1,9 @@
-package com.first1444.frc.util.valuemap;
+package com.first1444.frc.util.valuemap.sendable;
 
+import com.first1444.frc.util.valuemap.MutableValueMap;
+import com.first1444.frc.util.valuemap.ValueKey;
+import com.first1444.frc.util.valuemap.ValueMap;
+import edu.wpi.first.networktables.NetworkTableValue;
 import edu.wpi.first.wpilibj.SendableBase;
 import edu.wpi.first.wpilibj.command.PIDCommand;
 import edu.wpi.first.wpilibj.smartdashboard.SendableBuilder;
@@ -18,6 +22,8 @@ public class ValueMapSendable<T extends Enum<T> & ValueKey> extends SendableBase
 		for(T key : valueMap.getValueKeys()){
 			switch(key.getValueType()){
 				case DOUBLE:
+//					final NetworkTableValue value = NetworkTableValue.makeDouble(valueMap.getDouble(key));
+//					builder.addValueProperty(key.getName(), () -> value, null);
 					builder.addDoubleProperty(key.getName(), () -> valueMap.getDouble(key), (value) -> valueMap.setDouble(key, value));
 					break;
 				case STRING:

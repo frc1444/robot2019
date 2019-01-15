@@ -11,6 +11,7 @@ import com.first1444.frc.input.WPIInputCreator;
 import com.first1444.frc.input.sendable.InputPartSendable;
 import com.first1444.frc.input.sendable.JoystickPartSendable;
 import com.first1444.frc.robot2019.actions.TeleopAction;
+import com.first1444.frc.robot2019.autonomous.AutonomousChooserState;
 import com.first1444.frc.robot2019.input.DefaultRobotInput;
 import com.first1444.frc.robot2019.input.InputUtil;
 import com.first1444.frc.robot2019.input.RobotInput;
@@ -23,13 +24,14 @@ import com.first1444.frc.robot2019.subsystems.swerve.ImmutableActionFourSwerveCo
 import com.first1444.frc.robot2019.subsystems.swerve.SwerveDrive;
 import com.first1444.frc.robot2019.subsystems.swerve.TalonSwerveModule;
 import com.first1444.frc.util.pid.PidKey;
-import com.first1444.frc.util.valuemap.ValueMapSendable;
+import com.first1444.frc.util.valuemap.MutableValueMap;
+import com.first1444.frc.util.valuemap.sendable.ValueMapLayout;
+import com.first1444.frc.util.valuemap.sendable.ValueMapSendable;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.interfaces.Gyro;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import me.retrodaredevil.action.*;
 import me.retrodaredevil.controller.ControllerManager;
 import me.retrodaredevil.controller.DefaultControllerManager;
@@ -90,25 +92,28 @@ public class Robot extends TimedRobot {
 		getShuffleboardMap().getUserTab().add(startingOrientation);
 		orientation = new DefaultOrientation(gyro, startingOrientation::getSelected);
 
-		ValueMapSendable<PidKey> drivePidSendable = new ValueMapSendable<>(PidKey.class);
-		drivePidSendable.getMutableValueMap() // TODO pass this into drive once we set it up
+//		final ValueMapSendable<PidKey> drivePidSendable = new ValueMapSendable<>(PidKey.class);
+//		final ValueMapSendable<PidKey> steerPidSendable = new ValueMapSendable<>(PidKey.class);
+//		getShuffleboardMap().getDevTab().add("Drive PID", drivePidSendable);
+//		getShuffleboardMap().getDevTab().add("Steer PID", steerPidSendable);
+		
+		final MutableValueMap<PidKey> drivePid = new ValueMapLayout<>(PidKey.class, "Drive PID", getShuffleboardMap().getDevTab()).getMutableValueMap();
+		final MutableValueMap<PidKey> steerPid = new ValueMapLayout<>(PidKey.class, "Steer PID", getShuffleboardMap().getDevTab()).getMutableValueMap();
+		drivePid
+				.setDouble(PidKey.P, 1.5)
+				.setDouble(PidKey.F, 1.0)
+				.setDouble(PidKey.CLOSED_RAMP_RATE, .25); // etc
+        steerPid
 				.setDouble(PidKey.P, 12)
-				.setDouble(PidKey.I, .03); // etc
+				.setDouble(PidKey.I, .03);
 
-		ValueMapSendable<PidKey> steerPidSendable = new ValueMapSendable<>(PidKey.class);
-		steerPidSendable.getMutableValueMap()
-				.setDouble(PidKey.P, 12);
-		getShuffleboardMap().getDevTab().add("Drive PID", drivePidSendable);
-		getShuffleboardMap().getDevTab().add("Steer PID", steerPidSendable);
-//		SmartDashboard.putData("Drive PID Dash", drivePidSendable);
-
-		FourWheelSwerveDrive drive = new FourWheelSwerveDrive(
+		final FourWheelSwerveDrive drive = new FourWheelSwerveDrive(
 				this::getOrientation,
 				new ImmutableActionFourSwerveCollection(
-						new TalonSwerveModule("front left", 1, 5, drivePidSendable.getMutableValueMap(), steerPidSendable.getMutableValueMap()),
-						new TalonSwerveModule("front right", 2, 6, drivePidSendable.getMutableValueMap(), steerPidSendable.getMutableValueMap()),
-						new TalonSwerveModule("rear left", 3, 7, drivePidSendable.getMutableValueMap(), steerPidSendable.getMutableValueMap()),
-						new TalonSwerveModule("rear right", 4, 8, drivePidSendable.getMutableValueMap(), steerPidSendable.getMutableValueMap())
+						new TalonSwerveModule("front left", 1, 5, drivePid, steerPid),
+						new TalonSwerveModule("front right", 2, 6, drivePid, steerPid),
+						new TalonSwerveModule("rear left", 3, 7, drivePid, steerPid),
+						new TalonSwerveModule("rear right", 4, 8, drivePid, steerPid)
 				),
 				20, 20
 		);
@@ -133,6 +138,7 @@ public class Robot extends TimedRobot {
 		ShuffleboardTab inputTab = getShuffleboardMap().getDebugTab();
 		inputTab.add("Movement Joy", new JoystickPartSendable(robotInput::getMovementJoy));
 		inputTab.add("Movement Speed", new InputPartSendable(robotInput::getMovementSpeed));
+		new AutonomousChooserState(getShuffleboardMap()); // this will add stuff to the dashboard
 
 //		shuffleboardMap.getUserTab().add(new HttpCamera("Front Camera", "http://10.14.44.11/video/stream.mjpg", HttpCamera.HttpCameraKind.kMJPGStreamer));
 	}

@@ -6,7 +6,7 @@ import java.util.function.Consumer;
 public class MutableValueMap<T extends Enum<T> & ValueKey> extends ValueMapBase<T>{
 	private final Class<T> clazz;
 	private final Set<Consumer<T>> listeners = new LinkedHashSet<>();
-	MutableValueMap(Class<T> enumClass) {
+	public MutableValueMap(Class<T> enumClass) {
 		super(new EnumMap<>(enumClass), Collections.unmodifiableSet(EnumSet.allOf(enumClass)));
 		this.clazz = enumClass;
 
