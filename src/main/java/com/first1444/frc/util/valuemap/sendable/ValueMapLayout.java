@@ -6,11 +6,13 @@ import com.first1444.frc.util.valuemap.ValueMap;
 import edu.wpi.first.networktables.EntryListenerFlags;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableValue;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardContainer;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardLayout;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 public class ValueMapLayout<T extends Enum<T> & ValueKey> {
 	private final MutableValueMap<T> valueMap;
@@ -20,9 +22,13 @@ public class ValueMapLayout<T extends Enum<T> & ValueKey> {
 		valueMap = new MutableValueMap<>(clazz);
 		entryMap = new HashMap<>();
 
-		final ShuffleboardLayout layout = container.getLayout(title);
-		for(final T key : valueMap.getValueKeys()){
+		final ShuffleboardLayout layout = container.getLayout(title, BuiltInLayouts.kList);
+		final Set<T> valueKeys = valueMap.getValueKeys();
+		layout.withSize(1, (valueKeys.size() + 1) / 2);
+		for(final T key : valueKeys){
 			final NetworkTableEntry entry = layout.add(key.getName(), key.getDefaultValue())
+					.withPosition(0, key.ordinal())
+					.withSize(1, 1)
 					.getEntry();
 			entryMap.put(key, entry);
 

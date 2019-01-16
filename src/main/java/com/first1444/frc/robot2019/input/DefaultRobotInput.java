@@ -5,7 +5,10 @@ import me.retrodaredevil.controller.input.InputPart;
 import me.retrodaredevil.controller.input.JoystickPart;
 import me.retrodaredevil.controller.input.References;
 import me.retrodaredevil.controller.input.TwoWayInput;
+import me.retrodaredevil.controller.output.ControllerRumble;
+import me.retrodaredevil.controller.output.DisconnectedRumble;
 import me.retrodaredevil.controller.types.ExtremeFlightJoystickControllerInput;
+import me.retrodaredevil.controller.types.RumbleCapableController;
 import me.retrodaredevil.controller.types.StandardControllerInput;
 
 /**
@@ -16,6 +19,7 @@ import me.retrodaredevil.controller.types.StandardControllerInput;
  */
 public class DefaultRobotInput extends SimpleControllerInput implements RobotInput {
 	private final StandardControllerInput controller;
+	private final ControllerRumble rumble;
 	private final ExtremeFlightJoystickControllerInput joystick;
 
 	private final InputPart movementSpeed;
@@ -23,6 +27,12 @@ public class DefaultRobotInput extends SimpleControllerInput implements RobotInp
 	public DefaultRobotInput(StandardControllerInput controller, ExtremeFlightJoystickControllerInput joystick){
 		this.controller = controller;
 		this.joystick = joystick;
+		if(controller instanceof RumbleCapableController){
+			rumble = ((RumbleCapableController) controller).getRumble();
+		} else {
+			rumble = new DisconnectedRumble();
+			addChildren(false, false, rumble);
+		}
 		addChildren(false, false, controller, joystick);
 		movementSpeed = new TwoWayInput(
 				References.create(controller::getRightTrigger), // forward
@@ -45,7 +55,12 @@ public class DefaultRobotInput extends SimpleControllerInput implements RobotInp
 	public InputPart getMovementSpeed() {
 		return movementSpeed;
 	}
-
+	
+	@Override
+	public ControllerRumble getDriverRumble() {
+        return rumble;
+	}
+	
 	@Override
 	public boolean isConnected() {
 		return controller.isConnected() && joystick.isConnected();

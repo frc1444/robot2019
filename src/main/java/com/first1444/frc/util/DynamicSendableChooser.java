@@ -7,6 +7,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableBuilder;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Consumer;
 
 public class DynamicSendableChooser<V> extends SendableBase {
 	private static final String DEFAULT = "default";
@@ -19,6 +20,7 @@ public class DynamicSendableChooser<V> extends SendableBase {
 
 	private final int instanceNumber;
 	private final Map<String, V> map = new LinkedHashMap<>();
+	private final Collection<Consumer<String>> updateListeners = new LinkedHashSet<>();
 	private String defaultChoiceKey = "";
 	private String selectedKey;
 
@@ -28,6 +30,15 @@ public class DynamicSendableChooser<V> extends SendableBase {
 	public DynamicSendableChooser() {
 		super(false);
 		instanceNumber = instanceCounter.getAndIncrement();
+	}
+	public boolean addListener(Consumer<String> changeListener){
+		return updateListeners.add(changeListener);
+	}
+	public boolean removeListener(Consumer<String> changeListener){
+		return updateListeners.remove(changeListener);
+	}
+	private void notifyListeners(){
+		updateListeners.forEach(stringConsumer -> stringConsumer.accept(selectedKey));
 	}
 
 	public void addOption(String name, V object) {
@@ -72,6 +83,7 @@ public class DynamicSendableChooser<V> extends SendableBase {
 				return map.get(selectedKey);
 			} else {
 				if(defaultChoiceKey == null){
+					System.err.println("No default choice key found!");
 					return null;
 				}
 				return map.get(defaultChoiceKey);
@@ -109,9 +121,13 @@ public class DynamicSendableChooser<V> extends SendableBase {
 		builder.addStringProperty(SELECTED, null, val -> {
 			mutex.lock();
 			try {
+				final boolean changed = !val.equals(selectedKey);
 				selectedKey = val;
 				for (NetworkTableEntry entry : activeEntries) {
 					entry.setString(val);
+				}
+				if(changed){
+					notifyListeners();
 				}
 			} finally {
 				mutex.unlock();

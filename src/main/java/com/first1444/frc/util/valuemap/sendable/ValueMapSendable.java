@@ -1,46 +1,36 @@
 package com.first1444.frc.util.valuemap.sendable;
 
-import com.first1444.frc.util.valuemap.MutableValueMap;
 import com.first1444.frc.util.valuemap.ValueKey;
 import com.first1444.frc.util.valuemap.ValueMap;
-import edu.wpi.first.networktables.NetworkTableValue;
 import edu.wpi.first.wpilibj.SendableBase;
-import edu.wpi.first.wpilibj.command.PIDCommand;
 import edu.wpi.first.wpilibj.smartdashboard.SendableBuilder;
+
+import java.util.function.Supplier;
 
 public class ValueMapSendable<T extends Enum<T> & ValueKey> extends SendableBase {
 
-	private final MutableValueMap<T> valueMap;
+	private final Supplier<ValueMap<T>> valueMapSupplier;
 
-	public ValueMapSendable(Class<T> clazz){
-		valueMap = new MutableValueMap<>(clazz);
+	public ValueMapSendable(Supplier<ValueMap<T>> valueMapSupplier){
+        this.valueMapSupplier = valueMapSupplier;
 	}
 
 	@Override
 	public void initSendable(SendableBuilder builder) {
-//		builder.addStringProperty("Property", () -> "HI", (value) -> { throw new UnsupportedOperationException(); });
-		for(T key : valueMap.getValueKeys()){
+		for(T key : valueMapSupplier.get().getValueKeys()){
 			switch(key.getValueType()){
 				case DOUBLE:
-//					final NetworkTableValue value = NetworkTableValue.makeDouble(valueMap.getDouble(key));
-//					builder.addValueProperty(key.getName(), () -> value, null);
-					builder.addDoubleProperty(key.getName(), () -> valueMap.getDouble(key), (value) -> valueMap.setDouble(key, value));
+					builder.addDoubleProperty(key.getName(), () -> valueMapSupplier.get().getDouble(key), null);
 					break;
 				case STRING:
-					builder.addStringProperty(key.getName(), () -> valueMap.getString(key), (value) -> valueMap.setString(key, value));
+					builder.addStringProperty(key.getName(), () -> valueMapSupplier.get().getString(key), null);
 					break;
 				case BOOLEAN:
-					builder.addBooleanProperty(key.getName(), () -> valueMap.getBoolean(key), (value) -> valueMap.setBoolean(key, value));
+					builder.addBooleanProperty(key.getName(), () -> valueMapSupplier.get().getBoolean(key), null);
 					break;
 				default:
 					throw new UnsupportedOperationException("Unsupported value type: " + key.getValueType());
 			}
 		}
-	}
-	public MutableValueMap<T> getMutableValueMap(){
-		return valueMap;
-	}
-	public ValueMap<T> getImmutableValueMap(){
-		return valueMap.build();
 	}
 }

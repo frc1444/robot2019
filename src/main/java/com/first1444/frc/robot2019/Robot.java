@@ -12,6 +12,7 @@ import com.first1444.frc.input.sendable.InputPartSendable;
 import com.first1444.frc.input.sendable.JoystickPartSendable;
 import com.first1444.frc.robot2019.actions.TeleopAction;
 import com.first1444.frc.robot2019.autonomous.AutonomousChooserState;
+import com.first1444.frc.robot2019.autonomous.RobotAutonActionCreator;
 import com.first1444.frc.robot2019.input.DefaultRobotInput;
 import com.first1444.frc.robot2019.input.InputUtil;
 import com.first1444.frc.robot2019.input.RobotInput;
@@ -27,15 +28,23 @@ import com.first1444.frc.util.pid.PidKey;
 import com.first1444.frc.util.valuemap.MutableValueMap;
 import com.first1444.frc.util.valuemap.sendable.ValueMapLayout;
 import com.first1444.frc.util.valuemap.sendable.ValueMapSendable;
+import edu.wpi.cscore.HttpCamera;
+import edu.wpi.first.networktables.EntryListenerFlags;
+import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.wpilibj.DigitalOutput;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.interfaces.Gyro;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
+import edu.wpi.first.wpilibj.shuffleboard.SendableCameraWrapper;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import me.retrodaredevil.action.*;
 import me.retrodaredevil.controller.ControllerManager;
 import me.retrodaredevil.controller.DefaultControllerManager;
 import me.retrodaredevil.controller.MutableControlConfig;
+import me.retrodaredevil.controller.output.ControllerRumble;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -63,12 +72,13 @@ public class Robot extends TimedRobot {
 	private final ActionChooser actionChooser;
 
 	private final Action teleopAction;
+	private final AutonomousChooserState autonomousChooserState;
 
 
 
 	/** Used to initialize final fields.*/
 	public Robot(){
-		super(TimedRobot.kDefaultPeriod); // same as default constructor, but we can change it if we want
+		super(.03); // same as default constructor, but we can change it if we want
 		shuffleboardMap = new DefaultShuffleboardMap();
 		robotInput = new DefaultRobotInput(
 				InputUtil.createPS4Controller(new WPIInputCreator(new Joystick(0))),
@@ -89,13 +99,10 @@ public class Robot extends TimedRobot {
 		startingOrientation.addOption("right (0)", 0.0);
 		startingOrientation.addOption("left (180)", 180.0);
 		startingOrientation.addOption("backwards (270)", 270.0);
-		getShuffleboardMap().getUserTab().add(startingOrientation);
+		getShuffleboardMap().getUserTab().add(startingOrientation)
+				.withSize(2, 1);
 		orientation = new DefaultOrientation(gyro, startingOrientation::getSelected);
 
-//		final ValueMapSendable<PidKey> drivePidSendable = new ValueMapSendable<>(PidKey.class);
-//		final ValueMapSendable<PidKey> steerPidSendable = new ValueMapSendable<>(PidKey.class);
-//		getShuffleboardMap().getDevTab().add("Drive PID", drivePidSendable);
-//		getShuffleboardMap().getDevTab().add("Steer PID", steerPidSendable);
 		
 		final MutableValueMap<PidKey> drivePid = new ValueMapLayout<>(PidKey.class, "Drive PID", getShuffleboardMap().getDevTab()).getMutableValueMap();
 		final MutableValueMap<PidKey> steerPid = new ValueMapLayout<>(PidKey.class, "Steer PID", getShuffleboardMap().getDevTab()).getMutableValueMap();
@@ -133,30 +140,40 @@ public class Robot extends TimedRobot {
 		actionChooser = Actions.createActionChooser(WhenDone.CLEAR_ACTIVE);
 
 		teleopAction = new TeleopAction(this, robotInput);
+		autonomousChooserState = new AutonomousChooserState(getShuffleboardMap()); // this will add stuff to the dashboard
 
 		controllerManager.update(); // update this so when calling get methods don't throw exceptions
 		ShuffleboardTab inputTab = getShuffleboardMap().getDebugTab();
-		inputTab.add("Movement Joy", new JoystickPartSendable(robotInput::getMovementJoy));
+		inputTab.add("Movement Joy", new JoystickPartSendable(robotInput::getMovementJoy)).withSize(2, 2);
 		inputTab.add("Movement Speed", new InputPartSendable(robotInput::getMovementSpeed));
-		new AutonomousChooserState(getShuffleboardMap()); // this will add stuff to the dashboard
 
-//		shuffleboardMap.getUserTab().add(new HttpCamera("Front Camera", "http://10.14.44.11/video/stream.mjpg", HttpCamera.HttpCameraKind.kMJPGStreamer));
+//		final HttpCamera camera = new HttpCamera("Camera", "10.14.44.5:5001", HttpCamera.HttpCameraKind.kMJPGStreamer);
+//		camera.setFPS(9);
+//		camera.setResolution(640, 480);
+//		getShuffleboardMap().getUserTab().add(camera);
+		
+//		getShuffleboardMap().getDevTab().getLayout("rumble", BuiltInLayouts.kList).add("Test Rumble", false)
+//				.withWidget(BuiltInWidgets.kBooleanBox)
+//				.getEntry()
+//				.addListener(entryNotification -> {
+//					final boolean value = entryNotification.value.getBoolean();
+//					final ControllerRumble rumble = robotInput.getDriverRumble();
+//					if(rumble.isConnected()) {
+//						if (value) {
+//							rumble.rumbleTimeout(1000, 1);
+//						} else {
+//							rumble.rumbleForever(0);
+//						}
+//					}
+//				}, EntryListenerFlags.kUpdate);
+	
+		System.out.println("Finished constructor");
 	}
+	// region Overridden Methods
 
 	/** Just a second way to initialize things*/
 	@Override
-	public void robotInit() {
-	}
-
-	/** Called when robot is disabled and in between switching between modes such as teleop and autonomous*/
-	@Override
-	public void disabledInit() {
-		actionChooser.setToClearAction();
-		if(enabledSubsystemUpdater.isActive()) {
-			enabledSubsystemUpdater.end();
-		}
-	}
-
+	public void robotInit() { }
 	/** Called before every other period method no matter what state the robot is in*/
 	@Override
 	public void robotPeriodic() {
@@ -168,28 +185,33 @@ public class Robot extends TimedRobot {
 		constantSubsystemUpdater.update(); // update subsystems that are always updated
 
 	}
+	
+	/** Called when robot is disabled and in between switching between modes such as teleop and autonomous*/
+	@Override
+	public void disabledInit() {
+		actionChooser.setToClearAction();
+		if(enabledSubsystemUpdater.isActive()) {
+			enabledSubsystemUpdater.end();
+		}
+	}
+	@Override public void disabledPeriodic() { }
 
 	/** Called when going into teleop mode */
 	@Override
 	public void teleopInit() {
 		actionChooser.setNextAction(teleopAction);
 	}
-
+	@Override public void teleopPeriodic() { }
+	
 	/** Called first thing when match starts. Autonomous is active for 15 seconds*/
 	@Override
 	public void autonomousInit() {
 		gyro.reset();
-		actionChooser.setNextAction(
-				new Actions.ActionQueueBuilder(
-						Actions.createRunOnce(() -> System.out.println("Autonomous init!")),
-						Actions.createRunForever(() -> System.out.println("Autonomous running!"))
-				)
-						.canRecycle(false)
-						.canBeDone(true)
-						.build()
-		);
+        actionChooser.setNextAction(autonomousChooserState.createAutonomousAction(new RobotAutonActionCreator(this)));
 	}
-
+	@Override public void autonomousPeriodic() { }
+	// endregion
+	
 	public SwerveDrive getDrive(){ return drive; }
 	public Orientation getOrientation(){
 		if(orientation == null){
