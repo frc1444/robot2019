@@ -38,17 +38,17 @@ public class TestAutonActionCreator implements AutonActionCreator {
 	
 	@Override
 	public Action createCargoShipPlaceHatch() {
-        return createStringAction("Placing hatch at cargo ship");
+		return createStringAction("Placing hatch at cargo ship");
 	}
 	
 	@Override
 	public Action createCargoShipPlaceCargo() {
-        return createStringAction("Placing cargo at cargo ship");
+		return createStringAction("Placing cargo at cargo ship");
 	}
 	
 	@Override
 	public Action createRocket1PlaceHatch() {
-        return createStringAction("Placing hatch at level 1 rocket");
+		return createStringAction("Placing hatch at level 1 rocket");
 	}
 	
 	@Override

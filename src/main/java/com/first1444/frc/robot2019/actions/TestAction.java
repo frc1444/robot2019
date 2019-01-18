@@ -18,13 +18,12 @@ public class TestAction extends SimpleAction {
 		super.onUpdate();
 		final ControllerRumble rumble = input.getDriverRumble();
 		if(rumble.isConnected()) {
-            final InputPart inputPart = input.getMovementSpeed();
+			final InputPart inputPart = input.getMovementSpeed();
 			if (!inputPart.isDeadzone()) {
 				rumble.rumbleTimeout(100, inputPart.getPosition());
 			} else {
 				rumble.rumbleForever(0);
 			}
-		} else {
 		}
 	}
 }

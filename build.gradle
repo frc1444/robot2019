@@ -66,6 +66,11 @@ dependencies {
     
     compile 'com.github.retrodaredevil:abstract-controller-lib:v1.3.5'
     compile 'com.github.retrodaredevil:action-lib:v1.0.1'
+    
+    // https://mvnrepository.com/artifact/com.google.code.gson/gson
+    compile group: 'com.google.code.gson', name: 'gson', version: '2.3.1'
+    // https://mvnrepository.com/artifact/org.zeromq/jeromq
+    compile group: 'org.zeromq', name: 'jeromq', version: '0.4.3'
 }
 
 // Setting up my Jar File. In this case, adding all libraries into the main jar ('fat jar')

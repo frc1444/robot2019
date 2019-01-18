@@ -30,8 +30,6 @@ import com.first1444.frc.robot2019.subsystems.swerve.SwerveDrive;
 import com.first1444.frc.util.pid.PidKey;
 import com.first1444.frc.util.valuemap.MutableValueMap;
 import com.first1444.frc.util.valuemap.sendable.ValueMapLayout;
-import edu.wpi.cscore.HttpCamera;
-import edu.wpi.cscore.MjpegServer;
 import edu.wpi.cscore.UsbCamera;
 import edu.wpi.cscore.VideoMode;
 import edu.wpi.first.cameraserver.CameraServer;
@@ -75,6 +73,8 @@ public class Robot extends TimedRobot {
 	private final Action teleopAction;
 	private final Action testAction;
 	private final AutonomousChooserState autonomousChooserState;
+	
+	private UsbCamera camera = null;
 
 
 	// region Initialize
@@ -86,7 +86,7 @@ public class Robot extends TimedRobot {
 		robotInput = new DefaultRobotInput(
 				InputUtil.createPS4Controller(new WPIInputCreator(new Joystick(0))),
 				InputUtil.createJoystick(new WPIInputCreator(new Joystick(1))),
-                rumble
+				rumble
 		);
 		MutableControlConfig controlConfig = new MutableControlConfig();
 		// *edit values of controlConfig if desired*
@@ -161,10 +161,15 @@ public class Robot extends TimedRobot {
 	/** Just a second way to initialize things*/
 	@Override
 	public void robotInit() {
-		final UsbCamera camera = CameraServer.getInstance().startAutomaticCapture();
-		camera.setVideoMode(VideoMode.PixelFormat.kMJPEG, 320, 240, 9);
-		
-		shuffleboardMap.getUserTab().add(camera);
+		try {
+			camera = CameraServer.getInstance().startAutomaticCapture();
+			camera.setVideoMode(VideoMode.PixelFormat.kMJPEG, 320, 240, 9);
+			
+			shuffleboardMap.getUserTab().add(camera);
+		} catch(Exception e){
+			e.printStackTrace();
+			System.out.println("Couldn't initialize the camera!");
+		}
 
 		System.out.println("Finished robot init!");
 	}
@@ -205,9 +210,24 @@ public class Robot extends TimedRobot {
 	@Override
 	public void autonomousInit() {
 		gyro.reset();
-		actionChooser.setNextAction(autonomousChooserState.createAutonomousAction(new RobotAutonActionCreator(this)));
+		actionChooser.setNextAction(
+				new Actions.ActionQueueBuilder(
+						autonomousChooserState.createAutonomousAction(new RobotAutonActionCreator(this)),
+						teleopAction
+				)
+						.build()
+		);
+//		actionChooser.setNextAction(Actions.createRunForever(() -> {})); // for testing
 	}
-	@Override public void autonomousPeriodic() { }
+	@Override
+	public void autonomousPeriodic() {
+		if(!teleopAction.isActive()){
+			if(robotInput.getAutonomousCancelButton().isDown()){
+				actionChooser.setNextAction(teleopAction);
+				System.out.println("Letting teleop take over now");
+			}
+		}
+	}
 	
 	@Override
 	public void testInit() {

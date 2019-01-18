@@ -19,7 +19,7 @@ public class PS4HIDRumble extends HIDRumble {
 	}
 	private double getHeavy(double intensity){
 		if(intensity > HEAVY_START){
-            return (intensity - HEAVY_START) / (1 - HEAVY_START);
+			return (intensity - HEAVY_START) / (1 - HEAVY_START);
 		}
 		return 0;
 	}
@@ -32,27 +32,27 @@ public class PS4HIDRumble extends HIDRumble {
 	
 	@Override
 	public void rumbleForever(double leftIntensity, double rightIntensity) {
-        rumbleForever((leftIntensity + rightIntensity) / 2.0);
+		rumbleForever((leftIntensity + rightIntensity) / 2.0);
 	}
 	
 	
 	@Override
 	public void rumbleTime(long millis, double leftIntensity, double rightIntensity) {
-        rumbleTime(millis, (leftIntensity + rightIntensity) / 2.0);
+		rumbleTime(millis, (leftIntensity + rightIntensity) / 2.0);
 	}
 	
 	@Override
 	public void rumbleTimeout(long millisTimeout, double intensity) {
-        rumbleTime(millisTimeout, intensity);
+		rumbleTime(millisTimeout, intensity);
 	}
 	
 	@Override
 	public void rumbleTimeout(long millisTimeout, double leftIntensity, double rightIntensity) {
-        rumbleTime(millisTimeout, leftIntensity, rightIntensity);
+		rumbleTime(millisTimeout, leftIntensity, rightIntensity);
 	}
 	
 	@Override
 	public boolean isLeftAndRightSupported() {
-        return false;
+		return false;
 	}
 }

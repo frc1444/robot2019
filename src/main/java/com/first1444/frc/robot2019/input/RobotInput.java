@@ -16,5 +16,7 @@ public interface RobotInput extends ControllerInput {
 	/** @return An InputPart that can have a range of [0..1] or [-1..1] representing the speed multiplier */
 	InputPart getMovementSpeed();
 	
+	InputPart getAutonomousCancelButton();
+	
 	ControllerRumble getDriverRumble();
 }

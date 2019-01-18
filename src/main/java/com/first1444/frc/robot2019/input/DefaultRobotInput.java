@@ -65,6 +65,11 @@ public class DefaultRobotInput extends SimpleControllerInput implements RobotInp
 	}
 	
 	@Override
+	public InputPart getAutonomousCancelButton() {
+		return controller.getLeftStick();
+	}
+	
+	@Override
 	public ControllerRumble getDriverRumble() {
 		return rumbleSupplier.get();
 	}
