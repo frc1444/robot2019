@@ -57,6 +57,7 @@ public class FourWheelSwerveDrive extends SimpleAction implements SwerveDrive{
 			for(SwerveModule module : getModules()){
 				module.setTargetSpeed(0);
 			}
+			swerveCollection.update();
 			return;
 		}
 		final double offset = orientationSupplier.get().getOffset(controlPerspective);

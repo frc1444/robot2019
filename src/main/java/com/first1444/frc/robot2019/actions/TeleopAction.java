@@ -8,6 +8,7 @@ import com.first1444.frc.robot2019.subsystems.swerve.SwerveModule;
 import me.retrodaredevil.action.SimpleAction;
 import me.retrodaredevil.controller.input.InputPart;
 import me.retrodaredevil.controller.input.JoystickPart;
+import me.retrodaredevil.controller.output.ControllerRumble;
 
 /**
  * This handles everything needed for teleop and should be ended when teleop is over. This can be recycled
@@ -24,6 +25,11 @@ public class TeleopAction extends SimpleAction {
 	@Override
 	protected void onStart() {
 		super.onStart();
+		ControllerRumble rumble = input.getDriverRumble();
+		if(rumble.isConnected()){
+			rumble.rumbleTime(500, .7);
+			System.out.println("Doing rumble for teleop start");
+		}
 	}
 
 	@Override

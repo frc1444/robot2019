@@ -4,7 +4,7 @@ import edu.wpi.first.wpilibj.GenericHID;
 import me.retrodaredevil.controller.SimpleControllerPart;
 import me.retrodaredevil.controller.output.ControllerRumble;
 
-class HIDRumble extends SimpleControllerPart implements ControllerRumble {
+public class HIDRumble extends SimpleControllerPart implements ControllerRumble {
 
 	private final GenericHID hid;
 

@@ -1,4 +1,4 @@
-package com.first1444.frc.robot2019.autonomous;
+package com.first1444.frc.robot2019.autonomous.options;
 
 public enum AutonomousType {
 	DO_NOTHING("Do Nothing", false, false, false, false, false, false, false),
@@ -6,8 +6,8 @@ public enum AutonomousType {
 	CROSS_LINE_FORWARD("Cross Line"		 , false, false, false, false, false, false, false),
 	CROSS_LINE_SIDE("Cross Line to the Side", true, true, false, false, false, false, false),
 
-	CENTER_CARGO_SHIP("Center Cargo Ship (Goes at Angle)"		, true, true, true, true, true, false, false),
-	OFF_CENTER_CARGO_SHIP("Off Center Cargo Ship (Goes straight)", false, false, true, true, true, false, false),
+//	CENTER_CARGO_SHIP("Center Cargo Ship (Goes at Angle)"		, true, true, true, true, true, false, false),
+	OFF_CENTER_CARGO_SHIP("Off Center Cargo Ship (Goes straight)", true, true, true, true, true, false, false),
 
 	SIDE_CARGO_SHIP("Side Cargo Ship", true, true, true, true, true, false, false),
 

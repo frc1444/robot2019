@@ -12,7 +12,7 @@ public class ValueMapSendable<T extends Enum<T> & ValueKey> extends SendableBase
 	private final Supplier<ValueMap<T>> valueMapSupplier;
 
 	public ValueMapSendable(Supplier<ValueMap<T>> valueMapSupplier){
-        this.valueMapSupplier = valueMapSupplier;
+		this.valueMapSupplier = valueMapSupplier;
 	}
 
 	@Override

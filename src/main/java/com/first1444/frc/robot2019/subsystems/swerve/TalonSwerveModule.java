@@ -63,7 +63,7 @@ public class TalonSwerveModule extends SimpleAction implements SwerveModule {
 
 	@Override
 	public double getTargetAngle() {
-        return targetPositionDegrees;
+		return targetPositionDegrees;
 	}
 
 	@Override

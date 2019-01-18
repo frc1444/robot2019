@@ -11,6 +11,8 @@ import me.retrodaredevil.controller.types.ExtremeFlightJoystickControllerInput;
 import me.retrodaredevil.controller.types.RumbleCapableController;
 import me.retrodaredevil.controller.types.StandardControllerInput;
 
+import java.util.function.Supplier;
+
 /**
  * A class that takes care of all the controllers connected to the driver station and
  * exposes some of their inputs to be used in other parts of the program
@@ -19,19 +21,25 @@ import me.retrodaredevil.controller.types.StandardControllerInput;
  */
 public class DefaultRobotInput extends SimpleControllerInput implements RobotInput {
 	private final StandardControllerInput controller;
-	private final ControllerRumble rumble;
+	private final Supplier<ControllerRumble> rumbleSupplier;
 	private final ExtremeFlightJoystickControllerInput joystick;
 
 	private final InputPart movementSpeed;
 
-	public DefaultRobotInput(StandardControllerInput controller, ExtremeFlightJoystickControllerInput joystick){
+	public DefaultRobotInput(StandardControllerInput controller, ExtremeFlightJoystickControllerInput joystick, ControllerRumble rumble){
 		this.controller = controller;
 		this.joystick = joystick;
-		if(controller instanceof RumbleCapableController){
-			rumble = ((RumbleCapableController) controller).getRumble();
+		if(rumble != null){
+			addChildren(false, true, rumble);
+			this.rumbleSupplier = () -> rumble;
 		} else {
-			rumble = new DisconnectedRumble();
-			addChildren(false, false, rumble);
+			if (controller instanceof RumbleCapableController) {
+				this.rumbleSupplier = ((RumbleCapableController) controller)::getRumble;
+			} else {
+				final ControllerRumble disconnectedRumble = new DisconnectedRumble();
+				this.rumbleSupplier = () -> disconnectedRumble;
+				addChildren(false, false, disconnectedRumble);
+			}
 		}
 		addChildren(false, false, controller, joystick);
 		movementSpeed = new TwoWayInput(
@@ -58,7 +66,7 @@ public class DefaultRobotInput extends SimpleControllerInput implements RobotInp
 	
 	@Override
 	public ControllerRumble getDriverRumble() {
-        return rumble;
+		return rumbleSupplier.get();
 	}
 	
 	@Override
