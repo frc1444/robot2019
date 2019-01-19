@@ -69,7 +69,8 @@ public class Robot extends TimedRobot {
 	private final Orientation orientation;
 	private final SwerveDrive drive;
 	
-	private final PacketListener packetListener;
+	private final PacketListener hatchPacketListener;
+	private final PacketListener cargoPacketListener;
 
 	/** An {@link Action} that updates certain subsystems only when the robot is enabled*/
 	private final ActionMultiplexer enabledSubsystemUpdater;
@@ -140,7 +141,8 @@ public class Robot extends TimedRobot {
 		);
 		this.drive = drive;
 		
-		this.packetListener = new PacketListener(); // start in robotInit()
+		this.hatchPacketListener = new PacketListener(5801); // start in robotInit()
+		this.cargoPacketListener = new PacketListener(5802); // start in robotInit()
 		
 		enabledSubsystemUpdater = new Actions.ActionMultiplexerBuilder(
 				drive
@@ -185,7 +187,8 @@ public class Robot extends TimedRobot {
 			e.printStackTrace();
 			System.out.println("Couldn't initialize the camera!");
 		}
-		packetListener.start();
+		hatchPacketListener.start();
+		cargoPacketListener.start();
 
 		System.out.println("Finished robot init!");
 	}

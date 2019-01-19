@@ -10,13 +10,15 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 public class PacketListener extends Thread {
-	private final Collection<VisionPacket> packets = new ArrayList<>();
-	public PacketListener(){
+	private final int port;
+	private VisionInstant instant;
+	public PacketListener(int port){
+		this.port = port;
 		setDaemon(true);
 	}
-	public Collection<VisionPacket> getPackets(){
-		synchronized (packets){
-			return new ArrayList<>(packets);
+	public VisionInstant getPackets(){
+		synchronized (this){
+			return instant;
 		}
 	}
 	
@@ -24,7 +26,7 @@ public class PacketListener extends Thread {
 	public void run() {
 		try(ZContext context = new ZContext()){
 			ZMQ.Socket socket = context.createSocket(ZMQ.SUB);
-			socket.connect("tcp://10.14.44.5:5556");
+			socket.connect("tcp://10.14.44.5:" + port);
 			socket.setLinger(0);
 			socket.subscribe("".getBytes());
 			
@@ -40,20 +42,22 @@ public class PacketListener extends Thread {
 	}
 	private void updatePackets(JsonObject jsonObject){
 		JsonArray packetArray = jsonObject.get("packets").getAsJsonArray();
-		synchronized (packets) {
-			for (final JsonElement packetElement : packetArray) {
-				final JsonObject packetObject = packetElement.getAsJsonObject();
-				final VisionPacket packet = new ImmutableVisionPacket(
-						packetObject.get("x").getAsDouble(),
-						packetObject.get("y").getAsDouble(),
-						packetObject.get("z").getAsDouble(),
-						packetObject.get("yaw").getAsDouble(),
-						packetObject.get("pitch").getAsDouble(),
-						packetObject.get("roll").getAsDouble()
-				);
-				packets.add(packet);
-				System.out.println(packet);
-			}
+		final Collection<VisionPacket> packets = new ArrayList<>();
+		for (final JsonElement packetElement : packetArray) {
+			final JsonObject packetObject = packetElement.getAsJsonObject();
+			final VisionPacket packet = new ImmutableVisionPacket(
+					packetObject.get("x").getAsDouble(),
+					packetObject.get("y").getAsDouble(),
+					packetObject.get("z").getAsDouble(),
+					packetObject.get("yaw").getAsDouble(),
+					packetObject.get("pitch").getAsDouble(),
+					packetObject.get("roll").getAsDouble()
+			);
+			packets.add(packet);
+			System.out.println(packet);
+		}
+		synchronized (this) {
+			instant = new ImmutableVisionInstant(packets, System.currentTimeMillis());
 		}
 	}
 }
