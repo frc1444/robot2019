@@ -78,6 +78,7 @@ public class AutonomousModeCreator {
 				break;
 			case SIDE_CARGO_SHIP:
 				
+				
 				break;
 			case SIDE_ROCKET:
 				

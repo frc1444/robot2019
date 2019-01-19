@@ -27,6 +27,7 @@ import com.first1444.frc.robot2019.subsystems.swerve.DummySwerveModule;
 import com.first1444.frc.robot2019.subsystems.swerve.FourWheelSwerveDrive;
 import com.first1444.frc.robot2019.subsystems.swerve.ImmutableActionFourSwerveCollection;
 import com.first1444.frc.robot2019.subsystems.swerve.SwerveDrive;
+import com.first1444.frc.robot2019.vision.PacketListener;
 import com.first1444.frc.util.pid.PidKey;
 import com.first1444.frc.util.valuemap.MutableValueMap;
 import com.first1444.frc.util.valuemap.sendable.ValueMapLayout;
@@ -62,6 +63,8 @@ public class Robot extends TimedRobot {
 
 	private final Orientation orientation;
 	private final SwerveDrive drive;
+	
+	private final PacketListener packetListener;
 
 	/** An {@link Action} that updates certain subsystems only when the robot is enabled*/
 	private final ActionMultiplexer enabledSubsystemUpdater;
@@ -130,6 +133,9 @@ public class Robot extends TimedRobot {
 				20, 20
 		);
 		this.drive = drive;
+		
+		this.packetListener = new PacketListener(); // start in robotInit()
+		
 		enabledSubsystemUpdater = new Actions.ActionMultiplexerBuilder(
 				drive
 		)
@@ -170,6 +176,7 @@ public class Robot extends TimedRobot {
 			e.printStackTrace();
 			System.out.println("Couldn't initialize the camera!");
 		}
+		packetListener.start();
 
 		System.out.println("Finished robot init!");
 	}
