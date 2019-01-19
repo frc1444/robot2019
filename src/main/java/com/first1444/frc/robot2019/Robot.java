@@ -15,6 +15,7 @@ import com.first1444.frc.input.sendable.JoystickPartSendable;
 import com.first1444.frc.robot2019.actions.TeleopAction;
 import com.first1444.frc.robot2019.actions.TestAction;
 import com.first1444.frc.robot2019.autonomous.AutonomousChooserState;
+import com.first1444.frc.robot2019.autonomous.AutonomousModeCreator;
 import com.first1444.frc.robot2019.autonomous.RobotAutonActionCreator;
 import com.first1444.frc.robot2019.input.DefaultRobotInput;
 import com.first1444.frc.robot2019.input.InputUtil;
@@ -28,6 +29,7 @@ import com.first1444.frc.robot2019.subsystems.swerve.FourWheelSwerveDrive;
 import com.first1444.frc.robot2019.subsystems.swerve.ImmutableActionFourSwerveCollection;
 import com.first1444.frc.robot2019.subsystems.swerve.SwerveDrive;
 import com.first1444.frc.robot2019.vision.PacketListener;
+import com.first1444.frc.util.DynamicSendableChooser;
 import com.first1444.frc.util.pid.PidKey;
 import com.first1444.frc.util.valuemap.MutableValueMap;
 import com.first1444.frc.util.valuemap.sendable.ValueMapLayout;
@@ -44,6 +46,7 @@ import me.retrodaredevil.action.*;
 import me.retrodaredevil.controller.ControllerManager;
 import me.retrodaredevil.controller.DefaultControllerManager;
 import me.retrodaredevil.controller.MutableControlConfig;
+import me.retrodaredevil.controller.input.InputPart;
 import me.retrodaredevil.controller.output.ControllerRumble;
 
 /**
@@ -57,10 +60,12 @@ public class Robot extends TimedRobot {
 	
 	private final ShuffleboardMap shuffleboardMap;
 	private final Gyro gyro;
+	private final RobotDimensions dimensions;
 
 	private final ControllerManager controllerManager;
 	private final RobotInput robotInput;
 
+	private final DynamicSendableChooser<Double> startingOrientationChooser;
 	private final Orientation orientation;
 	private final SwerveDrive drive;
 	
@@ -99,16 +104,17 @@ public class Robot extends TimedRobot {
 		controllerManager.addController(robotInput);
 
 		gyro = new DummyGyro(0);
+		dimensions = Constants.Dimensions.INSTANCE;
 
-		final SendableChooser<Double> startingOrientation = new SendableChooser<>();
-		startingOrientation.setName("Starting Orientation");
-		startingOrientation.setDefaultOption("forward (90)", 90.0);
-		startingOrientation.addOption("right (0)", 0.0);
-		startingOrientation.addOption("left (180)", 180.0);
-		startingOrientation.addOption("backwards (270)", 270.0);
-		shuffleboardMap.getUserTab().add(startingOrientation)
+		startingOrientationChooser = new DynamicSendableChooser<>();
+		startingOrientationChooser.setName("Starting Orientation");
+		startingOrientationChooser.setDefaultOption("forward (90)", 90.0);
+		startingOrientationChooser.addOption("right (0)", 0.0);
+		startingOrientationChooser.addOption("left (180)", 180.0);
+		startingOrientationChooser.addOption("backwards (270)", 270.0);
+		shuffleboardMap.getUserTab().add(startingOrientationChooser)
 				.withSize(2, 1);
-		orientation = new DefaultOrientation(gyro, startingOrientation::getSelected);
+		orientation = new DefaultOrientation(gyro, startingOrientationChooser::getSelected);
 
 		
 		final MutableValueMap<PidKey> drivePid = new ValueMapLayout<>(PidKey.class, "Drive PID", shuffleboardMap.getDevTab()).getMutableValueMap();
@@ -152,7 +158,10 @@ public class Robot extends TimedRobot {
 
 		teleopAction = new TeleopAction(this, robotInput);
 		testAction = new TestAction(robotInput);
-		autonomousChooserState = new AutonomousChooserState(shuffleboardMap); // this will add stuff to the dashboard
+		autonomousChooserState = new AutonomousChooserState(
+				shuffleboardMap,  // this will add stuff to the dashboard
+				new AutonomousModeCreator(new RobotAutonActionCreator(this), dimensions)
+		);
 
 		controllerManager.update(); // update this so when calling get methods don't throw exceptions
 		final ShuffleboardTab inputTab = shuffleboardMap.getDebugTab();
@@ -193,7 +202,17 @@ public class Robot extends TimedRobot {
 			enabledSubsystemUpdater.update(); // update subsystems when robot is enabled
 		}
 		constantSubsystemUpdater.update(); // update subsystems that are always updated
-
+		
+		{
+			final InputPart x = robotInput.getResetGyroJoy().getXAxis();
+			final InputPart y = robotInput.getResetGyroJoy().getYAxis();
+			if (x.isDown() || y.isDown()){
+				gyro.reset();
+				final double angle = robotInput.getResetGyroJoy().getAngle();
+				startingOrientationChooser.addOption("Custom", angle);
+				startingOrientationChooser.setSelectedKey("Custom");
+			}
+		}
 	}
 	
 	/** Called when robot is disabled and in between switching between modes such as teleop and autonomous*/
@@ -219,7 +238,7 @@ public class Robot extends TimedRobot {
 		gyro.reset();
 		actionChooser.setNextAction(
 				new Actions.ActionQueueBuilder(
-						autonomousChooserState.createAutonomousAction(new RobotAutonActionCreator(this)),
+						autonomousChooserState.createAutonomousAction(startingOrientationChooser.getSelected()),
 						teleopAction
 				)
 						.build()

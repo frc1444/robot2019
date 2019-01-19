@@ -70,6 +70,11 @@ public class DefaultRobotInput extends SimpleControllerInput implements RobotInp
 	}
 	
 	@Override
+	public JoystickPart getResetGyroJoy() {
+		return controller.getDPad();
+	}
+	
+	@Override
 	public ControllerRumble getDriverRumble() {
 		return rumbleSupplier.get();
 	}

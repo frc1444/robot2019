@@ -7,4 +7,18 @@ public final class Constants {
 	
 	public static final DecimalFormat format = new DecimalFormat(" #0.00;-#0.00");
 	
+	public enum Dimensions implements RobotDimensions {
+		INSTANCE;
+		
+		@Override
+		public double getHatchManipulatorOrientationOffset() {
+			return 0;
+		}
+		
+		@Override
+		public double getForwardCargoManipulatorOffsetAngle() {
+			return 180;
+		}
+	}
+	
 }

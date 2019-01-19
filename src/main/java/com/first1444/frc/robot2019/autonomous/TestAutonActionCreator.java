@@ -1,6 +1,7 @@
 package com.first1444.frc.robot2019.autonomous;
 
 import com.first1444.frc.robot2019.Constants;
+import com.first1444.frc.robot2019.deepspace.SlotLevel;
 import me.retrodaredevil.action.Action;
 import me.retrodaredevil.action.Actions;
 
@@ -47,32 +48,12 @@ public class TestAutonActionCreator implements AutonActionCreator {
 	}
 	
 	@Override
-	public Action createRocket1PlaceHatch() {
-		return createStringAction("Placing hatch at level 1 rocket");
+	public Action createRocketPlaceCargo(SlotLevel slotLevel) {
+		return createStringAction("Placing cargo on rocket at " + slotLevel);
 	}
 	
 	@Override
-	public Action createRocket2PlaceHatch() {
-		return createStringAction("Placing hatch at level 2 rocket");
-	}
-	
-	@Override
-	public Action createRocket3PlaceHatch() {
-		return createStringAction("Placing hatch at level 3 rocket");
-	}
-	
-	@Override
-	public Action createRocket1PlaceCargo() {
-		return createStringAction("Placing cargo at level 1 rocket");
-	}
-	
-	@Override
-	public Action createRocket2PlaceCargo() {
-		return createStringAction("Placing cargo at level 2 rocket");
-	}
-	
-	@Override
-	public Action createRocket3PlaceCargo() {
-		return createStringAction("Placing cargo at level 3 rocket");
+	public Action createRocketPlaceHatch(SlotLevel slotLevel) {
+		return createStringAction("Placing hatch on rocket at " + slotLevel);
 	}
 }

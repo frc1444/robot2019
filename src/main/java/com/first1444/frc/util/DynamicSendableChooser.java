@@ -77,20 +77,40 @@ public class DynamicSendableChooser<V> extends SendableBase {
 	 * @return the option selected
 	 */
 	public V getSelected() {
+		return map.get(getSelectedKey());
+	}
+	public String getSelectedKey(){
 		mutex.lock();
 		try {
 			if (selectedKey != null) {
-				return map.get(selectedKey);
+				return selectedKey;
 			} else {
 				if(defaultChoiceKey == null){
 					System.err.println("No default choice key found!");
 					return null;
 				}
-				return map.get(defaultChoiceKey);
+				return defaultChoiceKey;
 			}
 		} finally {
 			mutex.unlock();
 		}
+
+	}
+	public void setSelectedKey(String selectedKey){
+		mutex.lock();
+		try {
+			final boolean changed = !selectedKey.equals(this.selectedKey);
+			this.selectedKey = selectedKey;
+			for (NetworkTableEntry entry : activeEntries) {
+				entry.setString(selectedKey);
+			}
+			if(changed){
+				notifyListeners();
+			}
+		} finally {
+			mutex.unlock();
+		}
+
 	}
 
 
@@ -118,20 +138,6 @@ public class DynamicSendableChooser<V> extends SendableBase {
 		} finally {
 			mutex.unlock();
 		}
-		builder.addStringProperty(SELECTED, null, val -> {
-			mutex.lock();
-			try {
-				final boolean changed = !val.equals(selectedKey);
-				selectedKey = val;
-				for (NetworkTableEntry entry : activeEntries) {
-					entry.setString(val);
-				}
-				if(changed){
-					notifyListeners();
-				}
-			} finally {
-				mutex.unlock();
-			}
-		});
+		builder.addStringProperty(SELECTED, this::getSelectedKey, this::setSelectedKey);
 	}
 }

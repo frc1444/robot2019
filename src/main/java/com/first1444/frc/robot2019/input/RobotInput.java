@@ -17,6 +17,7 @@ public interface RobotInput extends ControllerInput {
 	InputPart getMovementSpeed();
 	
 	InputPart getAutonomousCancelButton();
+	JoystickPart getResetGyroJoy();
 	
 	ControllerRumble getDriverRumble();
 }

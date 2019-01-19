@@ -12,12 +12,15 @@ import me.retrodaredevil.action.Action;
 import me.retrodaredevil.action.Actions;
 
 public class AutonomousChooserState {
+	private final AutonomousModeCreator autonomousModeCreator;
+	
 	private final DynamicSendableChooser<AutonomousType> autonomousChooser;
 	private final DynamicSendableChooser<StartingPosition> startingPositionChooser;
 	private final DynamicSendableChooser<GamePieceType> gamePieceChooser;
 	private final DynamicSendableChooser<SlotLevel> levelChooser;
 
-	public AutonomousChooserState(ShuffleboardMap shuffleboardMap){
+	public AutonomousChooserState(ShuffleboardMap shuffleboardMap, AutonomousModeCreator autonomousModeCreator){
+		this.autonomousModeCreator = autonomousModeCreator;
 		final ShuffleboardLayout layout = shuffleboardMap.getUserTab()
 				.getLayout("Autonomous", BuiltInLayouts.kList)
 				.withSize(2, 4);
@@ -41,7 +44,7 @@ public class AutonomousChooserState {
 			updateLevelChooser();
 		});
 	}
-	public Action createAutonomousAction(AutonActionCreator actionCreator){
+	public Action createAutonomousAction(double startingOrientation){
 		final AutonomousType type = autonomousChooser.getSelected();
 		if(type == null){
 			throw new NullPointerException("The autonomous type cannot be null!");
@@ -50,7 +53,7 @@ public class AutonomousChooserState {
 		final GamePieceType gamePiece = gamePieceChooser.getSelected();
 		final SlotLevel slotLevel = levelChooser.getSelected();
 		try {
-			return new AutonomousModeCreator(actionCreator).createAction(type, startingPosition, gamePiece, slotLevel);
+			return autonomousModeCreator.createAction(type, startingPosition, gamePiece, slotLevel, startingOrientation);
 		} catch (IllegalArgumentException ex){
 			ex.printStackTrace();
 			System.out.println("One of our choosers must not have been set correctly!");

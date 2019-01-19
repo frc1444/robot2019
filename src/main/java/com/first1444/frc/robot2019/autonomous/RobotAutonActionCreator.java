@@ -1,6 +1,7 @@
 package com.first1444.frc.robot2019.autonomous;
 
 import com.first1444.frc.robot2019.Robot;
+import com.first1444.frc.robot2019.deepspace.SlotLevel;
 import me.retrodaredevil.action.Action;
 
 public class RobotAutonActionCreator implements AutonActionCreator {
@@ -34,36 +35,14 @@ public class RobotAutonActionCreator implements AutonActionCreator {
 	public Action createCargoShipPlaceCargo() {
 		return null;
 	}
-
+	
 	@Override
-	public Action createRocket1PlaceHatch() {
+	public Action createRocketPlaceCargo(SlotLevel slotLevel) {
 		return null;
 	}
-
+	
 	@Override
-	public Action createRocket2PlaceHatch() {
+	public Action createRocketPlaceHatch(SlotLevel slotLevel) {
 		return null;
 	}
-
-	@Override
-	public Action createRocket3PlaceHatch() {
-		return null;
-	}
-
-	@Override
-	public Action createRocket1PlaceCargo() {
-		return null;
-	}
-
-	@Override
-	public Action createRocket2PlaceCargo() {
-		return null;
-	}
-
-	@Override
-	public Action createRocket3PlaceCargo() {
-		return null;
-	}
-
-
 }
