@@ -1,6 +1,8 @@
 package com.first1444.frc.robot2019.autonomous;
 
 import com.first1444.frc.robot2019.Robot;
+import com.first1444.frc.robot2019.autonomous.actions.GoStraight;
+import com.first1444.frc.robot2019.autonomous.actions.TurnToOrientation;
 import com.first1444.frc.robot2019.deepspace.SlotLevel;
 import me.retrodaredevil.action.Action;
 
@@ -18,12 +20,12 @@ public class RobotAutonActionCreator implements AutonActionCreator {
 
 	@Override
 	public Action createGoStraight(double distanceInches, double speed, double angleDegrees) {
-		return new GoStraight(distanceInches, speed, angleDegrees, null, robot::getDrive, robot::getOrientation);
+		return GoStraight.createGoStraightAtHeading(distanceInches, speed, angleDegrees, null, robot::getDrive, robot::getOrientation);
 	}
 
 	@Override
 	public Action createGoStraight(double distanceInches, double speed, double angleDegrees, double faceDirectionDegrees) {
-		return new GoStraight(distanceInches, speed, angleDegrees, faceDirectionDegrees, robot::getDrive, robot::getOrientation);
+		return GoStraight.createGoStraightAtHeading(distanceInches, speed, angleDegrees, faceDirectionDegrees, robot::getDrive, robot::getOrientation);
 	}
 
 	@Override

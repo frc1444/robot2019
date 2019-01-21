@@ -2,6 +2,7 @@ package com.first1444.frc.robot2019.subsystems.swerve;
 
 import com.first1444.frc.robot2019.Perspective;
 import com.first1444.frc.robot2019.sensors.Orientation;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import me.retrodaredevil.action.SimpleAction;
 
 import java.util.List;
@@ -42,6 +43,15 @@ public class FourWheelSwerveDrive extends SimpleAction implements SwerveDrive{
 
 	@Override
 	public void setControl(double x, double y, double turnAmount, double speed, Perspective controlPerspective) {
+		if(abs(x) > 1)
+			throw new IllegalArgumentException();
+		if(abs(y) > 1)
+			throw new IllegalArgumentException();
+		if(abs(turnAmount) > 1)
+			throw new IllegalArgumentException();
+		if(abs(speed) > 1)
+			throw new IllegalArgumentException();
+		
 		this.x = x;
 		this.y = y;
 		this.turnAmount = turnAmount;
@@ -60,7 +70,8 @@ public class FourWheelSwerveDrive extends SimpleAction implements SwerveDrive{
 			swerveCollection.update();
 			return;
 		}
-		final double offset = orientationSupplier.get().getOffset(controlPerspective);
+		
+		final double offset = orientationSupplier.get().getOffset(controlPerspective); // the amount to add to the desired angle (rotate x and y by)
 		final double offsetRadians = toRadians(offset);
 		final double offsetCosine = cos(offsetRadians);
 		final double offsetSine = sin(offsetRadians);
@@ -75,6 +86,21 @@ public class FourWheelSwerveDrive extends SimpleAction implements SwerveDrive{
 		Also, in this code, 90 degrees is forward while 0 degrees is to the right. This makes it similar to many
 		coordinate systems in math but may make the code somewhat different.
 		 */
+//		final double turnAmount = -this.turnAmount;
+//        SmartDashboard.putNumber("this.turnAmount", this.turnAmount);
+//		SmartDashboard.putNumber("local turnAmount", turnAmount);
+//		SmartDashboard.putNumber("this.speed", speed);
+//		SmartDashboard.putNumber("sinA", sinA);
+//		SmartDashboard.putNumber("cosA", cosA);
+		final double turnAmount = this.turnAmount;
+		final double speed = this.speed;
+		final double sinA = this.sinA;
+		final double cosA = this.cosA;
+		SmartDashboard.putNumber("turnAmount", turnAmount);
+		SmartDashboard.putNumber("speed", speed);
+		SmartDashboard.putNumber("sinA", sinA);
+		SmartDashboard.putNumber("cosA", cosA);
+		
 		final double A = y - turnAmount * sinA;
 		final double B = y + turnAmount * sinA;
 		final double C = x - turnAmount * cosA;
@@ -108,7 +134,7 @@ public class FourWheelSwerveDrive extends SimpleAction implements SwerveDrive{
 		swerveCollection.getRearLeft().set(rlSpeed, rlAngle);
 		swerveCollection.getRearRight().set(rrSpeed, rrAngle);
 
-		speed = 0; // reset the speed so it has to be continuously desired that the wheels move
+		this.speed = 0; // reset the speed so it has to be continuously desired that the wheels move
 		swerveCollection.update();
 	}
 

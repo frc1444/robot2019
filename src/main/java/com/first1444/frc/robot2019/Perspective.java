@@ -5,7 +5,11 @@ public enum Perspective {
 	ROBOT_RIGHT_CAM(0, false),
 	ROBOT_LEFT_CAM(180, false),
 	ROBOT_BACK_CAM(-90, false),
-	DRIVER_STATION(90, true);
+	DRIVER_STATION(90, true),
+	/** When the jumbotron is on the right side of our driver station*/
+	JUMBOTRON_ON_RIGHT(0, true),
+	/** When the jumbotron is on the left side of our driver station*/
+	JUMBOTRON_ON_LEFT(180, true);
 
 	private final double forwardDirection;
 	private final boolean useGyro;

@@ -22,12 +22,13 @@ final class SwerveTest {
 	void testStillRightTurn(){
 		final Orientation orientation = () -> 90; // straight forward
 		final FourSwerveCollection collection = new ImmutableFourSwerveCollection(
-				new TestSwerveModule(1, 45),
-				new TestSwerveModule(1, 270 + 45),
-				new TestSwerveModule(1, 90 + 45),
-				new TestSwerveModule(1, 180 + 45)
+				new TestSwerveModule(1, 45), // front left
+				new TestSwerveModule(1, 270 + 45), // front right
+				new TestSwerveModule(1, 90 + 45), // rear left
+				new TestSwerveModule(1, 180 + 45) // rear right
 		);
 		final FourWheelSwerveDrive drive = new FourWheelSwerveDrive(() -> orientation, collection, 20, 20);
+//		final FourWheelSwerveDrive drive = new FourWheelSwerveDrive(() -> orientation, collection, 27.375, 22.25);
 		drive.setControl(0, 0, 1, 1.0, Perspective.DRIVER_STATION); // turn right
 		drive.update();
 	}
@@ -82,6 +83,12 @@ final class SwerveTest {
 			assertEquals(expected, position, .01);
 
 		}
+		
+		@Override
+		public double getTotalDistanceTraveledInches() {
+            throw new UnsupportedOperationException();
+		}
+		
 		@Override
 		public double getTargetSpeed() {
 			throw new UnsupportedOperationException();

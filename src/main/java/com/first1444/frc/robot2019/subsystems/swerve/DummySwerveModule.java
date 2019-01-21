@@ -23,6 +23,11 @@ public class DummySwerveModule extends SimpleAction implements SwerveModule {
 	}
 	
 	@Override
+	public double getTotalDistanceTraveledInches() {
+		return 0;
+	}
+	
+	@Override
 	public double getTargetAngle() {
 		return 0;
 	}

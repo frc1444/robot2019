@@ -2,6 +2,7 @@ package com.first1444.frc.robot2019.sensors;
 
 import edu.wpi.first.wpilibj.interfaces.Gyro;
 
+import java.util.Objects;
 import java.util.function.Supplier;
 
 import static com.first1444.frc.util.MathUtil.mod;
@@ -23,7 +24,7 @@ public class DefaultOrientation implements Orientation {
 	 */
 	DefaultOrientation(Gyro gyro, Supplier<Double> startingOrientationSupplier, boolean isGyroReversed) {
 		this.gyro = gyro;
-		this.startingOrientationSupplier = startingOrientationSupplier;
+		this.startingOrientationSupplier = Objects.requireNonNull(startingOrientationSupplier);
 		this.isGyroReversed = isGyroReversed;
 	}
 	public DefaultOrientation(Gyro gyro, Supplier<Double> startingOrientationSupplier){

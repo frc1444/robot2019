@@ -1,0 +1,33 @@
+package com.first1444.frc.robot2019;
+
+import com.first1444.frc.util.valuemap.ValueKey;
+import com.first1444.frc.util.valuemap.ValueType;
+
+public enum ModuleConfig implements ValueKey {
+	ABS_ENCODER_OFFSET("Absolute Encoder Offset", ValueType.DOUBLE, 0)
+	;
+	private final String name;
+	private final ValueType valueType;
+	private final Object defaultValue;
+	
+	ModuleConfig(String name, ValueType valueType, Object defaultValue) {
+		this.name = name;
+		this.valueType = valueType;
+		this.defaultValue = defaultValue;
+	}
+	
+	@Override
+	public String getName() {
+		return name;
+	}
+	
+	@Override
+	public ValueType getValueType() {
+		return valueType;
+	}
+	
+	@Override
+	public Object getDefaultValue() {
+		return defaultValue;
+	}
+}

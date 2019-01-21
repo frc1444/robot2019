@@ -5,10 +5,13 @@ import com.first1444.frc.robot2019.Robot;
 import com.first1444.frc.robot2019.input.RobotInput;
 import com.first1444.frc.robot2019.subsystems.swerve.SwerveDrive;
 import com.first1444.frc.robot2019.subsystems.swerve.SwerveModule;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import me.retrodaredevil.action.SimpleAction;
 import me.retrodaredevil.controller.input.InputPart;
 import me.retrodaredevil.controller.input.JoystickPart;
 import me.retrodaredevil.controller.output.ControllerRumble;
+
+import java.util.Objects;
 
 /**
  * This handles everything needed for teleop and should be ended when teleop is over. This can be recycled
@@ -16,10 +19,15 @@ import me.retrodaredevil.controller.output.ControllerRumble;
 public class TeleopAction extends SimpleAction {
 	private final Robot robot;
 	private final RobotInput input;
+	private Perspective perspective = Perspective.DRIVER_STATION;
+	
 	public TeleopAction(Robot robot, RobotInput input) {
 		super(true);
 		this.robot = robot;
 		this.input = input;
+	}
+	public void setPerspective(Perspective perspective){
+		this.perspective = Objects.requireNonNull(perspective);
 	}
 
 	@Override
@@ -27,7 +35,7 @@ public class TeleopAction extends SimpleAction {
 		super.onStart();
 		ControllerRumble rumble = input.getDriverRumble();
 		if(rumble.isConnected()){
-			rumble.rumbleTime(500, .7);
+			rumble.rumbleTime(250, .5);
 			System.out.println("Doing rumble for teleop start");
 		}
 	}
@@ -54,6 +62,7 @@ public class TeleopAction extends SimpleAction {
 		} else {
 			turnAmount = turnInputPart.getPosition();
 		}
+		System.out.println("turnAmount: " + turnAmount);
 
 		final InputPart speedInputPart = input.getMovementSpeed();
 		final double speed;
@@ -63,7 +72,7 @@ public class TeleopAction extends SimpleAction {
 			speed = speedInputPart.getPosition();
 		}
 
-		drive.setControl(x, y, turnAmount, speed, Perspective.DRIVER_STATION);
+		drive.setControl(x, y, turnAmount, speed, perspective);
 	}
 
 	@Override
