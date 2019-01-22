@@ -11,12 +11,12 @@ import java.util.Collection;
 
 public class PacketListener extends Thread {
 	private final int port;
-	private VisionInstant instant;
+	private VisionInstant instant = null;
 	public PacketListener(int port){
 		this.port = port;
 		setDaemon(true);
 	}
-	public VisionInstant getPackets(){
+	public VisionInstant getInstant(){
 		synchronized (this){
 			return instant;
 		}

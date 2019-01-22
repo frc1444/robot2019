@@ -35,7 +35,7 @@ public class TeleopAction extends SimpleAction {
 		super.onStart();
 		ControllerRumble rumble = input.getDriverRumble();
 		if(rumble.isConnected()){
-			rumble.rumbleTime(250, .5);
+			rumble.rumbleTime(250, .4);
 			System.out.println("Doing rumble for teleop start");
 		}
 	}
@@ -62,7 +62,6 @@ public class TeleopAction extends SimpleAction {
 		} else {
 			turnAmount = turnInputPart.getPosition();
 		}
-		System.out.println("turnAmount: " + turnAmount);
 
 		final InputPart speedInputPart = input.getMovementSpeed();
 		final double speed;

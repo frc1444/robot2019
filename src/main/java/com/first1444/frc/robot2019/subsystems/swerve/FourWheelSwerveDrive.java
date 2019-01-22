@@ -86,20 +86,11 @@ public class FourWheelSwerveDrive extends SimpleAction implements SwerveDrive{
 		Also, in this code, 90 degrees is forward while 0 degrees is to the right. This makes it similar to many
 		coordinate systems in math but may make the code somewhat different.
 		 */
-//		final double turnAmount = -this.turnAmount;
-//        SmartDashboard.putNumber("this.turnAmount", this.turnAmount);
-//		SmartDashboard.putNumber("local turnAmount", turnAmount);
-//		SmartDashboard.putNumber("this.speed", speed);
-//		SmartDashboard.putNumber("sinA", sinA);
-//		SmartDashboard.putNumber("cosA", cosA);
+		
 		final double turnAmount = this.turnAmount;
 		final double speed = this.speed;
 		final double sinA = this.sinA;
 		final double cosA = this.cosA;
-		SmartDashboard.putNumber("turnAmount", turnAmount);
-		SmartDashboard.putNumber("speed", speed);
-		SmartDashboard.putNumber("sinA", sinA);
-		SmartDashboard.putNumber("cosA", cosA);
 		
 		final double A = y - turnAmount * sinA;
 		final double B = y + turnAmount * sinA;

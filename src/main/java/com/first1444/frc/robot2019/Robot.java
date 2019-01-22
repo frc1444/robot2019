@@ -7,7 +7,7 @@
 
 package com.first1444.frc.robot2019;
 
-import com.first1444.frc.input.PS4HIDRumble;
+import com.first1444.frc.input.DualShockRumble;
 import com.first1444.frc.input.WPIInputCreator;
 import com.first1444.frc.input.sendable.ControllerPartSendable;
 import com.first1444.frc.input.sendable.InputPartSendable;
@@ -17,11 +17,12 @@ import com.first1444.frc.robot2019.actions.TestAction;
 import com.first1444.frc.robot2019.autonomous.AutonomousChooserState;
 import com.first1444.frc.robot2019.autonomous.AutonomousModeCreator;
 import com.first1444.frc.robot2019.autonomous.RobotAutonActionCreator;
+import com.first1444.frc.robot2019.autonomous.actions.TurnToOrientation;
 import com.first1444.frc.robot2019.input.DefaultRobotInput;
 import com.first1444.frc.robot2019.input.InputUtil;
 import com.first1444.frc.robot2019.input.RobotInput;
+import com.first1444.frc.robot2019.sensors.BNO055;
 import com.first1444.frc.robot2019.sensors.DefaultOrientation;
-import com.first1444.frc.robot2019.sensors.DummyGyro;
 import com.first1444.frc.robot2019.sensors.Orientation;
 import com.first1444.frc.robot2019.subsystems.LEDHandler;
 import com.first1444.frc.robot2019.subsystems.swerve.*;
@@ -29,19 +30,14 @@ import com.first1444.frc.robot2019.vision.PacketListener;
 import com.first1444.frc.util.DynamicSendableChooser;
 import com.first1444.frc.util.pid.PidKey;
 import com.first1444.frc.util.valuemap.MutableValueMap;
-import com.first1444.frc.util.valuemap.ValueMap;
 import com.first1444.frc.util.valuemap.sendable.ValueMapLayout;
 import edu.wpi.cscore.UsbCamera;
 import edu.wpi.cscore.VideoMode;
 import edu.wpi.first.cameraserver.CameraServer;
-import edu.wpi.first.wpilibj.Joystick;
-import edu.wpi.first.wpilibj.SendableBase;
-import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.*;
 import edu.wpi.first.wpilibj.interfaces.Gyro;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.SendableBuilder;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import me.retrodaredevil.action.*;
 import me.retrodaredevil.controller.ControllerManager;
 import me.retrodaredevil.controller.DefaultControllerManager;
@@ -89,9 +85,9 @@ public class Robot extends TimedRobot {
 	// region Initialize
 	/** Used to initialize final fields.*/
 	public Robot(){
-		super(.02); // same as default constructor, but we can change it if we want
+		super(.04); // same as default constructor, but we can change it if we want
 		shuffleboardMap = new DefaultShuffleboardMap();
-		final ControllerRumble rumble = new PS4HIDRumble(new XboxController(2));
+		final ControllerRumble rumble = new DualShockRumble(new XboxController(2));
 		robotInput = new DefaultRobotInput(
 				InputUtil.createPS4Controller(new WPIInputCreator(new Joystick(0))),
 				InputUtil.createJoystick(new WPIInputCreator(new Joystick(1))),
@@ -117,14 +113,13 @@ public class Robot extends TimedRobot {
 		startingOrientationChooser.addOption("right (0)", 0.0);
 		startingOrientationChooser.addOption("left (180)", 180.0);
 		startingOrientationChooser.addOption("backwards (270)", 270.0);
-		shuffleboardMap.getUserTab().add(startingOrientationChooser)
-				.withSize(2, 1);
+		shuffleboardMap.getUserTab().add(startingOrientationChooser);
 		orientation = new DefaultOrientation(gyro, startingOrientationChooser::getSelected);
 		shuffleboardMap.getDebugTab().add("orientation", new SendableBase() {
 			@Override
 			public void initSendable(SendableBuilder builder) {
 				builder.addDoubleProperty("Orientation", orientation::getOrientation, null);
-				builder.addDoubleProperty("Offset", () -> orientation.getOffset(Perspective.DRIVER_STATION), null);
+				builder.addDoubleProperty("Driver station offset", () -> orientation.getOffset(Perspective.DRIVER_STATION), null);
 			}
 		});
 
@@ -139,13 +134,22 @@ public class Robot extends TimedRobot {
 				.setDouble(PidKey.P, 12)
 				.setDouble(PidKey.I, .03);
 
+		final ShuffleboardTab talonDebug = shuffleboardMap.getDebugTab();
 		final FourWheelSwerveDrive drive = new FourWheelSwerveDrive(
 				this::getOrientation,
 				new ImmutableActionFourSwerveCollection(
-						new TalonSwerveModule("front left", 1, 5, drivePid, steerPid, createModuleConfig("front left module")),
-						new TalonSwerveModule("front right", 2, 6, drivePid, steerPid, createModuleConfig("front right module")),
-						new TalonSwerveModule("rear left", 3, 7, drivePid, steerPid, createModuleConfig("rear left module")),
-						new TalonSwerveModule("rear right", 4, 8, drivePid, steerPid, createModuleConfig("rear right module"))
+						new TalonSwerveModule("front left", Constants.FL_DRIVE, Constants.FL_STEER, drivePid, steerPid,
+								createModuleConfig("front left module").setDouble(ModuleConfig.ABS_ENCODER_OFFSET, 147), talonDebug),
+						
+						new TalonSwerveModule("front right", Constants.FR_DRIVE, Constants.FR_STEER, drivePid, steerPid,
+								createModuleConfig("front right module").setDouble(ModuleConfig.ABS_ENCODER_OFFSET, 697), talonDebug),
+						
+						new TalonSwerveModule("rear left", Constants.RL_DRIVE, Constants.RL_STEER, drivePid, steerPid,
+								createModuleConfig("rear left module").setDouble(ModuleConfig.ABS_ENCODER_OFFSET, 787), talonDebug),
+						
+						new TalonSwerveModule("rear right", Constants.RR_DRIVE, Constants.RR_STEER, drivePid, steerPid,
+								createModuleConfig("rear right module").setDouble(ModuleConfig.ABS_ENCODER_OFFSET, 608), talonDebug)
+						
 //						new DummySwerveModule(), new DummySwerveModule(), new DummySwerveModule(), new DummySwerveModule()
 				),
 				27.375, 22.25
@@ -187,6 +191,16 @@ public class Robot extends TimedRobot {
 	}
 	private MutableValueMap<ModuleConfig> createModuleConfig(String name){
 		return new ValueMapLayout<>(ModuleConfig.class, name, shuffleboardMap.getDevTab()).getMutableValueMap();
+	}
+	private Action getDriveCalibrateAction(){
+		final ActionMultiplexer multiplexer = new Actions.ActionMultiplexerBuilder().canBeDone(true).clearAllOnEnd(true).canRecycle(false).build();
+		for(SwerveModule module : drive.getModules()){
+			final Action action = module.getCalibrateAction();
+			if(action != null){
+				multiplexer.add(action);
+			}
+		}
+		return multiplexer;
 	}
 
 	/** Just a second way to initialize things*/
@@ -245,7 +259,10 @@ public class Robot extends TimedRobot {
 	/** Called when going into teleop mode */
 	@Override
 	public void teleopInit() {
-		actionChooser.setNextAction(teleopAction);
+		actionChooser.setNextAction(new Actions.ActionMultiplexerBuilder(
+				getDriveCalibrateAction(),
+				teleopAction
+		).canRecycle(false).canBeDone(true).build());
 		teleopAction.setPerspective(Perspective.DRIVER_STATION);
 	}
 	@Override public void teleopPeriodic() { }
@@ -256,6 +273,7 @@ public class Robot extends TimedRobot {
 		gyro.reset();
 		actionChooser.setNextAction(
 				new Actions.ActionQueueBuilder(
+						getDriveCalibrateAction(),
 						autonomousChooserState.createAutonomousAction(startingOrientationChooser.getSelected()),
 						teleopAction
 				)
@@ -265,8 +283,8 @@ public class Robot extends TimedRobot {
 						.build()
 		);
 		teleopAction.setPerspective(Perspective.ROBOT_FORWARD_CAM);
-//		actionChooser.setNextAction(Actions.createRunForever(() -> {})); // for testing
 	}
+	/** Called constantly during autonomous*/
 	@Override
 	public void autonomousPeriodic() {
 		if(!teleopAction.isActive()){
@@ -279,7 +297,12 @@ public class Robot extends TimedRobot {
 	
 	@Override
 	public void testInit() {
-		actionChooser.setNextAction(testAction);
+//		actionChooser.setNextAction(testAction);
+		actionChooser.setNextAction(new Actions.ActionQueueBuilder(
+				getDriveCalibrateAction(),
+				new TurnToOrientation(0, this::getDrive, this::getOrientation),
+				Actions.createRunOnce(() -> robotInput.getDriverRumble().rumbleTime(500, .2))
+		).canRecycle(false).canBeDone(true).immediatelyDoNextWhenDone(true).build());
 	}
 	@Override
 	public void testPeriodic() { }

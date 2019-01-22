@@ -8,10 +8,10 @@ import me.retrodaredevil.action.SimpleAction;
 
 import java.util.function.Supplier;
 
-import static java.lang.Math.max;
-import static java.lang.Math.min;
+import static java.lang.Math.*;
 
 public class TurnToOrientation extends SimpleAction {
+	private final double MAX_SPEED = .6;
 
 	private final double desiredOrientation;
 	private final Supplier<SwerveDrive> driveSupplier;
@@ -32,8 +32,10 @@ public class TurnToOrientation extends SimpleAction {
 		final double currentOrientation = orientation.getOrientation();
 
 		final double minChange = MathUtil.minChange(desiredOrientation, currentOrientation, 360);
-		final double turnAmount = max(-1, min(1, minChange / -20)); // when positive turn right, when negative turn left
+		final double turnAmount = max(-MAX_SPEED, min(MAX_SPEED, minChange / -70)); // when positive turn right, when negative turn left
 		drive.setControl(0, 0, 1, turnAmount, Perspective.DRIVER_STATION);
-
+		if(abs(minChange) < 7.5){
+			setDone(true);
+		}
 	}
 }

@@ -4,7 +4,9 @@ import com.first1444.frc.util.valuemap.ValueKey;
 import com.first1444.frc.util.valuemap.ValueType;
 
 public enum ModuleConfig implements ValueKey {
-	ABS_ENCODER_OFFSET("Absolute Encoder Offset", ValueType.DOUBLE, 0)
+	ABS_ENCODER_OFFSET("Absolute Encoder Offset", ValueType.DOUBLE, 0),
+	MIN_ENCODER_VALUE("Minimum Encoder Value", ValueType.DOUBLE, 10),
+	MAX_ENCODER_VALUE("Maximum Encoder Value", ValueType.DOUBLE, 899)
 	;
 	private final String name;
 	private final ValueType valueType;

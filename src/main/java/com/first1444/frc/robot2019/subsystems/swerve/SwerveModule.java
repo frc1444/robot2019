@@ -2,8 +2,13 @@ package com.first1444.frc.robot2019.subsystems.swerve;
 
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import me.retrodaredevil.action.Action;
 
 public interface SwerveModule {
+	
+	default Action getCalibrateAction(){
+		return null;
+	}
 
 	/**
 	 * @param speed A number in range [-1..1] representing the speed as a percentage

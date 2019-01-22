@@ -11,6 +11,15 @@ public final class Constants {
 	public static final int SWERVE_STEER_QUAD_ENCODER_COUNTS_PER_REVOLUTION = 1657;
 	public static final int SWERVE_DRIVE_ENCODER_COUNTS_PER_REVOLUTION = 534;
 	
+	public static final int FL_DRIVE = 4;
+	public static final int FR_DRIVE = 3;
+	public static final int RL_DRIVE = 2;
+	public static final int RR_DRIVE = 1;
+	public static final int FL_STEER = 8;
+	public static final int FR_STEER = 7;
+	public static final int RL_STEER = 6;
+	public static final int RR_STEER = 5;
+	
 	public enum Dimensions implements RobotDimensions {
 		INSTANCE;
 		

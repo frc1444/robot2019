@@ -1,4 +1,4 @@
-package com.first1444.frc.robot2019;
+package com.first1444.frc.robot2019.sensors;
 
 
 
@@ -182,7 +182,7 @@ public class BNO055 implements Gyro {
 		static final int NDOF = 12;
 	}
 	*/
-	static enum IMUMode {
+	public enum IMUMode {
 		CONFIG(0),
 		ACCONLY(1),
 		MAG_ONLY(2),
