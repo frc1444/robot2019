@@ -70,4 +70,8 @@ public final class MathUtil {
 	public static double remapDegrees(double wpilibDegrees){
 		return 90 - wpilibDegrees;
 	}
+	
+	public static double conservePow(double a, double b){
+		return Math.abs(Math.pow(a, b)) * Math.signum(a);
+	}
 }

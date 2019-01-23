@@ -5,6 +5,7 @@ import com.first1444.frc.robot2019.Robot;
 import com.first1444.frc.robot2019.input.RobotInput;
 import com.first1444.frc.robot2019.subsystems.swerve.SwerveDrive;
 import com.first1444.frc.robot2019.subsystems.swerve.SwerveModule;
+import com.first1444.frc.util.MathUtil;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import me.retrodaredevil.action.SimpleAction;
 import me.retrodaredevil.controller.input.InputPart;
@@ -68,7 +69,7 @@ public class TeleopAction extends SimpleAction {
 		if(speedInputPart.isDeadzone()){
 			speed = 0;
 		} else {
-			speed = speedInputPart.getPosition();
+			speed = MathUtil.conservePow(speedInputPart.getPosition(), 2);
 		}
 
 		drive.setControl(x, y, turnAmount, speed, perspective);

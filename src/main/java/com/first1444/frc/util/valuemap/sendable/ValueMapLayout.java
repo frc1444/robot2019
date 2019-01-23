@@ -14,6 +14,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ *
+ * @deprecated Use {@link MutableValueMapSendable} instead
+ */
+@Deprecated
 public class ValueMapLayout<T extends Enum<T> & ValueKey> {
 	private final MutableValueMap<T> valueMap;
 	private final Map<T, NetworkTableEntry> entryMap;

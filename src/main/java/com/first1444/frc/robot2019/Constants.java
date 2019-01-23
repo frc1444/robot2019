@@ -7,8 +7,11 @@ public final class Constants {
 	
 	public static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat(" #0.00;-#0.00");
 	
+	/** The number of encoder counts per revolution on a steer wheel on the swerve drive when using the absolute encoders*/
 	public static final int SWERVE_STEER_ABSOLUTE_ENCODER_COUNTS_PER_REVOLUTION = 1024;
+	/** The number of encoder counts per revolution on a steer wheel on the swerve drive when using the quad encoders*/
 	public static final int SWERVE_STEER_QUAD_ENCODER_COUNTS_PER_REVOLUTION = 1657;
+	/** The number of encoder counts per revolution on a drive wheel on the swerve drive*/
 	public static final int SWERVE_DRIVE_ENCODER_COUNTS_PER_REVOLUTION = 534;
 	
 	public static final int FL_DRIVE = 4;
@@ -19,6 +22,14 @@ public final class Constants {
 	public static final int FR_STEER = 7;
 	public static final int RL_STEER = 6;
 	public static final int RR_STEER = 5;
+	
+	/** Conversion of CTRE units of 100 units/ms*/
+	public static final int CTRE_UNIT_CONVERSION = 600;
+	private static final int MAX_CIM_RPM = 5300;
+	/** The maximum RPM of a drive wheel on the swerve drive*/
+	public static final int MAX_SWERVE_DRIVE_RPM = MAX_CIM_RPM;
+	/** Talon SRX counts every edge of the quadrature encoder, so 4 * 20 */
+	public static final int CIMCODER_COUNTS_PER_REVOLUTION = 80;
 	
 	public enum Dimensions implements RobotDimensions {
 		INSTANCE;

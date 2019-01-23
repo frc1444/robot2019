@@ -11,7 +11,8 @@ import java.util.function.Supplier;
 import static java.lang.Math.*;
 
 public class TurnToOrientation extends SimpleAction {
-	private final double MAX_SPEED = .6;
+	private static final double MAX_SPEED = .65;
+	private static final double MIN_SPEED = .15;
 
 	private final double desiredOrientation;
 	private final Supplier<SwerveDrive> driveSupplier;
@@ -32,7 +33,12 @@ public class TurnToOrientation extends SimpleAction {
 		final double currentOrientation = orientation.getOrientation();
 
 		final double minChange = MathUtil.minChange(desiredOrientation, currentOrientation, 360);
-		final double turnAmount = max(-MAX_SPEED, min(MAX_SPEED, minChange / -70)); // when positive turn right, when negative turn left
+		double turnAmount = max(-1, min(1, MathUtil.conservePow(minChange / -110, 2.4))); // when positive turn right, when negative turn left
+		if(abs(turnAmount) < MIN_SPEED){
+			turnAmount = MIN_SPEED * signum(turnAmount);
+		} else if(abs(turnAmount) > MAX_SPEED){
+			turnAmount = MAX_SPEED * signum(turnAmount);
+		}
 		drive.setControl(0, 0, 1, turnAmount, Perspective.DRIVER_STATION);
 		if(abs(minChange) < 7.5){
 			setDone(true);

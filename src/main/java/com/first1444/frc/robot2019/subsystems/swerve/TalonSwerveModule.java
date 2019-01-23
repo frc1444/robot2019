@@ -3,6 +3,7 @@ package com.first1444.frc.robot2019.subsystems.swerve;
 import com.ctre.phoenix.ParamEnum;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
+import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.first1444.frc.robot2019.Constants;
 import com.first1444.frc.robot2019.ModuleConfig;
@@ -10,11 +11,9 @@ import com.first1444.frc.util.CTREUtil;
 import com.first1444.frc.util.MathUtil;
 import com.first1444.frc.util.pid.PidKey;
 import com.first1444.frc.util.valuemap.MutableValueMap;
-import com.first1444.frc.util.valuemap.ValueMap;
 import edu.wpi.first.wpilibj.SendableBase;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.SendableBuilder;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import me.retrodaredevil.action.Action;
 import me.retrodaredevil.action.SimpleAction;
 
@@ -24,8 +23,9 @@ import static java.lang.Math.abs;
 
 public class TalonSwerveModule extends SimpleAction implements SwerveModule {
 	private static final double WHEEL_CIRCUMFERENCE = 4 * Math.PI;
-	private static final boolean SHOULD_CALIBRATE = false;
+	private static final boolean USE_ABSOLUTE_ENCODERS = false;
 	private static final boolean QUICK_REVERSE = true;
+	private static final boolean VELOCITY_CONTROL = true;
 	
 	private final TalonSRX drive;
 	private final TalonSRX steer;
@@ -53,6 +53,9 @@ public class TalonSwerveModule extends SimpleAction implements SwerveModule {
 
 		drive.configFactoryDefault();
 		steer.configFactoryDefault();
+		
+		drive.setNeutralMode(NeutralMode.Brake);
+		steer.setNeutralMode(NeutralMode.Coast); // to make them easier to reposition when the robot is on
 
 		drivePid.addListener((key) -> CTREUtil.applyPID(drive, drivePid));
 		steerPid.addListener((key) -> CTREUtil.applyPID(steer, steerPid));
@@ -64,8 +67,11 @@ public class TalonSwerveModule extends SimpleAction implements SwerveModule {
 				updateAbsoluteEncoderOffset();
 			}
 		});
-//		switchToAbsoluteEncoder();
-		switchToQuadEncoder(); // TODO Because of this, the wheels must be in the correct position when starting
+		if(USE_ABSOLUTE_ENCODERS) {
+			switchToAbsoluteEncoder();
+		} else {
+			switchToQuadEncoder(); // TODO Because of this, the wheels must be in the correct position when starting
+		}
 		
 		debugTab.add(getName() + " debug", new SendableBase() {
 			@Override
@@ -111,7 +117,7 @@ public class TalonSwerveModule extends SimpleAction implements SwerveModule {
 	
 	@Override
 	public Action getCalibrateAction() {
-		if(!SHOULD_CALIBRATE){
+		if(!USE_ABSOLUTE_ENCODERS){
 			return null;
 		}
         return new SimpleAction(false){
@@ -162,7 +168,7 @@ public class TalonSwerveModule extends SimpleAction implements SwerveModule {
 
 			if(QUICK_REVERSE){
 				final int newPosition = (int) MathUtil.minChange(desired, current, wrap / 2.0) + current;
-				if(MathUtil.minDistance(newPosition, desired, wrap) < .001){
+				if(MathUtil.minDistance(newPosition, desired, wrap) < .001){ // check if equal
 					speedMultiplier = 1;
 				} else {
 					speedMultiplier = -1;
@@ -176,7 +182,14 @@ public class TalonSwerveModule extends SimpleAction implements SwerveModule {
 		}
 		
 		{ // speed code
-			drive.set(ControlMode.PercentOutput, speed * speedMultiplier);
+			if(VELOCITY_CONTROL){
+				drive.set(
+						ControlMode.Velocity, speed * speedMultiplier
+						* Constants.CIMCODER_COUNTS_PER_REVOLUTION * Constants.MAX_SWERVE_DRIVE_RPM / (double) Constants.CTRE_UNIT_CONVERSION
+				);
+			} else {
+				drive.set(ControlMode.PercentOutput, speed * speedMultiplier);
+			}
 			speed = 0;
 		}
 	}

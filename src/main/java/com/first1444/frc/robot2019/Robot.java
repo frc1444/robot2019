@@ -17,6 +17,7 @@ import com.first1444.frc.robot2019.actions.TestAction;
 import com.first1444.frc.robot2019.autonomous.AutonomousChooserState;
 import com.first1444.frc.robot2019.autonomous.AutonomousModeCreator;
 import com.first1444.frc.robot2019.autonomous.RobotAutonActionCreator;
+import com.first1444.frc.robot2019.autonomous.actions.GoStraight;
 import com.first1444.frc.robot2019.autonomous.actions.TurnToOrientation;
 import com.first1444.frc.robot2019.input.DefaultRobotInput;
 import com.first1444.frc.robot2019.input.InputUtil;
@@ -30,6 +31,7 @@ import com.first1444.frc.robot2019.vision.PacketListener;
 import com.first1444.frc.util.DynamicSendableChooser;
 import com.first1444.frc.util.pid.PidKey;
 import com.first1444.frc.util.valuemap.MutableValueMap;
+import com.first1444.frc.util.valuemap.sendable.MutableValueMapSendable;
 import com.first1444.frc.util.valuemap.sendable.ValueMapLayout;
 import edu.wpi.cscore.UsbCamera;
 import edu.wpi.cscore.VideoMode;
@@ -124,8 +126,14 @@ public class Robot extends TimedRobot {
 		});
 
 		
-		final MutableValueMap<PidKey> drivePid = new ValueMapLayout<>(PidKey.class, "Drive PID", shuffleboardMap.getDevTab()).getMutableValueMap();
-		final MutableValueMap<PidKey> steerPid = new ValueMapLayout<>(PidKey.class, "Steer PID", shuffleboardMap.getDevTab()).getMutableValueMap();
+//		final MutableValueMap<PidKey> drivePid = new ValueMapLayout<>(PidKey.class, "Drive PID", shuffleboardMap.getDevTab()).getMutableValueMap();
+//		final MutableValueMap<PidKey> steerPid = new ValueMapLayout<>(PidKey.class, "Steer PID", shuffleboardMap.getDevTab()).getMutableValueMap();
+		final MutableValueMapSendable<PidKey> drivePidSendable = new MutableValueMapSendable<>(PidKey.class);
+		final MutableValueMapSendable<PidKey> steerPidSendable = new MutableValueMapSendable<>(PidKey.class);
+		shuffleboardMap.getDevTab().add("Drive PID", drivePidSendable);
+		shuffleboardMap.getDevTab().add("Steer PID", steerPidSendable);
+		final MutableValueMap<PidKey> drivePid = drivePidSendable.getMutableValueMap();
+		final MutableValueMap<PidKey> steerPid = steerPidSendable.getMutableValueMap();
 		drivePid
 				.setDouble(PidKey.P, 1.5)
 				.setDouble(PidKey.F, 1.0)
@@ -190,7 +198,9 @@ public class Robot extends TimedRobot {
 		System.out.println("Finished constructor");
 	}
 	private MutableValueMap<ModuleConfig> createModuleConfig(String name){
-		return new ValueMapLayout<>(ModuleConfig.class, name, shuffleboardMap.getDevTab()).getMutableValueMap();
+		final MutableValueMapSendable<ModuleConfig> config = new MutableValueMapSendable<>(ModuleConfig.class);
+		shuffleboardMap.getDevTab().add(name, config);
+		return config.getMutableValueMap();
 	}
 	private Action getDriveCalibrateAction(){
 		final ActionMultiplexer multiplexer = new Actions.ActionMultiplexerBuilder().canBeDone(true).clearAllOnEnd(true).canRecycle(false).build();
@@ -300,7 +310,8 @@ public class Robot extends TimedRobot {
 //		actionChooser.setNextAction(testAction);
 		actionChooser.setNextAction(new Actions.ActionQueueBuilder(
 				getDriveCalibrateAction(),
-				new TurnToOrientation(0, this::getDrive, this::getOrientation),
+//				new TurnToOrientation(0, this::getDrive, this::getOrientation),
+				new GoStraight(10, .2, 0, 1, 90.0, this::getDrive, this::getOrientation),
 				Actions.createRunOnce(() -> robotInput.getDriverRumble().rumbleTime(500, .2))
 		).canRecycle(false).canBeDone(true).immediatelyDoNextWhenDone(true).build());
 	}

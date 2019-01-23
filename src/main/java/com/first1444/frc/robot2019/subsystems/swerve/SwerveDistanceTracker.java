@@ -41,7 +41,8 @@ public class SwerveDistanceTracker {
 		} else {
 			middle2 = null;
 		}
-		final double middle = middle2 == null ? middle1 : (middle1 + middle2) / 2.0;
-		return middle;
+		return middle2 == null
+				? middle1
+				: (middle1 + middle2) / 2.0;
 	}
 }
