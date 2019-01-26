@@ -5,4 +5,5 @@ import java.util.Collection;
 public interface VisionInstant {
 	Collection<VisionPacket> getVisiblePackets();
 	long getTimeMillis();
+	int getCameraID();
 }

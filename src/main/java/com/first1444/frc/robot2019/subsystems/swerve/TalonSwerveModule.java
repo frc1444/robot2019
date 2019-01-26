@@ -5,6 +5,8 @@ import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
+import com.ctre.phoenix.motorcontrol.can.TalonSRXConfiguration;
+import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import com.first1444.frc.robot2019.Constants;
 import com.first1444.frc.robot2019.ModuleConfig;
 import com.first1444.frc.util.CTREUtil;
@@ -48,8 +50,8 @@ public class TalonSwerveModule extends SimpleAction implements SwerveModule {
 		this.name = name;
 		absoluteEncoderOffsetSupplier = () -> (int) moduleConfig.getDouble(ModuleConfig.ABS_ENCODER_OFFSET);
 		
-		drive = new TalonSRX(driveID);
-		steer = new TalonSRX(steerID);
+		drive = new WPI_TalonSRX(driveID);
+		steer = new WPI_TalonSRX(steerID);
 
 		drive.configFactoryDefault();
 		steer.configFactoryDefault();
@@ -73,16 +75,16 @@ public class TalonSwerveModule extends SimpleAction implements SwerveModule {
 			switchToQuadEncoder(); // TODO Because of this, the wheels must be in the correct position when starting
 		}
 		
-		debugTab.add(getName() + " debug", new SendableBase() {
-			@Override
-			public void initSendable(SendableBuilder builder) {
-				builder.addStringProperty("current position", () -> "" + steer.getSelectedSensorPosition(), null);
-				builder.addStringProperty("quad position", () -> "" + steer.getSensorCollection().getQuadraturePosition(), null);
-				builder.addStringProperty("absolute position", () -> "" + steer.getSensorCollection().getAnalogInRaw(), null);
-				builder.addStringProperty("pw position", () -> "" + steer.getSensorCollection().getPulseWidthPosition(), null);
-				builder.addDoubleProperty("angle degrees", () -> getCurrentAngle(), null);
-			}
-		});
+//		debugTab.add(getName() + " debug", new SendableBase() {
+//			@Override
+//			public void initSendable(SendableBuilder builder) {
+//				builder.addStringProperty("current position", () -> "" + steer.getSelectedSensorPosition(), null);
+//				builder.addStringProperty("quad position", () -> "" + steer.getSensorCollection().getQuadraturePosition(), null);
+////				builder.addStringProperty("absolute position", () -> "" + steer.getSensorCollection().getAnalogInRaw(), null);
+////				builder.addStringProperty("pw position", () -> "" + steer.getSensorCollection().getPulseWidthPosition(), null);
+//				builder.addDoubleProperty("angle degrees", () -> getCurrentAngle(), null);
+//			}
+//		});
 	}
 	private void switchToAbsoluteEncoder(){
 		if(currentEncoderType == EncoderType.ABSOLUTE){
@@ -152,9 +154,10 @@ public class TalonSwerveModule extends SimpleAction implements SwerveModule {
 	}
 	
 	@Override
-	protected void onUpdate() {
+	protected void onUpdate() { // takes about 5 ms total
 		super.onUpdate();
-		{ // encoder code
+//		final long startTime = System.nanoTime();
+		{ // encoder code // taking 1.5 ms
 			final double currentDistance = getCurrentDistanceInches();
 			totalDistanceGone += abs(currentDistance - lastDistanceInches);
 			lastDistanceInches = currentDistance;
@@ -163,7 +166,7 @@ public class TalonSwerveModule extends SimpleAction implements SwerveModule {
 		
 		{ // steer code
 			final int wrap = getCountsPerRevolution(); // in encoder counts
-			final int current = steer.getSelectedSensorPosition(); // in encoder counts
+			final int current = steer.getSelectedSensorPosition(); // in encoder counts // takes .5 to 3 ms
 			final int desired = (int) Math.round(targetPositionDegrees * wrap / 360.0); // in encoder counts
 
 			if(QUICK_REVERSE){
@@ -173,7 +176,7 @@ public class TalonSwerveModule extends SimpleAction implements SwerveModule {
 				} else {
 					speedMultiplier = -1;
 				}
-				steer.set(ControlMode.Position, newPosition);
+				steer.set(ControlMode.Position, newPosition); // takes about 2 ms
 			} else {
 				speedMultiplier = 1;
 				final int newPosition = (int) MathUtil.minChange(desired, current, wrap) + current;
@@ -192,6 +195,7 @@ public class TalonSwerveModule extends SimpleAction implements SwerveModule {
 			}
 			speed = 0;
 		}
+//		System.out.println(getName() + " all swerve code taking (in nanos): " + (System.nanoTime() - startTime));
 	}
 	
 	@Override

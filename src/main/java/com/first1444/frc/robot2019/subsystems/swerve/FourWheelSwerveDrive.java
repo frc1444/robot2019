@@ -119,14 +119,15 @@ public class FourWheelSwerveDrive extends SimpleAction implements SwerveDrive{
 		final double frAngle = toDegrees(atan2(A, D));
 		final double rlAngle = toDegrees(atan2(B, C));
 		final double rrAngle = toDegrees(atan2(A, C));
-
+		
 		swerveCollection.getFrontLeft().set(flSpeed, flAngle);
 		swerveCollection.getFrontRight().set(frSpeed, frAngle);
 		swerveCollection.getRearLeft().set(rlSpeed, rlAngle);
 		swerveCollection.getRearRight().set(rrSpeed, rrAngle);
 
 		this.speed = 0; // reset the speed so it has to be continuously desired that the wheels move
-		swerveCollection.update();
+		
+		swerveCollection.update(); // culprit
 	}
 
 	@Override

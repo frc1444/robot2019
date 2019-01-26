@@ -17,7 +17,7 @@ import com.first1444.frc.robot2019.actions.TestAction;
 import com.first1444.frc.robot2019.autonomous.AutonomousChooserState;
 import com.first1444.frc.robot2019.autonomous.AutonomousModeCreator;
 import com.first1444.frc.robot2019.autonomous.RobotAutonActionCreator;
-import com.first1444.frc.robot2019.autonomous.actions.GoStraight;
+import com.first1444.frc.robot2019.autonomous.actions.LineUpAction;
 import com.first1444.frc.robot2019.autonomous.actions.TurnToOrientation;
 import com.first1444.frc.robot2019.input.DefaultRobotInput;
 import com.first1444.frc.robot2019.input.InputUtil;
@@ -27,16 +27,19 @@ import com.first1444.frc.robot2019.sensors.DefaultOrientation;
 import com.first1444.frc.robot2019.sensors.Orientation;
 import com.first1444.frc.robot2019.subsystems.LEDHandler;
 import com.first1444.frc.robot2019.subsystems.swerve.*;
+import com.first1444.frc.robot2019.vision.BestVisionPacketSelector;
 import com.first1444.frc.robot2019.vision.PacketListener;
 import com.first1444.frc.util.DynamicSendableChooser;
 import com.first1444.frc.util.pid.PidKey;
 import com.first1444.frc.util.valuemap.MutableValueMap;
 import com.first1444.frc.util.valuemap.sendable.MutableValueMapSendable;
-import com.first1444.frc.util.valuemap.sendable.ValueMapLayout;
 import edu.wpi.cscore.UsbCamera;
 import edu.wpi.cscore.VideoMode;
 import edu.wpi.first.cameraserver.CameraServer;
-import edu.wpi.first.wpilibj.*;
+import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.SendableBase;
+import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.interfaces.Gyro;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.SendableBuilder;
@@ -67,8 +70,7 @@ public class Robot extends TimedRobot {
 	private final Orientation orientation;
 	private final SwerveDrive drive;
 	
-	private final PacketListener hatchPacketListener;
-	private final PacketListener cargoPacketListener;
+	private final PacketListener packetListener;
 
 	/** An {@link Action} that updates certain subsystems only when the robot is enabled*/
 	private final ActionMultiplexer enabledSubsystemUpdater;
@@ -87,7 +89,7 @@ public class Robot extends TimedRobot {
 	// region Initialize
 	/** Used to initialize final fields.*/
 	public Robot(){
-		super(.04); // same as default constructor, but we can change it if we want
+		super(.075);
 		shuffleboardMap = new DefaultShuffleboardMap();
 		final ControllerRumble rumble = new DualShockRumble(new XboxController(2));
 		robotInput = new DefaultRobotInput(
@@ -99,6 +101,8 @@ public class Robot extends TimedRobot {
 		// *edit values of controlConfig if desired*
 		controlConfig.switchToSquareInputThreshold = 1.2;
 		controlConfig.fullAnalogDeadzone = .075;
+		controlConfig.analogDeadzone = .03;
+		controlConfig.cacheAngleAndMagnitudeInUpdate = false;
 		controllerManager = new DefaultControllerManager(controlConfig);
 		controllerManager.addController(robotInput);
 
@@ -164,8 +168,7 @@ public class Robot extends TimedRobot {
 		);
 		this.drive = drive;
 		
-		this.hatchPacketListener = new PacketListener(5801); // start in robotInit()
-		this.cargoPacketListener = new PacketListener(5802); // start in robotInit()
+		this.packetListener = new PacketListener(5801); // start in robotInit()
 		
 		enabledSubsystemUpdater = new Actions.ActionMultiplexerBuilder(
 				drive
@@ -225,8 +228,7 @@ public class Robot extends TimedRobot {
 			e.printStackTrace();
 			System.out.println("Couldn't initialize the camera!");
 		}
-		hatchPacketListener.start();
-		cargoPacketListener.start();
+		packetListener.start();
 
 		System.out.println("Finished robot init!");
 	}
@@ -238,7 +240,9 @@ public class Robot extends TimedRobot {
 	@Override
 	public void robotPeriodic() {
 		controllerManager.update(); // update controllers
+		
 		actionChooser.update(); // update Actions that control the subsystems
+		
 		if(isEnabled()){
 			enabledSubsystemUpdater.update(); // update subsystems when robot is enabled
 		}
@@ -310,8 +314,9 @@ public class Robot extends TimedRobot {
 //		actionChooser.setNextAction(testAction);
 		actionChooser.setNextAction(new Actions.ActionQueueBuilder(
 				getDriveCalibrateAction(),
-//				new TurnToOrientation(0, this::getDrive, this::getOrientation),
-				new GoStraight(10, .2, 0, 1, 90.0, this::getDrive, this::getOrientation),
+//				new TurnToOrientation(-90, this::getDrive, this::getOrientation),
+//				new GoStraight(10, .2, 0, 1, 90.0, this::getDrive, this::getOrientation),
+				new LineUpAction(packetListener, dimensions.getHatchCameraID(), Perspective.ROBOT_FORWARD_CAM, new BestVisionPacketSelector(), this::getDrive),
 				Actions.createRunOnce(() -> robotInput.getDriverRumble().rumbleTime(500, .2))
 		).canRecycle(false).canBeDone(true).immediatelyDoNextWhenDone(true).build());
 	}

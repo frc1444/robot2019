@@ -18,6 +18,7 @@ public final class Constants {
 	public static final int FR_DRIVE = 3;
 	public static final int RL_DRIVE = 2;
 	public static final int RR_DRIVE = 1;
+	
 	public static final int FL_STEER = 8;
 	public static final int FR_STEER = 7;
 	public static final int RL_STEER = 6;
@@ -42,6 +43,16 @@ public final class Constants {
 		@Override
 		public double getForwardCargoManipulatorOffsetAngle() {
 			return 180;
+		}
+		
+		@Override
+		public int getHatchCameraID() {
+            return 0;
+		}
+		
+		@Override
+		public int getCargoCameraID() {
+            return 1;
 		}
 	}
 	

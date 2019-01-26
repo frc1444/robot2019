@@ -7,4 +7,7 @@ public interface RobotDimensions {
 	 */
 	double getHatchManipulatorOrientationOffset();
 	double getForwardCargoManipulatorOffsetAngle();
+	
+	int getHatchCameraID();
+	int getCargoCameraID();
 }

@@ -6,9 +6,11 @@ import java.util.Collections;
 class ImmutableVisionInstant implements VisionInstant {
 	private final Collection<VisionPacket> packets;
 	private final long timeMillis;
-	public ImmutableVisionInstant(Collection<VisionPacket> packets, long timeMillis) {
+	private final int cameraID;
+	public ImmutableVisionInstant(Collection<VisionPacket> packets, long timeMillis, int cameraID) {
 		this.packets = Collections.unmodifiableCollection(packets);
 		this.timeMillis = timeMillis;
+		this.cameraID = cameraID;
 	}
 	
 	@Override
@@ -19,5 +21,19 @@ class ImmutableVisionInstant implements VisionInstant {
 	@Override
 	public long getTimeMillis() {
 		return timeMillis;
+	}
+	
+	@Override
+	public int getCameraID() {
+		return cameraID;
+	}
+	
+	@Override
+	public String toString() {
+		return "ImmutableVisionInstant{" +
+				"packets=" + packets +
+				", timeMillis=" + timeMillis +
+				", cameraID=" + cameraID +
+				'}';
 	}
 }

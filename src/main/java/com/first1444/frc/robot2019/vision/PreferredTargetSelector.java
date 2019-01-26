@@ -5,8 +5,9 @@ import java.util.Collection;
 public interface PreferredTargetSelector {
 	/**
 	 *
-	 * @param visiblePackets The visible
+	 * @param visiblePackets The visible vision packets. This cannot be empty
 	 * @return The preferred vision target.
+	 * @throws IllegalArgumentException If visiblePackets is empty. Optional.
 	 */
 	VisionPacket getPreferredTarget(Collection<? extends VisionPacket> visiblePackets);
 }
