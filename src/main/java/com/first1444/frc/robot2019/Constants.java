@@ -47,12 +47,12 @@ public final class Constants {
 		
 		@Override
 		public int getHatchCameraID() {
-            return 0;
+			return 0;
 		}
 		
 		@Override
 		public int getCargoCameraID() {
-            return 1;
+			return 1;
 		}
 	}
 	

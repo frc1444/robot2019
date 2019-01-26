@@ -20,7 +20,7 @@ public class BestVisionPacketSelector implements PreferredTargetSelector {
 		if(packets.isEmpty()){
 			return filterDistance(visiblePackets);
 		}
-        return filterDistance(packets);
+		return filterDistance(packets);
 	}
 	private List<? extends VisionPacket> filterAngles(Collection<? extends VisionPacket> visionPackets){
 		final List<VisionPacket> packets = new ArrayList<>(visionPackets);
@@ -28,19 +28,19 @@ public class BestVisionPacketSelector implements PreferredTargetSelector {
 		if(packets.isEmpty()){
 			return new ArrayList<>(visionPackets);
 		}
-        return packets;
+		return packets;
 	}
 	private VisionPacket filterDistance(Collection<? extends VisionPacket> visionPackets){
-        VisionPacket closest = null;
-        double closestDistance = 0;
-        for(VisionPacket packet : visionPackets){
-        	final double distance = hypot(packet.getX(), packet.getY());
-        	if(closest == null || closestDistance > distance){
-        		closest = packet;
-        		closestDistance = distance;
+		VisionPacket closest = null;
+		double closestDistance = 0;
+		for(VisionPacket packet : visionPackets){
+			final double distance = hypot(packet.getX(), packet.getY());
+			if(closest == null || closestDistance > distance){
+				closest = packet;
+				closestDistance = distance;
 			}
 		}
-        return closest;
+		return closest;
 	}
 	
 }

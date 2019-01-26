@@ -65,7 +65,7 @@ dependencies {
     */
     
     compile 'com.github.retrodaredevil:abstract-controller-lib:v1.3.5'
-    compile 'com.github.retrodaredevil:action-lib:v1.0.1'
+    compile 'com.github.retrodaredevil:action-lib:v1.1.0'
     
     // https://mvnrepository.com/artifact/com.google.code.gson/gson
     compile group: 'com.google.code.gson', name: 'gson', version: '2.3.1'

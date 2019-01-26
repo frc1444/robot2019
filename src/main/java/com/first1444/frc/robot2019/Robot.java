@@ -316,7 +316,14 @@ public class Robot extends TimedRobot {
 				getDriveCalibrateAction(),
 //				new TurnToOrientation(-90, this::getDrive, this::getOrientation),
 //				new GoStraight(10, .2, 0, 1, 90.0, this::getDrive, this::getOrientation),
-				new LineUpAction(packetListener, dimensions.getHatchCameraID(), Perspective.ROBOT_FORWARD_CAM, new BestVisionPacketSelector(), this::getDrive),
+				Actions.createLinkedActionRunner(
+						new LineUpAction(
+								packetListener, dimensions.getHatchCameraID(), Perspective.ROBOT_FORWARD_CAM,
+								new BestVisionPacketSelector(), this::getDrive,
+								Actions.createRunOnce(() -> System.out.println("Failed!")), Actions.createRunOnce(() -> System.out.println("Success!"))
+						),
+						WhenDone.CLEAR_ACTIVE_AND_BE_DONE, false
+				),
 				Actions.createRunOnce(() -> robotInput.getDriverRumble().rumbleTime(500, .2))
 		).canRecycle(false).canBeDone(true).immediatelyDoNextWhenDone(true).build());
 	}

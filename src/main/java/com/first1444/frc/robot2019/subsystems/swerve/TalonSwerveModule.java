@@ -122,8 +122,8 @@ public class TalonSwerveModule extends SimpleAction implements SwerveModule {
 		if(!USE_ABSOLUTE_ENCODERS){
 			return null;
 		}
-        return new SimpleAction(false){
-        	Long doneAt = null;
+		return new SimpleAction(false){
+			Long doneAt = null;
 			@Override
 			protected void onStart() {
 				super.onStart();

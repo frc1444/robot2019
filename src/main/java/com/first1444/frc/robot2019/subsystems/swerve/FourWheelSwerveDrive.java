@@ -44,13 +44,13 @@ public class FourWheelSwerveDrive extends SimpleAction implements SwerveDrive{
 	@Override
 	public void setControl(double x, double y, double turnAmount, double speed, Perspective controlPerspective) {
 		if(abs(x) > 1)
-			throw new IllegalArgumentException();
+			throw new IllegalArgumentException("abs(x) > 1. x=" + x);
 		if(abs(y) > 1)
-			throw new IllegalArgumentException();
+			throw new IllegalArgumentException("abs(y) > 1. y=" + y);
 		if(abs(turnAmount) > 1)
-			throw new IllegalArgumentException();
+			throw new IllegalArgumentException("abs(turnAmount) > 1. turnAmount=" + turnAmount);
 		if(abs(speed) > 1)
-			throw new IllegalArgumentException();
+			throw new IllegalArgumentException("abs(speed) > 1. speed=" + speed);
 		
 		this.x = x;
 		this.y = y;
