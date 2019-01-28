@@ -70,14 +70,8 @@ public class DynamicSendableChooser<V> extends SendableBase {
 	}
 
 
-	/**
-	 * Returns the selected option. If there is none selected, it will return the default. If there is
-	 * none selected and no default, then it will return {@code null}.
-	 *
-	 * @return the option selected
-	 */
 	public V getSelected() {
-		return map.computeIfAbsent(getSelectedKey(), key -> map.computeIfAbsent(defaultChoiceKey, defaultKey -> { throw new NoSuchElementException(); }));
+		return map.getOrDefault(getSelectedKey(), map.computeIfAbsent(defaultChoiceKey, defaultKey -> { throw new NoSuchElementException(); }));
 	}
 	public String getSelectedKey(){
 		mutex.lock();

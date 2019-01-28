@@ -2,8 +2,10 @@ package com.first1444.frc.robot2019.autonomous;
 
 import com.first1444.frc.robot2019.Robot;
 import com.first1444.frc.robot2019.autonomous.actions.GoStraight;
+import com.first1444.frc.robot2019.autonomous.actions.LineUpAction;
 import com.first1444.frc.robot2019.autonomous.actions.TurnToOrientation;
 import com.first1444.frc.robot2019.deepspace.SlotLevel;
+import com.first1444.frc.robot2019.vision.BestVisionPacketSelector;
 import me.retrodaredevil.action.Action;
 
 public class RobotAutonActionCreator implements AutonActionCreator {
@@ -29,22 +31,49 @@ public class RobotAutonActionCreator implements AutonActionCreator {
 	}
 
 	@Override
-	public Action createCargoShipPlaceHatch() {
-		return null;
+	public Action createCargoShipPlaceHatch(Action failAction, Action successAction) {
+		return new LineUpAction(
+				robot.getPacketListener(), robot.getDimensions().getHatchCameraID(),
+				robot.getDimensions().getHatchManipulatorPerspective(),
+				new BestVisionPacketSelector(), robot::getDrive,
+				failAction,
+				successAction // TODO do something here
+		);
 	}
 
 	@Override
-	public Action createCargoShipPlaceCargo() {
-		return null;
+	public Action createCargoShipPlaceCargo(Action failAction, Action successAction) {
+		return new LineUpAction(
+				robot.getPacketListener(), robot.getDimensions().getCargoCameraID(),
+				robot.getDimensions().getCargoManipulatorPerspective(),
+				new BestVisionPacketSelector(), robot::getDrive,
+				failAction,
+				successAction // TODO do something here
+		);
 	}
 	
 	@Override
-	public Action createRocketPlaceCargo(SlotLevel slotLevel) {
-		return null;
+	public Action createRocketPlaceCargo(SlotLevel slotLevel, Action failAction, Action successAction) {
+		
+		return new LineUpAction(
+				robot.getPacketListener(), robot.getDimensions().getCargoCameraID(),
+				robot.getDimensions().getCargoManipulatorPerspective(),
+				new BestVisionPacketSelector(), robot::getDrive,
+				failAction,
+				successAction // TODO do something here
+		);
+
 	}
 	
 	@Override
-	public Action createRocketPlaceHatch(SlotLevel slotLevel) {
-		return null;
+	public Action createRocketPlaceHatch(SlotLevel slotLevel, Action failAction, Action successAction) {
+		return new LineUpAction(
+				robot.getPacketListener(), robot.getDimensions().getHatchCameraID(),
+				robot.getDimensions().getHatchManipulatorPerspective(),
+				new BestVisionPacketSelector(), robot::getDrive,
+				failAction,
+				successAction // TODO do something here
+		);
+
 	}
 }

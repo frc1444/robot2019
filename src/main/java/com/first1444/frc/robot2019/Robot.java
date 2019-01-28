@@ -89,7 +89,7 @@ public class Robot extends TimedRobot {
 	// region Initialize
 	/** Used to initialize final fields.*/
 	public Robot(){
-		super(.075);
+		super(.055);
 		shuffleboardMap = new DefaultShuffleboardMap();
 		final ControllerRumble rumble = new DualShockRumble(new XboxController(2));
 		robotInput = new DefaultRobotInput(
@@ -125,7 +125,7 @@ public class Robot extends TimedRobot {
 			@Override
 			public void initSendable(SendableBuilder builder) {
 				builder.addDoubleProperty("Orientation", orientation::getOrientation, null);
-				builder.addDoubleProperty("Driver station offset", () -> orientation.getOffset(Perspective.DRIVER_STATION), null);
+				builder.addDoubleProperty("Driver station offset", () -> Perspective.DRIVER_STATION.getOrientationOffset(orientation), null);
 			}
 		});
 
@@ -334,5 +334,13 @@ public class Robot extends TimedRobot {
 	public SwerveDrive getDrive(){ return drive; }
 	public Orientation getOrientation(){
 		return orientation;
+	}
+	
+	public PacketListener getPacketListener() {
+		return packetListener;
+	}
+	
+	public RobotDimensions getDimensions() {
+		return dimensions;
 	}
 }

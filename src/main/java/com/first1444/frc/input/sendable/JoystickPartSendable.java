@@ -20,6 +20,7 @@ public class JoystickPartSendable extends ControllerPartSendable {
 
 	@Override
 	public void initSendable(SendableBuilder builder) {
+		super.initSendable(builder);
 		builder.addStringProperty("X", () -> Constants.DECIMAL_FORMAT.format(joystickPartSupplier.get().getX()), null);
 		builder.addStringProperty("Y", () -> Constants.DECIMAL_FORMAT.format(joystickPartSupplier.get().getY()), null);
 		builder.addStringProperty("correct magnitude", () -> Constants.DECIMAL_FORMAT.format(joystickPartSupplier.get().getCorrectMagnitude()), null);

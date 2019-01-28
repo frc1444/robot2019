@@ -4,9 +4,7 @@ import com.ctre.phoenix.ParamEnum;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
-import com.ctre.phoenix.motorcontrol.can.TalonSRX;
-import com.ctre.phoenix.motorcontrol.can.TalonSRXConfiguration;
-import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
+import com.ctre.phoenix.motorcontrol.can.*;
 import com.first1444.frc.robot2019.Constants;
 import com.first1444.frc.robot2019.ModuleConfig;
 import com.first1444.frc.util.CTREUtil;
@@ -19,6 +17,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableBuilder;
 import me.retrodaredevil.action.Action;
 import me.retrodaredevil.action.SimpleAction;
 
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.IntSupplier;
 
 import static java.lang.Math.abs;
@@ -29,7 +28,7 @@ public class TalonSwerveModule extends SimpleAction implements SwerveModule {
 	private static final boolean QUICK_REVERSE = true;
 	private static final boolean VELOCITY_CONTROL = true;
 	
-	private final TalonSRX drive;
+	private final BaseMotorController drive;
 	private final TalonSRX steer;
 
 	private final String name;
@@ -40,8 +39,10 @@ public class TalonSwerveModule extends SimpleAction implements SwerveModule {
 	private double speed = 0;
 	private double targetPositionDegrees = 0;
 	
-	private double lastDistanceInches;
+	/** The total distance gone. Make sure that you synchronize when accessing and modifying*/
 	private double totalDistanceGone = 0;
+	/** The most recent value for the encoder counts on the steer module. Make sure that you synchronize when accessing and modifying.*/
+	private int steerEncoderCountsCache = 0;
 
 	public TalonSwerveModule(String name, int driveID, int steerID,
 							 MutableValueMap<PidKey> drivePid, MutableValueMap<PidKey> steerPid,
@@ -75,16 +76,10 @@ public class TalonSwerveModule extends SimpleAction implements SwerveModule {
 			switchToQuadEncoder(); // TODO Because of this, the wheels must be in the correct position when starting
 		}
 		
-//		debugTab.add(getName() + " debug", new SendableBase() {
-//			@Override
-//			public void initSendable(SendableBuilder builder) {
-//				builder.addStringProperty("current position", () -> "" + steer.getSelectedSensorPosition(), null);
-//				builder.addStringProperty("quad position", () -> "" + steer.getSensorCollection().getQuadraturePosition(), null);
-////				builder.addStringProperty("absolute position", () -> "" + steer.getSensorCollection().getAnalogInRaw(), null);
-////				builder.addStringProperty("pw position", () -> "" + steer.getSensorCollection().getPulseWidthPosition(), null);
-//				builder.addDoubleProperty("angle degrees", () -> getCurrentAngle(), null);
-//			}
-//		});
+		final Thread encoderThread = new Thread(new EncoderRunnable());
+		encoderThread.setDaemon(true);
+		encoderThread.start();
+		
 	}
 	private void switchToAbsoluteEncoder(){
 		if(currentEncoderType == EncoderType.ABSOLUTE){
@@ -156,17 +151,14 @@ public class TalonSwerveModule extends SimpleAction implements SwerveModule {
 	@Override
 	protected void onUpdate() { // takes about 5 ms total
 		super.onUpdate();
-//		final long startTime = System.nanoTime();
-		{ // encoder code // taking 1.5 ms
-			final double currentDistance = getCurrentDistanceInches();
-			totalDistanceGone += abs(currentDistance - lastDistanceInches);
-			lastDistanceInches = currentDistance;
-		}
 		final double speedMultiplier;
 		
 		{ // steer code
 			final int wrap = getCountsPerRevolution(); // in encoder counts
-			final int current = steer.getSelectedSensorPosition(); // in encoder counts // takes .5 to 3 ms
+			final int current;
+			synchronized (this){
+				current = steerEncoderCountsCache;
+			}
 			final int desired = (int) Math.round(targetPositionDegrees * wrap / 360.0); // in encoder counts
 
 			if(QUICK_REVERSE){
@@ -176,7 +168,7 @@ public class TalonSwerveModule extends SimpleAction implements SwerveModule {
 				} else {
 					speedMultiplier = -1;
 				}
-				steer.set(ControlMode.Position, newPosition); // takes about 2 ms
+				steer.set(ControlMode.Position, newPosition); // taking .6 ms to 1.7 ms
 			} else {
 				speedMultiplier = 1;
 				final int newPosition = (int) MathUtil.minChange(desired, current, wrap) + current;
@@ -186,16 +178,14 @@ public class TalonSwerveModule extends SimpleAction implements SwerveModule {
 		
 		{ // speed code
 			if(VELOCITY_CONTROL){
-				drive.set(
-						ControlMode.Velocity, speed * speedMultiplier
-						* Constants.CIMCODER_COUNTS_PER_REVOLUTION * Constants.MAX_SWERVE_DRIVE_RPM / (double) Constants.CTRE_UNIT_CONVERSION
-				);
+				final double velocity = speed * speedMultiplier * Constants.CIMCODER_COUNTS_PER_REVOLUTION
+						* Constants.MAX_SWERVE_DRIVE_RPM / (double) Constants.CTRE_UNIT_CONVERSION;
+				drive.set(ControlMode.Velocity, velocity); // taking .015 ms
 			} else {
 				drive.set(ControlMode.PercentOutput, speed * speedMultiplier);
 			}
 			speed = 0;
 		}
-//		System.out.println(getName() + " all swerve code taking (in nanos): " + (System.nanoTime() - startTime));
 	}
 	
 	@Override
@@ -216,7 +206,7 @@ public class TalonSwerveModule extends SimpleAction implements SwerveModule {
 	}
 	
 	@Override
-	public double getTotalDistanceTraveledInches() {
+	public synchronized double getTotalDistanceTraveledInches() {
 		return totalDistanceGone;
 	}
 	
@@ -259,5 +249,34 @@ public class TalonSwerveModule extends SimpleAction implements SwerveModule {
 	
 	private enum EncoderType {
 		QUAD, ABSOLUTE
+	}
+	
+	/**
+	 * A runnable that should be on its own thread
+	 */
+	private class EncoderRunnable implements Runnable {
+		@Override
+		public void run() {
+			double lastDistanceInches = 0;
+			while(!Thread.currentThread().isInterrupted()){
+				final double currentDistance = getCurrentDistanceInches(); // takes a long time - .9 ms to 5 ms
+				synchronized (TalonSwerveModule.this) {
+					totalDistanceGone += abs(currentDistance - lastDistanceInches);
+				}
+				lastDistanceInches = currentDistance;
+				
+				
+				final int current = steer.getSelectedSensorPosition(); // in encoder counts // takes .4 to 1 ms and sometimes even 4 ms
+				synchronized (TalonSwerveModule.this){
+					steerEncoderCountsCache = current;
+				}
+				
+				try {
+					Thread.sleep(55);
+				} catch(InterruptedException ex){
+					break;
+				}
+			}
+		}
 	}
 }

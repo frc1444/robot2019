@@ -4,6 +4,7 @@ import com.first1444.frc.robot2019.Constants;
 import com.first1444.frc.robot2019.deepspace.SlotLevel;
 import me.retrodaredevil.action.Action;
 import me.retrodaredevil.action.Actions;
+import me.retrodaredevil.action.WhenDone;
 
 import java.io.PrintStream;
 
@@ -38,22 +39,34 @@ public class TestAutonActionCreator implements AutonActionCreator {
 	}
 	
 	@Override
-	public Action createCargoShipPlaceHatch() {
-		return createStringAction("Placing hatch at cargo ship");
+	public Action createCargoShipPlaceHatch(Action failAction, Action successAction) {
+		return Actions.createLinkedActionRunner(
+				Actions.createLinkedAction(createStringAction("Placing hatch at cargo ship"), successAction),
+				WhenDone.CLEAR_ACTIVE_AND_BE_DONE, true
+		);
 	}
 	
 	@Override
-	public Action createCargoShipPlaceCargo() {
-		return createStringAction("Placing cargo at cargo ship");
+	public Action createCargoShipPlaceCargo(Action failAction, Action successAction) {
+		return Actions.createLinkedActionRunner(
+				Actions.createLinkedAction(createStringAction("Placing cargo at cargo ship"), successAction),
+				WhenDone.CLEAR_ACTIVE_AND_BE_DONE, true
+		);
 	}
 	
 	@Override
-	public Action createRocketPlaceCargo(SlotLevel slotLevel) {
-		return createStringAction("Placing cargo on rocket at " + slotLevel);
+	public Action createRocketPlaceCargo(SlotLevel slotLevel, Action failAction, Action successAction) {
+		return Actions.createLinkedActionRunner(
+				Actions.createLinkedAction(createStringAction("Placing cargo on rocket at " + slotLevel), successAction),
+				WhenDone.CLEAR_ACTIVE_AND_BE_DONE, true
+		);
 	}
 	
 	@Override
-	public Action createRocketPlaceHatch(SlotLevel slotLevel) {
-		return createStringAction("Placing hatch on rocket at " + slotLevel);
+	public Action createRocketPlaceHatch(SlotLevel slotLevel, Action failAction, Action successAction) {
+		return Actions.createLinkedActionRunner(
+				Actions.createLinkedAction(createStringAction("Placing hatch on rocket at " + slotLevel), successAction),
+				WhenDone.CLEAR_ACTIVE_AND_BE_DONE, true
+		);
 	}
 }

@@ -21,6 +21,7 @@ public class InputPartSendable extends ControllerPartSendable {
 
 	@Override
 	public void initSendable(SendableBuilder builder) {
+		super.initSendable(builder);
 		builder.addStringProperty("position", () -> Constants.DECIMAL_FORMAT.format(inputPartSupplier.get().getPosition()), null);
 		builder.addStringProperty("digital position", () -> Constants.DECIMAL_FORMAT.format(inputPartSupplier.get().getDigitalPosition()), null);
 		builder.addBooleanProperty("is deadzone", () -> inputPartSupplier.get().isDeadzone(), null);

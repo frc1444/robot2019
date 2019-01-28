@@ -71,7 +71,7 @@ public class FourWheelSwerveDrive extends SimpleAction implements SwerveDrive{
 			return;
 		}
 		
-		final double offset = orientationSupplier.get().getOffset(controlPerspective); // the amount to add to the desired angle (rotate x and y by)
+		final double offset = controlPerspective.getOrientationOffset(orientationSupplier.get()); // the amount to add to the desired angle (rotate x and y by)
 		final double offsetRadians = toRadians(offset);
 		final double offsetCosine = cos(offsetRadians);
 		final double offsetSine = sin(offsetRadians);

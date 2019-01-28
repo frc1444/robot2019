@@ -51,7 +51,7 @@ public class LineUpAction extends SimpleAction implements LinkedAction {
 		if(visionInstant != null && visionInstant.getTimeMillis() + 750 >= System.currentTimeMillis()){ // not null and packet within .75 seconds
 			final Collection<? extends VisionPacket> packets = visionInstant.getVisiblePackets();
 			if(!packets.isEmpty()){
-                failed = false;
+				failed = false;
 				final VisionPacket vision = selector.getPreferredTarget(packets);
 				System.out.println("Using vision packet: " + vision);
 				
@@ -110,6 +110,6 @@ public class LineUpAction extends SimpleAction implements LinkedAction {
 	
 	@Override
 	public Action getNextAction() {
-        return nextAction;
+		return nextAction;
 	}
 }

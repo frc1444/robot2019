@@ -82,9 +82,9 @@ public class AutonomousModeCreator {
 				// went 100 inches
 				
 				if(gamePieceType == GamePieceType.CARGO){
-					actionQueue.add(actionCreator.createCargoShipPlaceCargo());
+					actionQueue.add(actionCreator.createCargoShipPlaceCargo(null, null));
 				} else {
-					actionQueue.add(actionCreator.createCargoShipPlaceHatch());
+					actionQueue.add(actionCreator.createCargoShipPlaceHatch(null, null));
 				}
 				break;
 			case SIDE_CARGO_SHIP:
@@ -99,8 +99,8 @@ public class AutonomousModeCreator {
 				}
 				double distance = 212.8 + (48.28 / 2.0); //we need to go this distance
 				final double manipulatorOffsetAngle = gamePieceType == GamePieceType.HATCH
-						? dimensions.getHatchManipulatorOrientationOffset()
-						: dimensions.getForwardCargoManipulatorOffsetAngle();
+						? dimensions.getHatchManipulatorPerspective().getOffset(null)
+						: dimensions.getCargoManipulatorPerspective().getOffset(null);
 				final double faceAngle = (isLeft ? 0 : 180) + manipulatorOffsetAngle; // face the manipulator towards the cargo ship
 //				actionQueue.add(actionCreator.createGoStraight())
 				actionQueue.add(actionCreator.createGoStraight(40, .3, 90, startingOrientation));
@@ -111,9 +111,9 @@ public class AutonomousModeCreator {
 				
 				actionQueue.add(actionCreator.createTurnToOrientation(faceAngle));
 				if(gamePieceType == GamePieceType.HATCH){
-					actionQueue.add(actionCreator.createCargoShipPlaceHatch());
+					actionQueue.add(actionCreator.createCargoShipPlaceHatch(null, null));
 				} else {
-					actionQueue.add(actionCreator.createCargoShipPlaceCargo());
+					actionQueue.add(actionCreator.createCargoShipPlaceCargo(null, null));
 				}
 				
 				
@@ -134,9 +134,9 @@ public class AutonomousModeCreator {
 				actionQueue.add(actionCreator.createTurnToOrientation(90 - (isLeft ? -20 : 20)));
 				
 				if(gamePieceType == GamePieceType.HATCH){
-					actionQueue.add(actionCreator.createRocketPlaceHatch(slotLevel));
+					actionQueue.add(actionCreator.createRocketPlaceHatch(slotLevel, null, null));
 				} else {
-					actionQueue.add(actionCreator.createRocketPlaceCargo(slotLevel));
+					actionQueue.add(actionCreator.createRocketPlaceCargo(slotLevel, null, null));
 				}
 				
 				break;

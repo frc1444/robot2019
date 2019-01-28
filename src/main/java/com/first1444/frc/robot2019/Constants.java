@@ -36,13 +36,13 @@ public final class Constants {
 		INSTANCE;
 		
 		@Override
-		public double getHatchManipulatorOrientationOffset() {
-			return 0;
+		public Perspective getHatchManipulatorPerspective() {
+			return Perspective.ROBOT_FORWARD_CAM;
 		}
 		
 		@Override
-		public double getForwardCargoManipulatorOffsetAngle() {
-			return 180;
+		public Perspective getCargoManipulatorPerspective() {
+			return Perspective.ROBOT_BACK_CAM;
 		}
 		
 		@Override

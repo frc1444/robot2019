@@ -9,16 +9,16 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 final class OrientationTest {
 	@Test
 	void testOrientation(){
-		assertEquals(0, createOrientation(90).getOffset(Perspective.DRIVER_STATION));
-		assertEquals(270, createOrientation(180).getOffset(Perspective.DRIVER_STATION));
-		assertEquals(180, createOrientation(-90).getOffset(Perspective.DRIVER_STATION));
-		assertEquals(90, createOrientation(0).getOffset(Perspective.DRIVER_STATION));
+		assertEquals(0, Perspective.DRIVER_STATION.getOffset(90.0));
+		assertEquals(270, Perspective.DRIVER_STATION.getOffset(180.0));
+		assertEquals(180, Perspective.DRIVER_STATION.getOffset(-90.0));
+		assertEquals(90, Perspective.DRIVER_STATION.getOffset(0.0));
 
 		for(double value : new double[]{0, 90, 180, 270}){
-			assertEquals(0, createOrientation(value).getOffset(Perspective.ROBOT_FORWARD_CAM));
-			assertEquals(270, createOrientation(value).getOffset(Perspective.ROBOT_RIGHT_CAM));
-			assertEquals(90, createOrientation(value).getOffset(Perspective.ROBOT_LEFT_CAM));
-			assertEquals(180, createOrientation(value).getOffset(Perspective.ROBOT_BACK_CAM));
+			assertEquals(0, Perspective.ROBOT_FORWARD_CAM.getOffset(value));
+			assertEquals(270, Perspective.ROBOT_RIGHT_CAM.getOffset(value));
+			assertEquals(90, Perspective.ROBOT_LEFT_CAM.getOffset(value));
+			assertEquals(180, Perspective.ROBOT_BACK_CAM.getOffset(value));
 		}
 	}
 	@Test
@@ -36,8 +36,5 @@ final class OrientationTest {
 
 		gyro.setAngle(-90);
 		assertEquals(0, o.getOrientation());
-	}
-	private Orientation createOrientation(double orientation){
-		return () -> orientation;
 	}
 }

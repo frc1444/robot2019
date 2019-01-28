@@ -1,5 +1,9 @@
 package com.first1444.frc.robot2019;
 
+import com.first1444.frc.robot2019.sensors.Orientation;
+
+import static com.first1444.frc.util.MathUtil.mod;
+
 public enum Perspective {
 	ROBOT_FORWARD_CAM(90, false),
 	ROBOT_RIGHT_CAM(0, false),
@@ -27,5 +31,20 @@ public enum Perspective {
 	}
 	public boolean isUseGyro(){
 		return useGyro;
+	}
+	/**
+	 * @return The amount to add to the desired direction to account for the given perspective
+	 */
+	public double getOffset(Double orientation){
+		if(!isUseGyro()){
+			return mod(getForwardDirection() - 90, 360);
+		}
+		if(orientation == null){
+			throw new IllegalArgumentException();
+		}
+		return mod(getForwardDirection() - orientation, 360);
+	}
+	public double getOrientationOffset(Orientation orientation){
+		return getOffset(orientation.getOrientation());
 	}
 }
