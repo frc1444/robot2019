@@ -5,6 +5,7 @@
 /.idea/
 *.ipr
 *.iws
+/out/
 
 ### C++ ###
 # Prerequisites

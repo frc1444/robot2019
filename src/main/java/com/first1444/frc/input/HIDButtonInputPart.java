@@ -84,7 +84,7 @@ class HIDButtonInputPart extends SimpleControllerPart implements InputPart {
 
 	@Override
 	public boolean isConnected() {
-		if(hid.getButtonCount() > buttonCode){
+		if(hid.getButtonCount() < buttonCode){
 			return false;
 		}
 		return HIDUtil.isConnected(hid);

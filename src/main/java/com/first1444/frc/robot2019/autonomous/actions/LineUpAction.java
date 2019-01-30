@@ -2,10 +2,7 @@ package com.first1444.frc.robot2019.autonomous.actions;
 
 import com.first1444.frc.robot2019.Perspective;
 import com.first1444.frc.robot2019.subsystems.swerve.SwerveDrive;
-import com.first1444.frc.robot2019.vision.PacketListener;
-import com.first1444.frc.robot2019.vision.PreferredTargetSelector;
-import com.first1444.frc.robot2019.vision.VisionInstant;
-import com.first1444.frc.robot2019.vision.VisionPacket;
+import com.first1444.frc.robot2019.vision.*;
 import me.retrodaredevil.action.Action;
 import me.retrodaredevil.action.LinkedAction;
 import me.retrodaredevil.action.SimpleAction;
@@ -18,7 +15,7 @@ import static java.lang.Math.*;
 public class LineUpAction extends SimpleAction implements LinkedAction {
 	private static final double MAX_SPEED = .3;
 	
-	private final PacketListener packetListener;
+	private final VisionSupplier visionSupplier;
 	private final int cameraID;
 	private final Perspective perspective;
 	private final PreferredTargetSelector selector;
@@ -29,11 +26,11 @@ public class LineUpAction extends SimpleAction implements LinkedAction {
 	private Action nextAction;
 	private Long failureStartTime = null;
 	
-	public LineUpAction(PacketListener packetListener, int cameraID, Perspective perspective, PreferredTargetSelector selector,
+	public LineUpAction(VisionSupplier visionSupplier, int cameraID, Perspective perspective, PreferredTargetSelector selector,
 						Supplier<SwerveDrive> driveSupplier,
 						Action failAction, Action successAction) {
 		super(false);
-		this.packetListener = packetListener;
+		this.visionSupplier = visionSupplier;
 		this.cameraID = cameraID;
 		this.perspective = perspective;
 		this.selector = selector;
@@ -46,7 +43,7 @@ public class LineUpAction extends SimpleAction implements LinkedAction {
 	@Override
 	protected void onUpdate() {
 		super.onUpdate();
-		final VisionInstant visionInstant = packetListener.getInstant(cameraID);
+		final VisionInstant visionInstant = visionSupplier.getInstant(cameraID);
 		final boolean failed;
 		if(visionInstant != null && visionInstant.getTimeMillis() + 750 >= System.currentTimeMillis()){ // not null and packet within .75 seconds
 			final Collection<? extends VisionPacket> packets = visionInstant.getVisiblePackets();

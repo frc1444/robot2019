@@ -34,7 +34,7 @@ public class TeleopAction extends SimpleAction {
 	@Override
 	protected void onStart() {
 		super.onStart();
-		ControllerRumble rumble = input.getDriverRumble();
+		final ControllerRumble rumble = input.getDriverRumble();
 		if(rumble.isConnected()){
 			rumble.rumbleTime(250, .4);
 			System.out.println("Doing rumble for teleop start");
@@ -47,22 +47,10 @@ public class TeleopAction extends SimpleAction {
 		final SwerveDrive drive = robot.getDrive();
 
 		final JoystickPart joystick = input.getMovementJoy();
-		final double x, y;
-		if(joystick.isDeadzone()){
-			x = 0;
-			y = 0;
-		} else {
-			x = joystick.getX();
-			y = joystick.getY();
-		}
+		final double x = joystick.getZonedCorrectX();
+		final double y = joystick.getZonedCorrectY();
 
-		final InputPart turnInputPart = input.getTurnAmount();
-		final double turnAmount;
-		if(turnInputPart.isDeadzone()){
-			turnAmount = 0;
-		} else {
-			turnAmount = turnInputPart.getPosition();
-		}
+		final double turnAmount = input.getTurnAmount().getZonedPosition();
 
 		final InputPart speedInputPart = input.getMovementSpeed();
 		final double speed;

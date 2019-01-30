@@ -8,7 +8,7 @@ import org.zeromq.ZMQ;
 
 import java.util.*;
 
-public class PacketListener extends Thread {
+public class PacketListener extends Thread implements VisionSupplier{
 	private static final double MILLIMETERS_IN_INCH = 25.4;
 	private final int port;
 	private Map<Integer, VisionInstant> visionMap = null;
@@ -16,6 +16,7 @@ public class PacketListener extends Thread {
 		this.port = port;
 		setDaemon(true);
 	}
+	@Override
 	public VisionInstant getInstant(int cameraID){
 		synchronized (this){
 			if(visionMap == null){

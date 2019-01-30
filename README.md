@@ -6,6 +6,8 @@ When you first clone this project from the internet, make sure that you run
 Some times you must run ```gradlew downloadAll``` to get everything.
 ### TODO
 * Rumble driver controller when operator places hatch/cargo
+* Test out absolute encoders using voltage regulator thing
+* Crack down on what's causing overruns. Try disabling encoder thread, see what happens
 ### Conventions
 * Use tabs in .java files
 * Use 4 spaces in gradle configuration
@@ -13,3 +15,4 @@ Some times you must run ```gradlew downloadAll``` to get everything.
 * PascalCase for classes
 * Use doubles instead of floats
 * Parameters involving left and right should be in the order: left, right
+* Only use ```this.``` when necessary

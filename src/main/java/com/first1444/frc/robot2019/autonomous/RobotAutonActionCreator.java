@@ -33,7 +33,7 @@ public class RobotAutonActionCreator implements AutonActionCreator {
 	@Override
 	public Action createCargoShipPlaceHatch(Action failAction, Action successAction) {
 		return new LineUpAction(
-				robot.getPacketListener(), robot.getDimensions().getHatchCameraID(),
+				robot.getVisionSupplier(), robot.getDimensions().getHatchCameraID(),
 				robot.getDimensions().getHatchManipulatorPerspective(),
 				new BestVisionPacketSelector(), robot::getDrive,
 				failAction,
@@ -44,7 +44,7 @@ public class RobotAutonActionCreator implements AutonActionCreator {
 	@Override
 	public Action createCargoShipPlaceCargo(Action failAction, Action successAction) {
 		return new LineUpAction(
-				robot.getPacketListener(), robot.getDimensions().getCargoCameraID(),
+				robot.getVisionSupplier(), robot.getDimensions().getCargoCameraID(),
 				robot.getDimensions().getCargoManipulatorPerspective(),
 				new BestVisionPacketSelector(), robot::getDrive,
 				failAction,
@@ -56,7 +56,7 @@ public class RobotAutonActionCreator implements AutonActionCreator {
 	public Action createRocketPlaceCargo(SlotLevel slotLevel, Action failAction, Action successAction) {
 		
 		return new LineUpAction(
-				robot.getPacketListener(), robot.getDimensions().getCargoCameraID(),
+				robot.getVisionSupplier(), robot.getDimensions().getCargoCameraID(),
 				robot.getDimensions().getCargoManipulatorPerspective(),
 				new BestVisionPacketSelector(), robot::getDrive,
 				failAction,
@@ -68,7 +68,7 @@ public class RobotAutonActionCreator implements AutonActionCreator {
 	@Override
 	public Action createRocketPlaceHatch(SlotLevel slotLevel, Action failAction, Action successAction) {
 		return new LineUpAction(
-				robot.getPacketListener(), robot.getDimensions().getHatchCameraID(),
+				robot.getVisionSupplier(), robot.getDimensions().getHatchCameraID(),
 				robot.getDimensions().getHatchManipulatorPerspective(),
 				new BestVisionPacketSelector(), robot::getDrive,
 				failAction,

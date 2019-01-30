@@ -49,11 +49,11 @@ class HIDInputPart extends AutoCachingInputPart {
 	@Override
 	public boolean isConnected() {
 		if(isAxis){
-			if(hid.getAxisCount() >= code){ // axi indexes start at 0
+			if(hid.getAxisCount() < code + 1){ // axi indexes start at 0
 				return false;
 			}
 		} else {
-			if(hid.getButtonCount() > code){ // button indexes start at 1
+			if(hid.getButtonCount() < code){ // button indexes start at 1
 				return false;
 			}
 		}

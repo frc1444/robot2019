@@ -6,18 +6,14 @@ import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.*;
 import com.first1444.frc.robot2019.Constants;
-import com.first1444.frc.robot2019.ModuleConfig;
 import com.first1444.frc.util.CTREUtil;
 import com.first1444.frc.util.MathUtil;
 import com.first1444.frc.util.pid.PidKey;
 import com.first1444.frc.util.valuemap.MutableValueMap;
-import edu.wpi.first.wpilibj.SendableBase;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
-import edu.wpi.first.wpilibj.smartdashboard.SendableBuilder;
 import me.retrodaredevil.action.Action;
 import me.retrodaredevil.action.SimpleAction;
 
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.IntSupplier;
 
 import static java.lang.Math.abs;
@@ -60,10 +56,10 @@ public class TalonSwerveModule extends SimpleAction implements SwerveModule {
 		drive.setNeutralMode(NeutralMode.Brake);
 		steer.setNeutralMode(NeutralMode.Coast); // to make them easier to reposition when the robot is on
 
-		drivePid.addListener((key) -> CTREUtil.applyPID(drive, drivePid));
-		steerPid.addListener((key) -> CTREUtil.applyPID(steer, steerPid));
-		CTREUtil.applyPID(drive, drivePid);
-		CTREUtil.applyPID(steer, steerPid);
+		drivePid.addListener((key) -> CTREUtil.applyPID(drive, drivePid, Constants.LOOP_TIMEOUT));
+		steerPid.addListener((key) -> CTREUtil.applyPID(steer, steerPid, Constants.LOOP_TIMEOUT));
+		CTREUtil.applyPID(drive, drivePid, Constants.INIT_TIMEOUT);
+		CTREUtil.applyPID(steer, steerPid, Constants.INIT_TIMEOUT);
 		
 		moduleConfig.addListener(option -> {
 			if(option == ModuleConfig.ABS_ENCODER_OFFSET){
@@ -107,9 +103,6 @@ public class TalonSwerveModule extends SimpleAction implements SwerveModule {
 		steer.setSensorPhase(true);
 		
 		currentEncoderType = EncoderType.QUAD;
-	}
-	private double getCurrentDistanceInches(){
-		return drive.getSelectedSensorPosition() * WHEEL_CIRCUMFERENCE / (double) Constants.SWERVE_DRIVE_ENCODER_COUNTS_PER_REVOLUTION;
 	}
 	
 	@Override
@@ -255,24 +248,31 @@ public class TalonSwerveModule extends SimpleAction implements SwerveModule {
 	 * A runnable that should be on its own thread
 	 */
 	private class EncoderRunnable implements Runnable {
+		private static final long SLEEP_MILLIS = 60;
 		@Override
 		public void run() {
 			double lastDistanceInches = 0;
 			while(!Thread.currentThread().isInterrupted()){
-				final double currentDistance = getCurrentDistanceInches(); // takes a long time - .9 ms to 5 ms
+				final double currentDistance = drive.getSelectedSensorPosition() // takes a long time - .9 ms to 5 ms
+						* WHEEL_CIRCUMFERENCE / (double) Constants.SWERVE_DRIVE_ENCODER_COUNTS_PER_REVOLUTION;
 				synchronized (TalonSwerveModule.this) {
 					totalDistanceGone += abs(currentDistance - lastDistanceInches);
 				}
 				lastDistanceInches = currentDistance;
 				
+				try {
+					Thread.sleep(SLEEP_MILLIS);
+				} catch(InterruptedException ex){
+					break;
+				}
 				
-				final int current = steer.getSelectedSensorPosition(); // in encoder counts // takes .4 to 1 ms and sometimes even 4 ms
+				final int current = steer.getSelectedSensorPosition(Constants.PID_INDEX); // in encoder counts // takes .4 to 1 ms and sometimes even 4 ms
 				synchronized (TalonSwerveModule.this){
 					steerEncoderCountsCache = current;
 				}
 				
 				try {
-					Thread.sleep(55);
+					Thread.sleep(SLEEP_MILLIS);
 				} catch(InterruptedException ex){
 					break;
 				}

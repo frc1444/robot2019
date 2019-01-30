@@ -18,7 +18,6 @@ import com.first1444.frc.robot2019.autonomous.AutonomousChooserState;
 import com.first1444.frc.robot2019.autonomous.AutonomousModeCreator;
 import com.first1444.frc.robot2019.autonomous.RobotAutonActionCreator;
 import com.first1444.frc.robot2019.autonomous.actions.LineUpAction;
-import com.first1444.frc.robot2019.autonomous.actions.TurnToOrientation;
 import com.first1444.frc.robot2019.input.DefaultRobotInput;
 import com.first1444.frc.robot2019.input.InputUtil;
 import com.first1444.frc.robot2019.input.RobotInput;
@@ -29,6 +28,7 @@ import com.first1444.frc.robot2019.subsystems.LEDHandler;
 import com.first1444.frc.robot2019.subsystems.swerve.*;
 import com.first1444.frc.robot2019.vision.BestVisionPacketSelector;
 import com.first1444.frc.robot2019.vision.PacketListener;
+import com.first1444.frc.robot2019.vision.VisionSupplier;
 import com.first1444.frc.util.DynamicSendableChooser;
 import com.first1444.frc.util.pid.PidKey;
 import com.first1444.frc.util.valuemap.MutableValueMap;
@@ -36,10 +36,7 @@ import com.first1444.frc.util.valuemap.sendable.MutableValueMapSendable;
 import edu.wpi.cscore.UsbCamera;
 import edu.wpi.cscore.VideoMode;
 import edu.wpi.first.cameraserver.CameraServer;
-import edu.wpi.first.wpilibj.Joystick;
-import edu.wpi.first.wpilibj.SendableBase;
-import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.*;
 import edu.wpi.first.wpilibj.interfaces.Gyro;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.SendableBuilder;
@@ -68,6 +65,7 @@ public class Robot extends TimedRobot {
 
 	private final DynamicSendableChooser<Double> startingOrientationChooser;
 	private final Orientation orientation;
+	private final DynamicSendableChooser<Perspective> autonomousPerspectiveChooser;
 	private final SwerveDrive drive;
 	
 	private final PacketListener packetListener;
@@ -83,9 +81,7 @@ public class Robot extends TimedRobot {
 	private final Action testAction;
 	private final AutonomousChooserState autonomousChooserState;
 	
-	private UsbCamera camera = null;
-
-
+	
 	// region Initialize
 	/** Used to initialize final fields.*/
 	public Robot(){
@@ -101,7 +97,7 @@ public class Robot extends TimedRobot {
 		// *edit values of controlConfig if desired*
 		controlConfig.switchToSquareInputThreshold = 1.2;
 		controlConfig.fullAnalogDeadzone = .075;
-		controlConfig.analogDeadzone = .03;
+		controlConfig.analogDeadzone = .02;
 		controlConfig.cacheAngleAndMagnitudeInUpdate = false;
 		controllerManager = new DefaultControllerManager(controlConfig);
 		controllerManager.addController(robotInput);
@@ -128,10 +124,15 @@ public class Robot extends TimedRobot {
 				builder.addDoubleProperty("Driver station offset", () -> Perspective.DRIVER_STATION.getOrientationOffset(orientation), null);
 			}
 		});
+		
+		autonomousPerspectiveChooser = new DynamicSendableChooser<>();
+		autonomousPerspectiveChooser.setDefaultOption("Hatch Cam", dimensions.getHatchManipulatorPerspective());
+		autonomousPerspectiveChooser.addOption("Cargo Cam", dimensions.getCargoManipulatorPerspective());
+		autonomousPerspectiveChooser.addOption("Driver Station (blind field centric)", Perspective.DRIVER_STATION);
+		autonomousPerspectiveChooser.addOption("Jumbotron on Right", Perspective.JUMBOTRON_ON_RIGHT);
+		autonomousPerspectiveChooser.addOption("Jumbotron on Left", Perspective.JUMBOTRON_ON_LEFT);
 
 		
-//		final MutableValueMap<PidKey> drivePid = new ValueMapLayout<>(PidKey.class, "Drive PID", shuffleboardMap.getDevTab()).getMutableValueMap();
-//		final MutableValueMap<PidKey> steerPid = new ValueMapLayout<>(PidKey.class, "Steer PID", shuffleboardMap.getDevTab()).getMutableValueMap();
 		final MutableValueMapSendable<PidKey> drivePidSendable = new MutableValueMapSendable<>(PidKey.class);
 		final MutableValueMapSendable<PidKey> steerPidSendable = new MutableValueMapSendable<>(PidKey.class);
 		shuffleboardMap.getDevTab().add("Drive PID", drivePidSendable);
@@ -172,16 +173,11 @@ public class Robot extends TimedRobot {
 		
 		enabledSubsystemUpdater = new Actions.ActionMultiplexerBuilder(
 				drive
-		)
-				.clearAllOnEnd(false)
-				.canRecycle(true)
-				.build();
+		).clearAllOnEnd(false).canRecycle(true).build();
+		
 		constantSubsystemUpdater = new Actions.ActionMultiplexerBuilder(
 				new LEDHandler(this)
-		)
-				.clearAllOnEnd(false)
-				.canRecycle(false)
-				.build();
+		).clearAllOnEnd(false).canRecycle(false).build();
 		actionChooser = Actions.createActionChooser(WhenDone.CLEAR_ACTIVE);
 
 		teleopAction = new TeleopAction(this, robotInput);
@@ -220,7 +216,7 @@ public class Robot extends TimedRobot {
 	@Override
 	public void robotInit() {
 		try {
-			camera = CameraServer.getInstance().startAutomaticCapture();
+			UsbCamera camera = CameraServer.getInstance().startAutomaticCapture();
 			camera.setVideoMode(VideoMode.PixelFormat.kMJPEG, 320, 240, 9);
 			
 			shuffleboardMap.getUserTab().add(camera);
@@ -248,7 +244,7 @@ public class Robot extends TimedRobot {
 		}
 		constantSubsystemUpdater.update(); // update subsystems that are always updated
 		
-		{
+		{ // resetting the gyro code
 			final InputPart x = robotInput.getResetGyroJoy().getXAxis();
 			final InputPart y = robotInput.getResetGyroJoy().getYAxis();
 			if (x.isDown() || y.isDown()){
@@ -296,7 +292,7 @@ public class Robot extends TimedRobot {
 						.canRecycle(false)
 						.build()
 		);
-		teleopAction.setPerspective(Perspective.ROBOT_FORWARD_CAM);
+		teleopAction.setPerspective(autonomousPerspectiveChooser.getSelected());
 	}
 	/** Called constantly during autonomous*/
 	@Override
@@ -336,7 +332,7 @@ public class Robot extends TimedRobot {
 		return orientation;
 	}
 	
-	public PacketListener getPacketListener() {
+	public VisionSupplier getVisionSupplier() {
 		return packetListener;
 	}
 	
