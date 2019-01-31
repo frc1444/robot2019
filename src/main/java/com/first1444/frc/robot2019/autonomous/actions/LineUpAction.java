@@ -1,6 +1,8 @@
 package com.first1444.frc.robot2019.autonomous.actions;
 
 import com.first1444.frc.robot2019.Perspective;
+import com.first1444.frc.robot2019.event.EventSender;
+import com.first1444.frc.robot2019.event.SoundEvents;
 import com.first1444.frc.robot2019.subsystems.swerve.SwerveDrive;
 import com.first1444.frc.robot2019.vision.*;
 import me.retrodaredevil.action.Action;
@@ -8,6 +10,7 @@ import me.retrodaredevil.action.LinkedAction;
 import me.retrodaredevil.action.SimpleAction;
 
 import java.util.Collection;
+import java.util.Objects;
 import java.util.function.Supplier;
 
 import static java.lang.Math.*;
@@ -22,21 +25,25 @@ public class LineUpAction extends SimpleAction implements LinkedAction {
 	private final Supplier<SwerveDrive> driveSupplier;
 	
 	private final Action successAction;
+	private final EventSender eventSender;
 	
+	private boolean hasFound = false;
 	private Action nextAction;
 	private Long failureStartTime = null;
 	
 	public LineUpAction(VisionSupplier visionSupplier, int cameraID, Perspective perspective, PreferredTargetSelector selector,
 						Supplier<SwerveDrive> driveSupplier,
-						Action failAction, Action successAction) {
+						Action failAction, Action successAction, EventSender eventSender) {
 		super(false);
-		this.visionSupplier = visionSupplier;
+		this.visionSupplier = Objects.requireNonNull(visionSupplier);
 		this.cameraID = cameraID;
-		this.perspective = perspective;
-		this.selector = selector;
-		this.driveSupplier = driveSupplier;
+		this.perspective = Objects.requireNonNull(perspective);
+		this.selector = Objects.requireNonNull(selector);
+		this.driveSupplier = Objects.requireNonNull(driveSupplier);
 		
 		this.successAction = successAction;
+		this.eventSender = eventSender;
+		
 		nextAction = failAction;
 	}
 	
@@ -48,6 +55,12 @@ public class LineUpAction extends SimpleAction implements LinkedAction {
 		if(visionInstant != null && visionInstant.getTimeMillis() + 750 >= System.currentTimeMillis()){ // not null and packet within .75 seconds
 			final Collection<? extends VisionPacket> packets = visionInstant.getVisiblePackets();
 			if(!packets.isEmpty()){
+				if(!hasFound){
+					if(eventSender != null) {
+						eventSender.sendEvent(SoundEvents.TARGET_FOUND);
+					}
+					hasFound = true;
+				}
 				failed = false;
 				final VisionPacket vision = selector.getPreferredTarget(packets);
 				System.out.println("Using vision packet: " + vision);
@@ -98,6 +111,9 @@ public class LineUpAction extends SimpleAction implements LinkedAction {
 				failureStartTime = System.currentTimeMillis();
 			}
 			if(failureStartTime + 500 < System.currentTimeMillis()){ // half a second of failure
+				if(eventSender != null) {
+					eventSender.sendEvent(SoundEvents.TARGET_FAILED);
+				}
 				setDone(true);
 			}
 		} else {

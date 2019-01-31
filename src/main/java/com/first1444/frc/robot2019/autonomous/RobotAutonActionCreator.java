@@ -7,6 +7,8 @@ import com.first1444.frc.robot2019.autonomous.actions.TurnToOrientation;
 import com.first1444.frc.robot2019.deepspace.SlotLevel;
 import com.first1444.frc.robot2019.vision.BestVisionPacketSelector;
 import me.retrodaredevil.action.Action;
+import me.retrodaredevil.action.Actions;
+import me.retrodaredevil.action.WhenDone;
 
 public class RobotAutonActionCreator implements AutonActionCreator {
 	private final Robot robot;
@@ -32,24 +34,12 @@ public class RobotAutonActionCreator implements AutonActionCreator {
 
 	@Override
 	public Action createCargoShipPlaceHatch(Action failAction, Action successAction) {
-		return new LineUpAction(
-				robot.getVisionSupplier(), robot.getDimensions().getHatchCameraID(),
-				robot.getDimensions().getHatchManipulatorPerspective(),
-				new BestVisionPacketSelector(), robot::getDrive,
-				failAction,
-				successAction // TODO do something here
-		);
+		return createRocketPlaceHatch(SlotLevel.LEVEL1, failAction, successAction);
 	}
 
 	@Override
 	public Action createCargoShipPlaceCargo(Action failAction, Action successAction) {
-		return new LineUpAction(
-				robot.getVisionSupplier(), robot.getDimensions().getCargoCameraID(),
-				robot.getDimensions().getCargoManipulatorPerspective(),
-				new BestVisionPacketSelector(), robot::getDrive,
-				failAction,
-				successAction // TODO do something here
-		);
+        return createRocketPlaceCargo(SlotLevel.LEVEL1, failAction, successAction);
 	}
 	
 	@Override
@@ -60,19 +50,23 @@ public class RobotAutonActionCreator implements AutonActionCreator {
 				robot.getDimensions().getCargoManipulatorPerspective(),
 				new BestVisionPacketSelector(), robot::getDrive,
 				failAction,
-				successAction // TODO do something here
-		);
+				successAction, // TODO do something here
+				robot.getSoundSender());
 
 	}
 	
 	@Override
 	public Action createRocketPlaceHatch(SlotLevel slotLevel, Action failAction, Action successAction) {
-		return new LineUpAction(
-				robot.getVisionSupplier(), robot.getDimensions().getHatchCameraID(),
-				robot.getDimensions().getHatchManipulatorPerspective(),
-				new BestVisionPacketSelector(), robot::getDrive,
-				failAction,
-				successAction // TODO do something here
+		return Actions.createLinkedActionRunner(
+				new LineUpAction(
+						robot.getVisionSupplier(), robot.getDimensions().getHatchCameraID(),
+						robot.getDimensions().getHatchManipulatorPerspective(),
+						new BestVisionPacketSelector(), robot::getDrive,
+						failAction,
+						successAction, // TODO do something here
+						robot.getSoundSender()
+				),
+				WhenDone.CLEAR_ACTIVE_AND_BE_DONE, false
 		);
 
 	}

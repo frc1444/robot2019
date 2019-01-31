@@ -10,6 +10,7 @@ import com.first1444.frc.util.CTREUtil;
 import com.first1444.frc.util.MathUtil;
 import com.first1444.frc.util.pid.PidKey;
 import com.first1444.frc.util.valuemap.MutableValueMap;
+import com.first1444.frc.util.valuemap.ValueMap;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import me.retrodaredevil.action.Action;
 import me.retrodaredevil.action.SimpleAction;
@@ -20,7 +21,6 @@ import static java.lang.Math.abs;
 
 public class TalonSwerveModule extends SimpleAction implements SwerveModule {
 	private static final double WHEEL_CIRCUMFERENCE = 4 * Math.PI;
-	private static final boolean USE_ABSOLUTE_ENCODERS = false;
 	private static final boolean QUICK_REVERSE = true;
 	private static final boolean VELOCITY_CONTROL = true;
 	
@@ -30,8 +30,6 @@ public class TalonSwerveModule extends SimpleAction implements SwerveModule {
 	private final String name;
 	private final IntSupplier absoluteEncoderOffsetSupplier;
 	
-	private EncoderType currentEncoderType = null;
-
 	private double speed = 0;
 	private double targetPositionDegrees = 0;
 	
@@ -50,11 +48,15 @@ public class TalonSwerveModule extends SimpleAction implements SwerveModule {
 		drive = new WPI_TalonSRX(driveID);
 		steer = new WPI_TalonSRX(steerID);
 
-		drive.configFactoryDefault();
-		steer.configFactoryDefault();
+		drive.configFactoryDefault(Constants.INIT_TIMEOUT);
+		steer.configFactoryDefault(Constants.INIT_TIMEOUT);
 		
 		drive.setNeutralMode(NeutralMode.Brake);
 		steer.setNeutralMode(NeutralMode.Coast); // to make them easier to reposition when the robot is on
+		
+		steer.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder, Constants.PID_INDEX, Constants.INIT_TIMEOUT);
+		steer.configSetParameter(ParamEnum.eFeedbackNotContinuous, 0, 0, 0, Constants.INIT_TIMEOUT);
+		steer.setSensorPhase(true);
 
 		drivePid.addListener((key) -> CTREUtil.applyPID(drive, drivePid, Constants.LOOP_TIMEOUT));
 		steerPid.addListener((key) -> CTREUtil.applyPID(steer, steerPid, Constants.LOOP_TIMEOUT));
@@ -62,83 +64,29 @@ public class TalonSwerveModule extends SimpleAction implements SwerveModule {
 		CTREUtil.applyPID(steer, steerPid, Constants.INIT_TIMEOUT);
 		
 		moduleConfig.addListener(option -> {
-			if(option == ModuleConfig.ABS_ENCODER_OFFSET){
-				updateAbsoluteEncoderOffset();
-			}
+			updateEncoderOffset(moduleConfig);
 		});
-		if(USE_ABSOLUTE_ENCODERS) {
-			switchToAbsoluteEncoder();
-		} else {
-			switchToQuadEncoder(); // TODO Because of this, the wheels must be in the correct position when starting
-		}
+		updateEncoderOffset(moduleConfig);
 		
 		final Thread encoderThread = new Thread(new EncoderRunnable());
 		encoderThread.setDaemon(true);
 		encoderThread.start();
 		
 	}
-	private void switchToAbsoluteEncoder(){
-		if(currentEncoderType == EncoderType.ABSOLUTE){
-			return;
-		}
-		steer.configSelectedFeedbackSensor(FeedbackDevice.Analog);
-		steer.configSetParameter(ParamEnum.eAnalogPosition, 0, 0, 0);
-		updateAbsoluteEncoderOffset();
-		steer.setSensorPhase(false);
-		
-		currentEncoderType = EncoderType.ABSOLUTE;
-	}
-	private void updateAbsoluteEncoderOffset(){
-		if(currentEncoderType == EncoderType.ABSOLUTE) {
-			steer.setSelectedSensorPosition(steer.getSensorCollection().getAnalogInRaw() - absoluteEncoderOffsetSupplier.getAsInt());
-		}
-	}
-	private void switchToQuadEncoder(){
-		if(currentEncoderType == EncoderType.QUAD){
-			return;
-		}
-		steer.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder);
-		steer.configSetParameter(ParamEnum.eFeedbackNotContinuous, 0, 0, 0);
-		steer.setSelectedSensorPosition(0);
-		steer.setSensorPhase(true);
-		
-		currentEncoderType = EncoderType.QUAD;
+	private void updateEncoderOffset(ValueMap<ModuleConfig> config){
+		final int min = (int) config.getDouble(ModuleConfig.MIN_ENCODER_VALUE);
+		final int max = (int) config.getDouble(ModuleConfig.MAX_ENCODER_VALUE);
+		final int difference = max - min;
+		final int offset = (int) config.getDouble(ModuleConfig.ABS_ENCODER_OFFSET) - min;
+		steer.setSelectedSensorPosition(
+				offset * getCountsPerRevolution() / difference,
+				Constants.PID_INDEX, Constants.LOOP_TIMEOUT
+		);
 	}
 	
 	@Override
 	public Action getCalibrateAction() {
-		if(!USE_ABSOLUTE_ENCODERS){
-			return null;
-		}
-		return new SimpleAction(false){
-			Long doneAt = null;
-			@Override
-			protected void onStart() {
-				super.onStart();
-				switchToAbsoluteEncoder();
-				System.out.println("Starting " + getName());
-			}
-	
-			@Override
-			protected void onUpdate() {
-				super.onUpdate();
-				setTargetAngle(0);
-				setTargetSpeed(0);
-				if(doneAt != null && doneAt <= System.currentTimeMillis()){
-					setDone(true);
-				}
-				if(doneAt == null && abs(getCurrentAngle()) < 5){
-					doneAt = System.currentTimeMillis() + 300;
-					System.out.println("Current angle: " + getCurrentAngle());
-				}
-			}
-	
-			@Override
-			protected void onEnd(boolean peacefullyEnded) {
-				super.onEnd(peacefullyEnded);
-				switchToQuadEncoder();
-			}
-		};
+		return null;
 	}
 	
 	@Override
@@ -223,22 +171,9 @@ public class TalonSwerveModule extends SimpleAction implements SwerveModule {
 	}
 	
 	
-	/** @return The number of encoder counds per revolution for the current {@link EncoderType} for the steer*/
+	/** @return The number of encoder counds per revolution steer*/
 	private int getCountsPerRevolution(){
-		if(currentEncoderType == null){
-			throw new IllegalStateException("Trying to get encoder counts per rev when an encoder type isn't set!");
-		}
-		switch(currentEncoderType){
-			case QUAD:
-				return Constants.SWERVE_STEER_QUAD_ENCODER_COUNTS_PER_REVOLUTION;
-			case ABSOLUTE:
-				return Constants.SWERVE_STEER_ABSOLUTE_ENCODER_COUNTS_PER_REVOLUTION;
-		}
-		throw new UnsupportedOperationException("We should have already returned!");
-	}
-	
-	private enum EncoderType {
-		QUAD, ABSOLUTE
+		return Constants.SWERVE_STEER_QUAD_ENCODER_COUNTS_PER_REVOLUTION;
 	}
 	
 	/**

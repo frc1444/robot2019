@@ -12,12 +12,14 @@ import com.first1444.frc.input.WPIInputCreator;
 import com.first1444.frc.input.sendable.ControllerPartSendable;
 import com.first1444.frc.input.sendable.InputPartSendable;
 import com.first1444.frc.input.sendable.JoystickPartSendable;
-import com.first1444.frc.robot2019.actions.TeleopAction;
-import com.first1444.frc.robot2019.actions.TestAction;
+import com.first1444.frc.robot2019.actions.SwerveDriveAction;
 import com.first1444.frc.robot2019.autonomous.AutonomousChooserState;
 import com.first1444.frc.robot2019.autonomous.AutonomousModeCreator;
 import com.first1444.frc.robot2019.autonomous.RobotAutonActionCreator;
 import com.first1444.frc.robot2019.autonomous.actions.LineUpAction;
+import com.first1444.frc.robot2019.event.EventSender;
+import com.first1444.frc.robot2019.event.SoundEvents;
+import com.first1444.frc.robot2019.event.TCPEventSender;
 import com.first1444.frc.robot2019.input.DefaultRobotInput;
 import com.first1444.frc.robot2019.input.InputUtil;
 import com.first1444.frc.robot2019.input.RobotInput;
@@ -25,6 +27,7 @@ import com.first1444.frc.robot2019.sensors.BNO055;
 import com.first1444.frc.robot2019.sensors.DefaultOrientation;
 import com.first1444.frc.robot2019.sensors.Orientation;
 import com.first1444.frc.robot2019.subsystems.LEDHandler;
+import com.first1444.frc.robot2019.subsystems.OrientationSystem;
 import com.first1444.frc.robot2019.subsystems.swerve.*;
 import com.first1444.frc.robot2019.vision.BestVisionPacketSelector;
 import com.first1444.frc.robot2019.vision.PacketListener;
@@ -40,7 +43,6 @@ import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.wpilibj.*;
 import edu.wpi.first.wpilibj.interfaces.Gyro;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
-import edu.wpi.first.wpilibj.smartdashboard.SendableBuilder;
 import me.retrodaredevil.action.*;
 import me.retrodaredevil.controller.ControllerManager;
 import me.retrodaredevil.controller.DefaultControllerManager;
@@ -58,18 +60,17 @@ import me.retrodaredevil.controller.output.ControllerRumble;
 public class Robot extends TimedRobot {
 	
 	private final ShuffleboardMap shuffleboardMap;
-	private final Gyro gyro;
+	private final OrientationSystem orientationSystem;
 	private final RobotDimensions dimensions;
 
 	private final ControllerManager controllerManager;
 	private final RobotInput robotInput;
 
-	private final DynamicSendableChooser<Double> startingOrientationChooser;
-	private final Orientation orientation;
 	private final DynamicSendableChooser<Perspective> autonomousPerspectiveChooser;
 	private final SwerveDrive drive;
 	
 	private final PacketListener packetListener;
+	private final EventSender soundSender;
 
 	/** An {@link Action} that updates certain subsystems only when the robot is enabled*/
 	private final ActionMultiplexer enabledSubsystemUpdater;
@@ -78,9 +79,12 @@ public class Robot extends TimedRobot {
 	/** The {@link ActionChooser} that handles an action that updates subsystems*/
 	private final ActionChooser actionChooser;
 
-	private final TeleopAction teleopAction;
-	private final Action testAction;
+	private final SwerveDriveAction swerveDriveAction;
+//	private final Action testAction;
 	private final AutonomousChooserState autonomousChooserState;
+	
+	private enum RobotMode {TELEOP, TEST, AUTO, DISABLED}
+	private RobotMode lastMode = RobotMode.DISABLED;
 	
 	
 	// region Initialize
@@ -103,20 +107,12 @@ public class Robot extends TimedRobot {
 		controllerManager = new DefaultControllerManager(controlConfig);
 		controllerManager.addController(robotInput);
 
-//		gyro = new DummyGyro(0);
 		BNO055 IMU = new BNO055();
 		IMU.SetMode(BNO055.IMUMode.NDOF);
-		gyro = IMU;
 		
 		dimensions = Constants.Dimensions.INSTANCE;
 
-		startingOrientationChooser = new DynamicSendableChooser<>();
-		startingOrientationChooser.setDefaultOption("forward (90)", 90.0);
-		startingOrientationChooser.addOption("right (0)", 0.0);
-		startingOrientationChooser.addOption("left (180)", 180.0);
-		startingOrientationChooser.addOption("backwards (270)", 270.0);
-		shuffleboardMap.getUserTab().add("Starting Orientation", startingOrientationChooser);
-		orientation = new DefaultOrientation(gyro, startingOrientationChooser::getSelected);
+		orientationSystem = new OrientationSystem(shuffleboardMap, IMU, robotInput);
 		
 		OrientationSendable.addOrientation(shuffleboardMap.getUserTab(), this::getOrientation);
 		
@@ -126,8 +122,8 @@ public class Robot extends TimedRobot {
 		autonomousPerspectiveChooser.addOption("Driver Station (blind field centric)", Perspective.DRIVER_STATION);
 		autonomousPerspectiveChooser.addOption("Jumbotron on Right", Perspective.JUMBOTRON_ON_RIGHT);
 		autonomousPerspectiveChooser.addOption("Jumbotron on Left", Perspective.JUMBOTRON_ON_LEFT);
+		shuffleboardMap.getUserTab().add("Autonomous Perspective", autonomousPerspectiveChooser);
 
-		
 		final MutableValueMapSendable<PidKey> drivePidSendable = new MutableValueMapSendable<>(PidKey.class);
 		final MutableValueMapSendable<PidKey> steerPidSendable = new MutableValueMapSendable<>(PidKey.class);
 		shuffleboardMap.getDevTab().add("Drive PID", drivePidSendable);
@@ -165,18 +161,20 @@ public class Robot extends TimedRobot {
 		this.drive = drive;
 		
 		this.packetListener = new PacketListener(5801); // start in robotInit()
+		this.soundSender = new TCPEventSender(5809);
 		
 		enabledSubsystemUpdater = new Actions.ActionMultiplexerBuilder(
 				drive
 		).clearAllOnEnd(false).canRecycle(true).build();
 		
 		constantSubsystemUpdater = new Actions.ActionMultiplexerBuilder(
+				orientationSystem,
 				new LEDHandler(this)
 		).clearAllOnEnd(false).canRecycle(false).build();
 		actionChooser = Actions.createActionChooser(WhenDone.CLEAR_ACTIVE);
 
-		teleopAction = new TeleopAction(this, robotInput);
-		testAction = new TestAction(robotInput);
+		swerveDriveAction = new SwerveDriveAction(this::getDrive, robotInput);
+//		testAction = new TestAction(robotInput);
 		autonomousChooserState = new AutonomousChooserState(
 				shuffleboardMap,  // this will add stuff to the dashboard
 				new AutonomousModeCreator(new RobotAutonActionCreator(this), dimensions)
@@ -239,16 +237,6 @@ public class Robot extends TimedRobot {
 		}
 		constantSubsystemUpdater.update(); // update subsystems that are always updated
 		
-		{ // resetting the gyro code
-			final InputPart x = robotInput.getResetGyroJoy().getXAxis();
-			final InputPart y = robotInput.getResetGyroJoy().getYAxis();
-			if (x.isDown() || y.isDown()){
-				gyro.reset();
-				final double angle = robotInput.getResetGyroJoy().getAngle();
-				startingOrientationChooser.addOption("Custom", angle);
-				startingOrientationChooser.setSelectedKey("Custom");
-			}
-		}
 	}
 	
 	/** Called when robot is disabled and in between switching between modes such as teleop and autonomous*/
@@ -258,6 +246,12 @@ public class Robot extends TimedRobot {
 		if(enabledSubsystemUpdater.isActive()) {
 			enabledSubsystemUpdater.end();
 		}
+		if(lastMode == RobotMode.TELEOP){
+            soundSender.sendEvent(SoundEvents.MATCH_END);
+		} else {
+			soundSender.sendEvent(SoundEvents.DISABLE);
+		}
+		lastMode = RobotMode.DISABLED;
 	}
 	@Override public void disabledPeriodic() { }
 
@@ -266,35 +260,36 @@ public class Robot extends TimedRobot {
 	public void teleopInit() {
 		actionChooser.setNextAction(new Actions.ActionMultiplexerBuilder(
 				getDriveCalibrateAction(),
-				teleopAction
+				swerveDriveAction
 		).canRecycle(false).canBeDone(true).build());
-		teleopAction.setPerspective(Perspective.DRIVER_STATION);
+		swerveDriveAction.setPerspective(Perspective.DRIVER_STATION);
+		soundSender.sendEvent(SoundEvents.TELEOP_ENABLE);
+		lastMode = RobotMode.TELEOP;
 	}
 	@Override public void teleopPeriodic() { }
 	
 	/** Called first thing when match starts. Autonomous is active for 15 seconds*/
 	@Override
 	public void autonomousInit() {
-		gyro.reset();
+        orientationSystem.resetGyro();
+        
 		actionChooser.setNextAction(
 				new Actions.ActionQueueBuilder(
 						getDriveCalibrateAction(),
-						autonomousChooserState.createAutonomousAction(startingOrientationChooser.getSelected()),
-						teleopAction
-				)
-						.immediatelyDoNextWhenDone(true)
-						.canBeDone(false)
-						.canRecycle(false)
-						.build()
+						autonomousChooserState.createAutonomousAction(orientationSystem.getStartingOrientation()),
+						swerveDriveAction
+				) .immediatelyDoNextWhenDone(true) .canBeDone(false) .canRecycle(false) .build()
 		);
-		teleopAction.setPerspective(autonomousPerspectiveChooser.getSelected());
+		swerveDriveAction.setPerspective(autonomousPerspectiveChooser.getSelected());
+		soundSender.sendEvent(SoundEvents.AUTONOMOUS_ENABLE);
+		lastMode = RobotMode.AUTO;
 	}
 	/** Called constantly during autonomous*/
 	@Override
 	public void autonomousPeriodic() {
-		if(!teleopAction.isActive()){
+		if(!swerveDriveAction.isActive()){
 			if(robotInput.getAutonomousCancelButton().isDown()){
-				actionChooser.setNextAction(teleopAction);
+				actionChooser.setNextAction(swerveDriveAction);
 				System.out.println("Letting teleop take over now");
 			}
 		}
@@ -311,12 +306,13 @@ public class Robot extends TimedRobot {
 						new LineUpAction(
 								packetListener, dimensions.getHatchCameraID(), Perspective.ROBOT_FORWARD_CAM,
 								new BestVisionPacketSelector(), this::getDrive,
-								Actions.createRunOnce(() -> System.out.println("Failed!")), Actions.createRunOnce(() -> System.out.println("Success!"))
-						),
+								Actions.createRunOnce(() -> System.out.println("Failed!")), Actions.createRunOnce(() -> System.out.println("Success!")),
+								getSoundSender()),
 						WhenDone.CLEAR_ACTIVE_AND_BE_DONE, false
 				),
 				Actions.createRunOnce(() -> robotInput.getDriverRumble().rumbleTime(500, .2))
 		).canRecycle(false).canBeDone(true).immediatelyDoNextWhenDone(true).build());
+		lastMode = RobotMode.TEST;
 	}
 	@Override
 	public void testPeriodic() { }
@@ -324,7 +320,7 @@ public class Robot extends TimedRobot {
 	
 	public SwerveDrive getDrive(){ return drive; }
 	public Orientation getOrientation(){
-		return orientation;
+        return orientationSystem.getOrientation();
 	}
 	
 	public VisionSupplier getVisionSupplier() {
@@ -333,5 +329,9 @@ public class Robot extends TimedRobot {
 	
 	public RobotDimensions getDimensions() {
 		return dimensions;
+	}
+	
+	public EventSender getSoundSender(){
+		return soundSender;
 	}
 }

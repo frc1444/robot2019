@@ -13,19 +13,20 @@ import me.retrodaredevil.controller.input.JoystickPart;
 import me.retrodaredevil.controller.output.ControllerRumble;
 
 import java.util.Objects;
+import java.util.function.Supplier;
 
 /**
- * This handles everything needed for teleop and should be ended when teleop is over. This can be recycled
+ * This swerve controls for teleop and should be ended when teleop is over. This can be recycled
  */
-public class TeleopAction extends SimpleAction {
-	private final Robot robot;
+public class SwerveDriveAction extends SimpleAction {
+	private final Supplier<SwerveDrive> driveSupplier;
 	private final RobotInput input;
 	private Perspective perspective = Perspective.DRIVER_STATION;
 	
-	public TeleopAction(Robot robot, RobotInput input) {
+	public SwerveDriveAction(Supplier<SwerveDrive> driveSupplier, RobotInput input) {
 		super(true);
-		this.robot = robot;
-		this.input = input;
+		this.driveSupplier = Objects.requireNonNull(driveSupplier);
+		this.input = Objects.requireNonNull(input);
 	}
 	public void setPerspective(Perspective perspective){
 		this.perspective = Objects.requireNonNull(perspective);
@@ -44,7 +45,7 @@ public class TeleopAction extends SimpleAction {
 	@Override
 	protected void onUpdate() {
 		super.onUpdate();
-		final SwerveDrive drive = robot.getDrive();
+		final SwerveDrive drive = Objects.requireNonNull(driveSupplier.get());
 
 		final JoystickPart joystick = input.getMovementJoy();
 		final double x = joystick.getZonedCorrectX();
@@ -63,8 +64,4 @@ public class TeleopAction extends SimpleAction {
 		drive.setControl(x, y, turnAmount, speed, perspective);
 	}
 
-	@Override
-	protected void onEnd(boolean peacefullyEnded) {
-		super.onEnd(peacefullyEnded);
-	}
 }

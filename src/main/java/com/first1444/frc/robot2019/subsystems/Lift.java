@@ -28,6 +28,8 @@ public class Lift extends SimpleAction {
 	}
 	private final TalonSRX master;
 	
+	private double desiredPosition;
+	
 	public Lift() {
 		super(true);
 		master = new WPI_TalonSRX(Constants.LIFT_MASTER_ID);
@@ -42,5 +44,32 @@ public class Lift extends SimpleAction {
 				() -> master.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, Constants.PID_INDEX, Constants.INIT_TIMEOUT)
 		);
 		master.setNeutralMode(NeutralMode.Brake);
+	}
+	public void setDesiredPosition(double desiredPosition){
+		if(desiredPosition < 0 || desiredPosition > 1){
+			throw new IllegalArgumentException();
+		}
+		this.desiredPosition = desiredPosition;
+	}
+	
+	@Override
+	protected void onUpdate() {
+		super.onUpdate();
+	}
+	
+	
+	public static final class Position {
+		private Position() { throw new UnsupportedOperationException(); }
+		
+		public static final double HATCH_CARGO_SHIP = .1;
+		public static final double CARGO_CARGO_SHIP = .3;
+		
+		public static final double HATCH_LEVEL1 = HATCH_CARGO_SHIP;
+		public static final double HATCH_LEVEL2 = .4;
+		public static final double HATCH_LEVEL3 = .7;
+		
+		public static final double CARGO_LEVEL1 = .2;
+		public static final double CARGO_LEVEL2 = .5;
+		public static final double CARGO_LEVEL3 = .8;
 	}
 }

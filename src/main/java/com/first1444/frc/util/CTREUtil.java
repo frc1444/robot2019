@@ -34,7 +34,7 @@ public final class CTREUtil {
 		int i = 0;
 		for(Supplier<ErrorCode> supplier : errorCodeSuppliers){
 			final ErrorCode error = Objects.requireNonNull(supplier.get());
-            errorCodeReport.accept(error, i);
+			errorCodeReport.accept(error, i);
 			i++;
 		}
 	}
