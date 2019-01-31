@@ -67,8 +67,11 @@ public final class MathUtil {
 	 * @param wpilibDegrees The degrees to remap to the correct way
 	 * @return
 	 */
-	public static double remapDegrees(double wpilibDegrees){
-		return 90 - wpilibDegrees;
+	public static double toEulerDegrees(double wpilibDegrees){
+		return 90 - wpilibDegrees; // == euler degrees
+	}
+	public static double toWPIDegrees(double eulerDegrees){
+		return 90 - eulerDegrees;
 	}
 	
 	public static double conservePow(double a, double b){

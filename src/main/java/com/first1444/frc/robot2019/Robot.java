@@ -30,6 +30,7 @@ import com.first1444.frc.robot2019.vision.BestVisionPacketSelector;
 import com.first1444.frc.robot2019.vision.PacketListener;
 import com.first1444.frc.robot2019.vision.VisionSupplier;
 import com.first1444.frc.util.DynamicSendableChooser;
+import com.first1444.frc.util.OrientationSendable;
 import com.first1444.frc.util.pid.PidKey;
 import com.first1444.frc.util.valuemap.MutableValueMap;
 import com.first1444.frc.util.valuemap.sendable.MutableValueMapSendable;
@@ -110,20 +111,14 @@ public class Robot extends TimedRobot {
 		dimensions = Constants.Dimensions.INSTANCE;
 
 		startingOrientationChooser = new DynamicSendableChooser<>();
-		startingOrientationChooser.setName("Starting Orientation");
 		startingOrientationChooser.setDefaultOption("forward (90)", 90.0);
 		startingOrientationChooser.addOption("right (0)", 0.0);
 		startingOrientationChooser.addOption("left (180)", 180.0);
 		startingOrientationChooser.addOption("backwards (270)", 270.0);
-		shuffleboardMap.getUserTab().add(startingOrientationChooser);
+		shuffleboardMap.getUserTab().add("Starting Orientation", startingOrientationChooser);
 		orientation = new DefaultOrientation(gyro, startingOrientationChooser::getSelected);
-		shuffleboardMap.getDebugTab().add("orientation", new SendableBase() {
-			@Override
-			public void initSendable(SendableBuilder builder) {
-				builder.addDoubleProperty("Orientation", orientation::getOrientation, null);
-				builder.addDoubleProperty("Driver station offset", () -> Perspective.DRIVER_STATION.getOrientationOffset(orientation), null);
-			}
-		});
+		
+		OrientationSendable.addOrientation(shuffleboardMap.getUserTab(), this::getOrientation);
 		
 		autonomousPerspectiveChooser = new DynamicSendableChooser<>();
 		autonomousPerspectiveChooser.setDefaultOption("Hatch Cam", dimensions.getHatchManipulatorPerspective());
@@ -189,7 +184,7 @@ public class Robot extends TimedRobot {
 
 		controllerManager.update(); // update this so when calling get methods don't throw exceptions
 		final ShuffleboardTab inputTab = shuffleboardMap.getDebugTab();
-		inputTab.add("Movement Joy", new JoystickPartSendable(robotInput::getMovementJoy)).withSize(2, 2);
+		inputTab.add("Movement Joy", new JoystickPartSendable(robotInput::getMovementJoy));
 		inputTab.add("Movement Speed", new InputPartSendable(robotInput::getMovementSpeed));
 		inputTab.add("Driver Rumble", new ControllerPartSendable(robotInput::getDriverRumble));
 

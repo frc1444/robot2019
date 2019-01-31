@@ -24,7 +24,7 @@ public class Lift extends SimpleAction {
 		MASTER_CONFIG.forwardSoftLimitEnable = true;
 		MASTER_CONFIG.forwardSoftLimitThreshold = ENCODER_COUNTS;
 		
-		
+		MASTER_CONFIG.clearPositionOnLimitR = true; // TODO test what this does
 	}
 	private final TalonSRX master;
 	

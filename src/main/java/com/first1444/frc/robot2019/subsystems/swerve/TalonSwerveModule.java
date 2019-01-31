@@ -36,9 +36,9 @@ public class TalonSwerveModule extends SimpleAction implements SwerveModule {
 	private double targetPositionDegrees = 0;
 	
 	/** The total distance gone. Make sure that you synchronize when accessing and modifying*/
-	private double totalDistanceGone = 0;
+	private volatile double totalDistanceGone = 0;
 	/** The most recent value for the encoder counts on the steer module. Make sure that you synchronize when accessing and modifying.*/
-	private int steerEncoderCountsCache = 0;
+	private volatile int steerEncoderCountsCache = 0;
 
 	public TalonSwerveModule(String name, int driveID, int steerID,
 							 MutableValueMap<PidKey> drivePid, MutableValueMap<PidKey> steerPid,
@@ -142,16 +142,13 @@ public class TalonSwerveModule extends SimpleAction implements SwerveModule {
 	}
 	
 	@Override
-	protected void onUpdate() { // takes about 5 ms total
+	protected void onUpdate() {
 		super.onUpdate();
 		final double speedMultiplier;
 		
 		{ // steer code
 			final int wrap = getCountsPerRevolution(); // in encoder counts
-			final int current;
-			synchronized (this){
-				current = steerEncoderCountsCache;
-			}
+			final int current = steerEncoderCountsCache;
 			final int desired = (int) Math.round(targetPositionDegrees * wrap / 360.0); // in encoder counts
 
 			if(QUICK_REVERSE){
@@ -199,7 +196,7 @@ public class TalonSwerveModule extends SimpleAction implements SwerveModule {
 	}
 	
 	@Override
-	public synchronized double getTotalDistanceTraveledInches() {
+	public double getTotalDistanceTraveledInches() {
 		return totalDistanceGone;
 	}
 	
@@ -215,7 +212,7 @@ public class TalonSwerveModule extends SimpleAction implements SwerveModule {
 
 	@Override
 	public double getCurrentAngle() {
-		final int encoderPosition = steer.getSelectedSensorPosition();
+		final int encoderPosition = steerEncoderCountsCache;
 		final int totalCounts = getCountsPerRevolution();
 		return MathUtil.mod(encoderPosition * 360.0 / totalCounts, 360.0);
 	}
@@ -251,14 +248,14 @@ public class TalonSwerveModule extends SimpleAction implements SwerveModule {
 		private static final long SLEEP_MILLIS = 60;
 		@Override
 		public void run() {
+			double totalDistanceGone = 0;
 			double lastDistanceInches = 0;
 			while(!Thread.currentThread().isInterrupted()){
 				final double currentDistance = drive.getSelectedSensorPosition() // takes a long time - .9 ms to 5 ms
 						* WHEEL_CIRCUMFERENCE / (double) Constants.SWERVE_DRIVE_ENCODER_COUNTS_PER_REVOLUTION;
-				synchronized (TalonSwerveModule.this) {
-					totalDistanceGone += abs(currentDistance - lastDistanceInches);
-				}
+				totalDistanceGone += abs(currentDistance - lastDistanceInches);
 				lastDistanceInches = currentDistance;
+				TalonSwerveModule.this.totalDistanceGone = totalDistanceGone;
 				
 				try {
 					Thread.sleep(SLEEP_MILLIS);
@@ -266,10 +263,7 @@ public class TalonSwerveModule extends SimpleAction implements SwerveModule {
 					break;
 				}
 				
-				final int current = steer.getSelectedSensorPosition(Constants.PID_INDEX); // in encoder counts // takes .4 to 1 ms and sometimes even 4 ms
-				synchronized (TalonSwerveModule.this){
-					steerEncoderCountsCache = current;
-				}
+				steerEncoderCountsCache = steer.getSelectedSensorPosition(Constants.PID_INDEX);
 				
 				try {
 					Thread.sleep(SLEEP_MILLIS);
