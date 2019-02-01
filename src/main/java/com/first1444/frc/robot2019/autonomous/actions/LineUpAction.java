@@ -17,6 +17,8 @@ import static java.lang.Math.*;
 
 public class LineUpAction extends SimpleAction implements LinkedAction {
 	private static final double MAX_SPEED = .3;
+	private static final long FAIL_NOTIFY_TIME = 100;
+	private static final long MAX_FAIL_TIME = 500;
 	
 	private final VisionSupplier visionSupplier;
 	private final int cameraID;
@@ -30,6 +32,7 @@ public class LineUpAction extends SimpleAction implements LinkedAction {
 	private boolean hasFound = false;
 	private Action nextAction;
 	private Long failureStartTime = null;
+	private Long lastFailSound = null;
 	
 	public LineUpAction(VisionSupplier visionSupplier, int cameraID, Perspective perspective, PreferredTargetSelector selector,
 						Supplier<SwerveDrive> driveSupplier,
@@ -110,10 +113,13 @@ public class LineUpAction extends SimpleAction implements LinkedAction {
 			if(failureStartTime == null){
 				failureStartTime = System.currentTimeMillis();
 			}
-			if(failureStartTime + 500 < System.currentTimeMillis()){ // half a second of failure
+			if(failureStartTime + FAIL_NOTIFY_TIME < System.currentTimeMillis() && (lastFailSound == null || lastFailSound + 1000 < System.currentTimeMillis())){
 				if(eventSender != null) {
 					eventSender.sendEvent(SoundEvents.TARGET_FAILED);
 				}
+				lastFailSound = System.currentTimeMillis();
+			}
+			if(failureStartTime + MAX_FAIL_TIME < System.currentTimeMillis()){ // half a second of failure
 				setDone(true);
 			}
 		} else {

@@ -71,7 +71,7 @@ public class DynamicSendableChooser<V> extends SendableBase {
 
 
 	public V getSelected() {
-		return map.getOrDefault(getSelectedKey(), map.computeIfAbsent(defaultChoiceKey, defaultKey -> { throw new NoSuchElementException(); }));
+		return map.getOrDefault(getSelectedKey(), map.get(defaultChoiceKey));
 	}
 	public String getSelectedKey(){
 		mutex.lock();

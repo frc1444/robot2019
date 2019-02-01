@@ -1,10 +1,7 @@
 package com.first1444.frc.robot2019.input;
 
 import me.retrodaredevil.controller.SimpleControllerInput;
-import me.retrodaredevil.controller.input.InputPart;
-import me.retrodaredevil.controller.input.JoystickPart;
-import me.retrodaredevil.controller.input.References;
-import me.retrodaredevil.controller.input.TwoWayInput;
+import me.retrodaredevil.controller.input.*;
 import me.retrodaredevil.controller.output.ControllerRumble;
 import me.retrodaredevil.controller.output.DisconnectedRumble;
 import me.retrodaredevil.controller.types.ExtremeFlightJoystickControllerInput;
@@ -25,6 +22,8 @@ public class DefaultRobotInput extends SimpleControllerInput implements RobotInp
 	private final ExtremeFlightJoystickControllerInput joystick;
 
 	private final InputPart movementSpeed;
+	private final InputPart liftManualSpeed;
+	private final InputPart hatchManualPivotSpeed;
 
 	public DefaultRobotInput(StandardControllerInput controller, ExtremeFlightJoystickControllerInput joystick, ControllerRumble rumble){
 		this.controller = controller;
@@ -47,6 +46,17 @@ public class DefaultRobotInput extends SimpleControllerInput implements RobotInp
 				References.create(controller::getLeftTrigger) // backward
 		);
 		addChildren(false, false, movementSpeed);
+		final References.InputPartGetter joystickYGetter = () -> joystick.getMainJoystick().getYAxis();
+		liftManualSpeed = new LowestPositionInputPart(
+				References.create(joystickYGetter), // NOTE: This relies on this being in this order
+				References.create(joystick::getTrigger)
+		);
+		addChildren(false, false, liftManualSpeed);
+		hatchManualPivotSpeed = new LowestPositionInputPart(
+				References.create(joystickYGetter),
+				References.create(joystick::getThumbButton)
+		);
+		addChildren(false, false, hatchManualPivotSpeed);
 	}
 
 	@Override
@@ -62,6 +72,21 @@ public class DefaultRobotInput extends SimpleControllerInput implements RobotInp
 	@Override
 	public InputPart getMovementSpeed() {
 		return movementSpeed;
+	}
+	
+	@Override
+	public InputPart getLiftManualSpeed() {
+        return liftManualSpeed;
+	}
+	
+	@Override
+	public InputPart getCargoIntakeSpeed() {
+        return joystick.getDPad().getYAxis();
+	}
+	
+	@Override
+	public InputPart getHatchManualPivotSpeed() {
+		return null;
 	}
 	
 	@Override
