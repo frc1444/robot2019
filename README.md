@@ -6,7 +6,6 @@ When you first clone this project from the internet, make sure that you run
 Some times you must run ```gradlew downloadAll``` to get everything.
 ### TODO
 * Rumble driver controller when operator places hatch/cargo
-* Try configClosedLoopPeriod to see if making that higher decreases encoder count access time
 ### Conventions
 * Use tabs in .java files
 * Use 4 spaces in gradle configuration

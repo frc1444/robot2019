@@ -19,15 +19,21 @@ import java.util.function.Supplier;
 public class DefaultRobotInput extends SimpleControllerInput implements RobotInput {
 	private final StandardControllerInput controller;
 	private final Supplier<ControllerRumble> rumbleSupplier;
-	private final ExtremeFlightJoystickControllerInput joystick;
+	private final ExtremeFlightJoystickControllerInput operatorJoy;
+	private final ExtremeFlightJoystickControllerInput climbJoy;
 
 	private final InputPart movementSpeed;
 	private final InputPart liftManualSpeed;
+	private final InputPart cargoIntakeSpeed;
 	private final InputPart hatchManualPivotSpeed;
 
-	public DefaultRobotInput(StandardControllerInput controller, ExtremeFlightJoystickControllerInput joystick, ControllerRumble rumble){
+	public DefaultRobotInput(StandardControllerInput controller,
+							 ExtremeFlightJoystickControllerInput operatorJoy,
+							 ExtremeFlightJoystickControllerInput climbJoy,
+							 ControllerRumble rumble){
 		this.controller = controller;
-		this.joystick = joystick;
+		this.operatorJoy = operatorJoy;
+		this.climbJoy = climbJoy;
 		if(rumble != null){
 			addChildren(false, true, rumble);
 			this.rumbleSupplier = () -> rumble;
@@ -40,25 +46,32 @@ public class DefaultRobotInput extends SimpleControllerInput implements RobotInp
 				addChildren(false, false, disconnectedRumble);
 			}
 		}
-		addChildren(false, false, controller, joystick);
+		addChildren(false, false, controller, operatorJoy);
 		movementSpeed = new TwoWayInput(
 				References.create(controller::getRightTrigger), // forward
 				References.create(controller::getLeftTrigger) // backward
 		);
 		addChildren(false, false, movementSpeed);
-		final References.InputPartGetter joystickYGetter = () -> joystick.getMainJoystick().getYAxis();
-		liftManualSpeed = new LowestPositionInputPart(
-				References.create(joystickYGetter), // NOTE: This relies on this being in this order
-				References.create(joystick::getTrigger)
+		final References.InputPartGetter joystickYGetter = () -> operatorJoy.getMainJoystick().getYAxis();
+		liftManualSpeed = new MultiplierInputPart(
+				References.create(joystickYGetter), // analog full
+				References.create(operatorJoy::getTrigger) // digital
 		);
 		addChildren(false, false, liftManualSpeed);
-		hatchManualPivotSpeed = new LowestPositionInputPart(
-				References.create(joystickYGetter),
-				References.create(joystick::getThumbButton)
+		cargoIntakeSpeed = new MultiplierInputPart(
+				true,
+				new ScaledInputPart(AxisType.ANALOG, References.create(operatorJoy::getSlider)), // analog
+				References.create(() -> operatorJoy.getDPad().getYAxis()) // digital full
+		);
+		addChildren(false, false, cargoIntakeSpeed);
+		hatchManualPivotSpeed = new MultiplierInputPart(
+				References.create(joystickYGetter), // analog full
+				References.create(operatorJoy::getThumbButton) // digital
 		);
 		addChildren(false, false, hatchManualPivotSpeed);
 	}
 
+	// region Drive Controls
 	@Override
 	public JoystickPart getMovementJoy() {
 		return controller.getLeftJoy();
@@ -73,21 +86,50 @@ public class DefaultRobotInput extends SimpleControllerInput implements RobotInp
 	public InputPart getMovementSpeed() {
 		return movementSpeed;
 	}
+	// endregion
 	
 	@Override
 	public InputPart getLiftManualSpeed() {
-        return liftManualSpeed;
+		return liftManualSpeed;
+	}
+	
+	@Override
+	public InputPart getManualCargoAllowed() {
+		return operatorJoy.getThumbLeftLower();
 	}
 	
 	@Override
 	public InputPart getCargoIntakeSpeed() {
-        return joystick.getDPad().getYAxis();
+		return cargoIntakeSpeed;
 	}
 	
 	@Override
 	public InputPart getHatchManualPivotSpeed() {
-		return null;
+		return hatchManualPivotSpeed;
 	}
+	
+	// region Lift Presets
+	@Override
+	public InputPart getLevel1Preset() { // final
+		return operatorJoy.getGridLowerLeft();
+	}
+	@Override
+	public InputPart getLevel2Preset() { // final
+		return operatorJoy.getGridMiddleLeft();
+	}
+	@Override
+	public InputPart getLevel3Preset() { // final
+		return operatorJoy.getGridUpperLeft();
+	}
+	@Override
+	public InputPart getLevelCargoShipCargoPreset() { // final
+		return operatorJoy.getGridMiddleRight();
+	}
+	@Override
+	public InputPart getCargoPickupPreset() { // final
+		return operatorJoy.getGridLowerRight();
+	}
+	// endregion
 	
 	@Override
 	public InputPart getAutonomousCancelButton() {
@@ -105,7 +147,17 @@ public class DefaultRobotInput extends SimpleControllerInput implements RobotInp
 	}
 	
 	@Override
+	public InputPart getAutonomousWaitButton() {
+		return climbJoy.getGridLowerLeft();
+	}
+	
+	@Override
+	public InputPart getAutonomousStartButton() {
+		return climbJoy.getGridLowerRight();
+	}
+	
+	@Override
 	public boolean isConnected() {
-		return controller.isConnected() && joystick.isConnected();
+		return controller.isConnected() && operatorJoy.isConnected();
 	}
 }

@@ -24,7 +24,6 @@ import com.first1444.frc.robot2019.input.DefaultRobotInput;
 import com.first1444.frc.robot2019.input.InputUtil;
 import com.first1444.frc.robot2019.input.RobotInput;
 import com.first1444.frc.robot2019.sensors.BNO055;
-import com.first1444.frc.robot2019.sensors.DefaultOrientation;
 import com.first1444.frc.robot2019.sensors.Orientation;
 import com.first1444.frc.robot2019.subsystems.LEDHandler;
 import com.first1444.frc.robot2019.subsystems.OrientationSystem;
@@ -41,13 +40,11 @@ import edu.wpi.cscore.UsbCamera;
 import edu.wpi.cscore.VideoMode;
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.wpilibj.*;
-import edu.wpi.first.wpilibj.interfaces.Gyro;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import me.retrodaredevil.action.*;
 import me.retrodaredevil.controller.ControllerManager;
 import me.retrodaredevil.controller.DefaultControllerManager;
 import me.retrodaredevil.controller.MutableControlConfig;
-import me.retrodaredevil.controller.input.InputPart;
 import me.retrodaredevil.controller.output.ControllerRumble;
 
 /**
@@ -92,10 +89,11 @@ public class Robot extends TimedRobot {
 	public Robot(){
 		super(.055);
 		shuffleboardMap = new DefaultShuffleboardMap();
-		final ControllerRumble rumble = new DualShockRumble(new XboxController(2));
+		final ControllerRumble rumble = new DualShockRumble(new XboxController(5));
 		robotInput = new DefaultRobotInput(
 				InputUtil.createPS4Controller(new WPIInputCreator(new Joystick(0))),
 				InputUtil.createJoystick(new WPIInputCreator(new Joystick(1))),
+				InputUtil.createJoystick(new WPIInputCreator(new Joystick(2))),
 				rumble
 		);
 		MutableControlConfig controlConfig = new MutableControlConfig();
@@ -177,14 +175,18 @@ public class Robot extends TimedRobot {
 //		testAction = new TestAction(robotInput);
 		autonomousChooserState = new AutonomousChooserState(
 				shuffleboardMap,  // this will add stuff to the dashboard
-				new AutonomousModeCreator(new RobotAutonActionCreator(this), dimensions)
-		);
+				new AutonomousModeCreator(new RobotAutonActionCreator(this), dimensions),
+				robotInput);
 
 		controllerManager.update(); // update this so when calling get methods don't throw exceptions
 		final ShuffleboardTab inputTab = shuffleboardMap.getDebugTab();
 		inputTab.add("Movement Joy", new JoystickPartSendable(robotInput::getMovementJoy));
 		inputTab.add("Movement Speed", new InputPartSendable(robotInput::getMovementSpeed));
 		inputTab.add("Driver Rumble", new ControllerPartSendable(robotInput::getDriverRumble));
+		
+		inputTab.add("Cargo Intake", new InputPartSendable(robotInput::getCargoIntakeSpeed));
+		inputTab.add("Lift Speed", new InputPartSendable(robotInput::getLiftManualSpeed));
+		inputTab.add("Hatch Pivot Speed", new InputPartSendable(robotInput::getHatchManualPivotSpeed));
 
 
 		System.out.println("Finished constructor");
@@ -247,7 +249,7 @@ public class Robot extends TimedRobot {
 			enabledSubsystemUpdater.end();
 		}
 		if(lastMode == RobotMode.TELEOP){
-            soundSender.sendEvent(SoundEvents.MATCH_END);
+			soundSender.sendEvent(SoundEvents.MATCH_END);
 		} else {
 			soundSender.sendEvent(SoundEvents.DISABLE);
 		}
@@ -271,8 +273,8 @@ public class Robot extends TimedRobot {
 	/** Called first thing when match starts. Autonomous is active for 15 seconds*/
 	@Override
 	public void autonomousInit() {
-        orientationSystem.resetGyro();
-        
+		orientationSystem.resetGyro();
+		
 		actionChooser.setNextAction(
 				new Actions.ActionQueueBuilder(
 						getDriveCalibrateAction(),
@@ -320,7 +322,7 @@ public class Robot extends TimedRobot {
 	
 	public SwerveDrive getDrive(){ return drive; }
 	public Orientation getOrientation(){
-        return orientationSystem.getOrientation();
+		return orientationSystem.getOrientation();
 	}
 	
 	public VisionSupplier getVisionSupplier() {

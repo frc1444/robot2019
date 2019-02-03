@@ -39,7 +39,7 @@ public class RobotAutonActionCreator implements AutonActionCreator {
 
 	@Override
 	public Action createCargoShipPlaceCargo(Action failAction, Action successAction) {
-        return createRocketPlaceCargo(SlotLevel.LEVEL1, failAction, successAction);
+		return createRocketPlaceCargo(SlotLevel.LEVEL1, failAction, successAction);
 	}
 	
 	@Override

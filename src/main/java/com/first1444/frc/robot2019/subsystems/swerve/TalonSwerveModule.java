@@ -20,22 +20,22 @@ import java.util.function.IntSupplier;
 import static java.lang.Math.abs;
 
 public class TalonSwerveModule extends SimpleAction implements SwerveModule {
+	private static final int CLOSED_LOOP_TIME = 4;
 	private static final double WHEEL_CIRCUMFERENCE = 4 * Math.PI;
 	private static final boolean QUICK_REVERSE = true;
 	private static final boolean VELOCITY_CONTROL = true;
 	
+	private final String name;
+	
 	private final BaseMotorController drive;
 	private final TalonSRX steer;
 
-	private final String name;
-	private final IntSupplier absoluteEncoderOffsetSupplier;
-	
 	private double speed = 0;
 	private double targetPositionDegrees = 0;
 	
-	/** The total distance gone. Make sure that you synchronize when accessing and modifying*/
+	/** The total distance gone. This is changed in another thread and should only be read*/
 	private volatile double totalDistanceGone = 0;
-	/** The most recent value for the encoder counts on the steer module. Make sure that you synchronize when accessing and modifying.*/
+	/** The most recent value for the encoder counts on the steer module. This is changed in another thread and should only be read*/
 	private volatile int steerEncoderCountsCache = 0;
 
 	public TalonSwerveModule(String name, int driveID, int steerID,
@@ -43,7 +43,6 @@ public class TalonSwerveModule extends SimpleAction implements SwerveModule {
 							 MutableValueMap<ModuleConfig> moduleConfig, ShuffleboardTab debugTab) {
 		super(true);
 		this.name = name;
-		absoluteEncoderOffsetSupplier = () -> (int) moduleConfig.getDouble(ModuleConfig.ABS_ENCODER_OFFSET);
 		
 		drive = new WPI_TalonSRX(driveID);
 		steer = new WPI_TalonSRX(steerID);
@@ -53,10 +52,12 @@ public class TalonSwerveModule extends SimpleAction implements SwerveModule {
 		
 		drive.setNeutralMode(NeutralMode.Brake);
 		steer.setNeutralMode(NeutralMode.Coast); // to make them easier to reposition when the robot is on
+		drive.configClosedLoopPeriod(Constants.SLOT_INDEX, CLOSED_LOOP_TIME, Constants.INIT_TIMEOUT);
 		
 		steer.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder, Constants.PID_INDEX, Constants.INIT_TIMEOUT);
 		steer.configSetParameter(ParamEnum.eFeedbackNotContinuous, 0, 0, 0, Constants.INIT_TIMEOUT);
 		steer.setSensorPhase(true);
+		steer.configClosedLoopPeriod(Constants.SLOT_INDEX, CLOSED_LOOP_TIME, Constants.INIT_TIMEOUT);
 
 		drivePid.addListener((key) -> CTREUtil.applyPID(drive, drivePid, Constants.LOOP_TIMEOUT));
 		steerPid.addListener((key) -> CTREUtil.applyPID(steer, steerPid, Constants.LOOP_TIMEOUT));

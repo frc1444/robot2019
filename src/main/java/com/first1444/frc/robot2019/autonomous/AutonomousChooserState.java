@@ -1,11 +1,15 @@
 package com.first1444.frc.robot2019.autonomous;
 
 import com.first1444.frc.robot2019.ShuffleboardMap;
+import com.first1444.frc.robot2019.autonomous.actions.WaitAction;
 import com.first1444.frc.robot2019.autonomous.options.AutonomousType;
 import com.first1444.frc.robot2019.deepspace.GamePieceType;
 import com.first1444.frc.robot2019.deepspace.SlotLevel;
 import com.first1444.frc.robot2019.autonomous.options.StartingPosition;
+import com.first1444.frc.robot2019.input.RobotInput;
 import com.first1444.frc.util.DynamicSendableChooser;
+import com.first1444.frc.util.valuemap.ValueMap;
+import com.first1444.frc.util.valuemap.sendable.MutableValueMapSendable;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardLayout;
 import me.retrodaredevil.action.Action;
@@ -13,21 +17,26 @@ import me.retrodaredevil.action.Actions;
 
 public class AutonomousChooserState {
 	private final AutonomousModeCreator autonomousModeCreator;
+	private final RobotInput robotInput;
 	
 	private final DynamicSendableChooser<AutonomousType> autonomousChooser;
 	private final DynamicSendableChooser<StartingPosition> startingPositionChooser;
 	private final DynamicSendableChooser<GamePieceType> gamePieceChooser;
 	private final DynamicSendableChooser<SlotLevel> levelChooser;
+	private final ValueMap<AutonConfig> autonConfig;
 
-	public AutonomousChooserState(ShuffleboardMap shuffleboardMap, AutonomousModeCreator autonomousModeCreator){
+	public AutonomousChooserState(ShuffleboardMap shuffleboardMap, AutonomousModeCreator autonomousModeCreator, RobotInput robotInput){
 		this.autonomousModeCreator = autonomousModeCreator;
+		this.robotInput = robotInput;
 		final ShuffleboardLayout layout = shuffleboardMap.getUserTab()
-				.getLayout("Autonomous", BuiltInLayouts.kList)
-				.withSize(2, 4);
+				.getLayout("Autonomous", BuiltInLayouts.kList);
 		autonomousChooser = new DynamicSendableChooser<>();
 		startingPositionChooser = new DynamicSendableChooser<>();
 		gamePieceChooser = new DynamicSendableChooser<>();
 		levelChooser = new DynamicSendableChooser<>();
+		final var valueMapSendable = new MutableValueMapSendable<>(AutonConfig.class);
+		layout.add("Config", valueMapSendable);
+		autonConfig = valueMapSendable.getMutableValueMap();
 
 		addAutoOptions();
 		updateStartingPositionChooser();
@@ -53,7 +62,14 @@ public class AutonomousChooserState {
 		final GamePieceType gamePiece = gamePieceChooser.getSelected();
 		final SlotLevel slotLevel = levelChooser.getSelected();
 		try {
-			return autonomousModeCreator.createAction(type, startingPosition, gamePiece, slotLevel, startingOrientation);
+			return new Actions.ActionQueueBuilder(
+					new WaitAction(
+							Math.round(autonConfig.getDouble(AutonConfig.WAIT_TIME) * 1000),
+							() -> robotInput.getAutonomousWaitButton().isDown(),
+							() -> robotInput.getAutonomousStartButton().isDown()
+					),
+					autonomousModeCreator.createAction(type, startingPosition, gamePiece, slotLevel, startingOrientation)
+			).canRecycle(false).canBeDone(true).immediatelyDoNextWhenDone(true).build();
 		} catch (IllegalArgumentException ex){
 			ex.printStackTrace();
 			System.out.println("One of our choosers must not have been set correctly!");

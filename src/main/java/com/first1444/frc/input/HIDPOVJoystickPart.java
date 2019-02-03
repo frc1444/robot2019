@@ -120,7 +120,7 @@ class HIDPOVJoystickPart extends SimpleControllerPart implements JoystickPart {
 
 	@Override
 	public boolean isConnected() {
-		if(hid.getPOVCount() >= povCode){
+		if(hid.getPOVCount() < povCode + 1){
 			return false;
 		}
 		return HIDUtil.isConnected(hid);
