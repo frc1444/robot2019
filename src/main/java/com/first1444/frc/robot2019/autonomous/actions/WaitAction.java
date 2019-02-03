@@ -5,6 +5,11 @@ import com.first1444.frc.robot2019.actions.TimedAction;
 import java.util.Objects;
 import java.util.function.BooleanSupplier;
 
+/**
+ * A {@link TimedAction} designed for autonomous that allows you to specify a time to wait while you are able to
+ * keep waiting by having a {@link BooleanSupplier} that gives true. You can also end this action early if the other {@link BooleanSupplier}
+ * returns true
+ */
 public class WaitAction extends TimedAction {
 	private final BooleanSupplier shouldWait;
 	private final BooleanSupplier shouldStart;

@@ -1,6 +1,7 @@
 package com.first1444.frc.robot2019.subsystems;
 
 import com.ctre.phoenix.ErrorCode;
+import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.LimitSwitchSource;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
@@ -14,6 +15,8 @@ import me.retrodaredevil.action.SimpleAction;
 public class Lift extends SimpleAction {
 	private static final int ENCODER_COUNTS = 30000; // TODO Change
 	private static final TalonSRXConfiguration MASTER_CONFIG;
+	private enum LiftMode { SPEED, POSITION }
+	
 	static {
 		MASTER_CONFIG = new TalonSRXConfiguration();
 		
@@ -26,9 +29,11 @@ public class Lift extends SimpleAction {
 		
 		MASTER_CONFIG.clearPositionOnLimitR = true; // TODO test what this does
 	}
+	
 	private final TalonSRX master;
 	
-	private double desiredPosition;
+	private LiftMode mode = null;
+	private double control = 0;
 	
 	public Lift() {
 		super(true);
@@ -45,16 +50,53 @@ public class Lift extends SimpleAction {
 		);
 		master.setNeutralMode(NeutralMode.Brake);
 	}
+	private static int getEncoderCountsFromPosition(double position){
+		if(position < 0 || position > 1){
+			throw new IllegalArgumentException();
+		}
+		return (int) Math.round(position * ENCODER_COUNTS);
+	}
 	public void setDesiredPosition(double desiredPosition){
 		if(desiredPosition < 0 || desiredPosition > 1){
 			throw new IllegalArgumentException();
 		}
-		this.desiredPosition = desiredPosition;
+		mode = LiftMode.POSITION;
+		control = desiredPosition;
+	}
+	public void setPositionCargoIntake(){
+		setDesiredPosition(0); // TODO make this work
+	}
+	public void setManualSpeed(double speed){
+		if(speed < -1 || speed > 1){
+			throw new IllegalArgumentException();
+		}
+		
 	}
 	
 	@Override
 	protected void onUpdate() {
 		super.onUpdate();
+		if(mode != null) {
+			switch (mode) {
+				case SPEED:
+					master.set(ControlMode.PercentOutput, control); // TODO make into velocity
+					resetControlCache();
+					break;
+				case POSITION:
+					final int position = getEncoderCountsFromPosition(control);
+					master.set(ControlMode.Position, position);
+					break;
+				default:
+					throw new UnsupportedOperationException();
+			}
+		} else {
+			master.set(ControlMode.Disabled, 0);
+			resetControlCache();
+		}
+	}
+	private void resetControlCache(){
+		mode = null;
+		control = 0;
 	}
 	
 	
@@ -64,12 +106,9 @@ public class Lift extends SimpleAction {
 		public static final double HATCH_CARGO_SHIP = .1;
 		public static final double CARGO_CARGO_SHIP = .3;
 		
-		public static final double HATCH_LEVEL1 = HATCH_CARGO_SHIP;
-		public static final double HATCH_LEVEL2 = .4;
-		public static final double HATCH_LEVEL3 = .7;
+		public static final double LEVEL1 = HATCH_CARGO_SHIP;
+		public static final double LEVEL2 = .4;
+		public static final double LEVEL3 = .7;
 		
-		public static final double CARGO_LEVEL1 = .2;
-		public static final double CARGO_LEVEL2 = .5;
-		public static final double CARGO_LEVEL3 = .8;
 	}
 }

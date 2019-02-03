@@ -25,8 +25,7 @@ import com.first1444.frc.robot2019.input.InputUtil;
 import com.first1444.frc.robot2019.input.RobotInput;
 import com.first1444.frc.robot2019.sensors.BNO055;
 import com.first1444.frc.robot2019.sensors.Orientation;
-import com.first1444.frc.robot2019.subsystems.LEDHandler;
-import com.first1444.frc.robot2019.subsystems.OrientationSystem;
+import com.first1444.frc.robot2019.subsystems.*;
 import com.first1444.frc.robot2019.subsystems.swerve.*;
 import com.first1444.frc.robot2019.vision.BestVisionPacketSelector;
 import com.first1444.frc.robot2019.vision.PacketListener;
@@ -335,5 +334,18 @@ public class Robot extends TimedRobot {
 	
 	public EventSender getSoundSender(){
 		return soundSender;
+	}
+	
+	public Lift getLift(){
+		throw new UnsupportedOperationException();
+	}
+	public CargoIntake getCargoIntake(){
+		throw new UnsupportedOperationException();
+	}
+	public HatchIntake getHatchIntake(){
+		throw new UnsupportedOperationException();
+	}
+	public Climber getClimber(){
+		throw new UnsupportedOperationException();
 	}
 }
