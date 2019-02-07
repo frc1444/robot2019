@@ -92,7 +92,7 @@ public class Robot extends TimedRobot {
 		robotInput = new DefaultRobotInput(
 				InputUtil.createPS4Controller(new WPIInputCreator(new Joystick(0))),
 				InputUtil.createJoystick(new WPIInputCreator(new Joystick(1))),
-				InputUtil.createJoystick(new WPIInputCreator(new Joystick(2))),
+				InputUtil.createAttackJoystick(new WPIInputCreator(new Joystick(2))),
 				rumble
 		);
 		MutableControlConfig controlConfig = new MutableControlConfig();
@@ -103,6 +103,7 @@ public class Robot extends TimedRobot {
 		controlConfig.cacheAngleAndMagnitudeInUpdate = false;
 		controllerManager = new DefaultControllerManager(controlConfig);
 		controllerManager.addController(robotInput);
+		controllerManager.update(); // update this so when calling get methods don't throw exceptions
 
 		BNO055 IMU = new BNO055();
 		IMU.SetMode(BNO055.IMUMode.NDOF);
@@ -140,16 +141,29 @@ public class Robot extends TimedRobot {
 				this::getOrientation,
 				new ImmutableActionFourSwerveCollection(
 						new TalonSwerveModule("front left", Constants.FL_DRIVE, Constants.FL_STEER, drivePid, steerPid,
-								createModuleConfig("front left module").setDouble(ModuleConfig.ABS_ENCODER_OFFSET, 147), talonDebug),
+								createModuleConfig("front left module")
+										.setDouble(ModuleConfig.ABS_ENCODER_OFFSET, 147)
+										.setDouble(ModuleConfig.MAX_ENCODER_VALUE, 899)
+										.setDouble(ModuleConfig.MIN_ENCODER_VALUE, 10), talonDebug),
 						
 						new TalonSwerveModule("front right", Constants.FR_DRIVE, Constants.FR_STEER, drivePid, steerPid,
-								createModuleConfig("front right module").setDouble(ModuleConfig.ABS_ENCODER_OFFSET, 697), talonDebug),
+								createModuleConfig("front right module")
+										.setDouble(ModuleConfig.ABS_ENCODER_OFFSET, 705)
+										.setDouble(ModuleConfig.MAX_ENCODER_VALUE, 891)
+										.setDouble(ModuleConfig.MIN_ENCODER_VALUE, 12), talonDebug),
 						
 						new TalonSwerveModule("rear left", Constants.RL_DRIVE, Constants.RL_STEER, drivePid, steerPid,
-								createModuleConfig("rear left module").setDouble(ModuleConfig.ABS_ENCODER_OFFSET, 787), talonDebug),
+								createModuleConfig("rear left module")
+										.setDouble(ModuleConfig.ABS_ENCODER_OFFSET, 775)
+										.setDouble(ModuleConfig.MAX_ENCODER_VALUE, 872)
+										.setDouble(ModuleConfig.MIN_ENCODER_VALUE, 13), talonDebug),
 						
 						new TalonSwerveModule("rear right", Constants.RR_DRIVE, Constants.RR_STEER, drivePid, steerPid,
-								createModuleConfig("rear right module").setDouble(ModuleConfig.ABS_ENCODER_OFFSET, 608), talonDebug)
+								createModuleConfig("rear right module")
+										.setDouble(ModuleConfig.ABS_ENCODER_OFFSET, 604)
+										.setDouble(ModuleConfig.MAX_ENCODER_VALUE, 895)
+										.setDouble(ModuleConfig.MIN_ENCODER_VALUE, 9), talonDebug)
+
 						
 //						new DummySwerveModule(), new DummySwerveModule(), new DummySwerveModule(), new DummySwerveModule()
 				),
@@ -170,14 +184,14 @@ public class Robot extends TimedRobot {
 		).clearAllOnEnd(false).canRecycle(false).build();
 		actionChooser = Actions.createActionChooser(WhenDone.CLEAR_ACTIVE);
 
-		swerveDriveAction = new SwerveDriveAction(this::getDrive, robotInput);
+		swerveDriveAction = new SwerveDriveAction(this::getDrive, robotInput, getVisionSupplier(), getDimensions());
 //		testAction = new TestAction(robotInput);
 		autonomousChooserState = new AutonomousChooserState(
 				shuffleboardMap,  // this will add stuff to the dashboard
 				new AutonomousModeCreator(new RobotAutonActionCreator(this), dimensions),
-				robotInput);
+				robotInput
+		);
 
-		controllerManager.update(); // update this so when calling get methods don't throw exceptions
 		final ShuffleboardTab inputTab = shuffleboardMap.getDebugTab();
 		inputTab.add("Movement Joy", new JoystickPartSendable(robotInput::getMovementJoy));
 		inputTab.add("Movement Speed", new InputPartSendable(robotInput::getMovementSpeed));

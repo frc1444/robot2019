@@ -5,6 +5,7 @@ import me.retrodaredevil.controller.input.*;
 import me.retrodaredevil.controller.output.ControllerRumble;
 import me.retrodaredevil.controller.output.DisconnectedRumble;
 import me.retrodaredevil.controller.types.ExtremeFlightJoystickControllerInput;
+import me.retrodaredevil.controller.types.LogitechAttack3JoystickControllerInput;
 import me.retrodaredevil.controller.types.RumbleCapableController;
 import me.retrodaredevil.controller.types.StandardControllerInput;
 
@@ -20,16 +21,24 @@ public class DefaultRobotInput extends SimpleControllerInput implements RobotInp
 	private final StandardControllerInput controller;
 	private final Supplier<ControllerRumble> rumbleSupplier;
 	private final ExtremeFlightJoystickControllerInput operatorJoy;
-	private final ExtremeFlightJoystickControllerInput climbJoy;
+	private final LogitechAttack3JoystickControllerInput climbJoy;
 
 	private final InputPart movementSpeed;
 	private final InputPart liftManualSpeed;
 	private final InputPart cargoIntakeSpeed;
 	private final InputPart hatchManualPivotSpeed;
-
+	private final InputPart climbSpeed;
+	
+	/**
+	 * The passed controllers cannot have parents.
+	 * @param controller
+	 * @param operatorJoy
+	 * @param climbJoy
+	 * @param rumble The rumble or null. This CAN have a parent
+	 */
 	public DefaultRobotInput(StandardControllerInput controller,
 							 ExtremeFlightJoystickControllerInput operatorJoy,
-							 ExtremeFlightJoystickControllerInput climbJoy,
+							 LogitechAttack3JoystickControllerInput climbJoy,
 							 ControllerRumble rumble){
 		this.controller = controller;
 		this.operatorJoy = operatorJoy;
@@ -46,15 +55,15 @@ public class DefaultRobotInput extends SimpleControllerInput implements RobotInp
 				addChildren(false, false, disconnectedRumble);
 			}
 		}
-		addChildren(false, false, controller, operatorJoy);
+		addChildren(false, false, controller, operatorJoy, climbJoy); // add the controllers as children
+		
 		movementSpeed = new TwoWayInput(
 				References.create(controller::getRightTrigger), // forward
 				References.create(controller::getLeftTrigger) // backward
 		);
 		addChildren(false, false, movementSpeed);
-		final References.InputPartGetter joystickYGetter = () -> operatorJoy.getMainJoystick().getYAxis();
 		liftManualSpeed = new MultiplierInputPart(
-				References.create(joystickYGetter), // analog full
+				References.create(() -> operatorJoy.getMainJoystick().getYAxis()), // analog full
 				References.create(operatorJoy::getTrigger) // digital
 		);
 		addChildren(false, false, liftManualSpeed);
@@ -65,10 +74,15 @@ public class DefaultRobotInput extends SimpleControllerInput implements RobotInp
 		);
 		addChildren(false, false, cargoIntakeSpeed);
 		hatchManualPivotSpeed = new MultiplierInputPart(
-				References.create(joystickYGetter), // analog full
-				References.create(operatorJoy::getThumbButton) // digital
+				References.create(() -> climbJoy.getMainJoystick().getYAxis()), // analog full
+				References.create(climbJoy::getThumbUpper) // digital
 		);
 		addChildren(false, false, hatchManualPivotSpeed);
+		climbSpeed = new MultiplierInputPart(
+				References.create(() -> climbJoy.getMainJoystick().getYAxis()),
+				References.create(climbJoy::getTrigger)
+		);
+		addChildren(false, false, climbSpeed);
 	}
 
 	// region Drive Controls
@@ -88,13 +102,19 @@ public class DefaultRobotInput extends SimpleControllerInput implements RobotInp
 	}
 	// endregion
 	
+	
+	@Override
+	public InputPart getVisionAlign() {
+		return controller.getRightBumper();
+	}
+	
 	@Override
 	public InputPart getLiftManualSpeed() {
 		return liftManualSpeed;
 	}
 	
 	@Override
-	public InputPart getManualCargoAllowed() {
+	public InputPart getCargoLiftManualAllowed() {
 		return operatorJoy.getThumbLeftLower();
 	}
 	
@@ -107,6 +127,20 @@ public class DefaultRobotInput extends SimpleControllerInput implements RobotInp
 	public InputPart getHatchManualPivotSpeed() {
 		return hatchManualPivotSpeed;
 	}
+	// region Hatch Pivot Presets
+	@Override
+	public InputPart getHatchPivotGroundPreset() {
+		return operatorJoy.getThumbButton();
+	}
+	@Override
+	public InputPart getHatchPivotReadyPreset() {
+		return operatorJoy.getThumbLeftLower();
+	}
+	@Override
+	public InputPart getHatchPivotStowedPreset() {
+		return operatorJoy.getThumbLeftUpper();
+	}
+	// endregion
 	
 	// region Lift Presets
 	@Override
@@ -131,6 +165,17 @@ public class DefaultRobotInput extends SimpleControllerInput implements RobotInp
 	}
 	// endregion
 	
+	
+	@Override
+	public InputPart getDefenseButton() {
+		return climbJoy.getLeftUpper();
+	}
+	
+	@Override
+	public InputPart getClimbSpeed() {
+		return climbSpeed;
+	}
+	
 	@Override
 	public InputPart getAutonomousCancelButton() {
 		return controller.getLeftStick();
@@ -148,12 +193,12 @@ public class DefaultRobotInput extends SimpleControllerInput implements RobotInp
 	
 	@Override
 	public InputPart getAutonomousWaitButton() {
-		return climbJoy.getGridLowerLeft();
+		return climbJoy.getLeftLower();
 	}
 	
 	@Override
 	public InputPart getAutonomousStartButton() {
-		return climbJoy.getGridLowerRight();
+		return climbJoy.getLeftUpper();
 	}
 	
 	@Override

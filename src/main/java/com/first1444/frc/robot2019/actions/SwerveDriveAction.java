@@ -2,12 +2,16 @@ package com.first1444.frc.robot2019.actions;
 
 import com.first1444.frc.robot2019.Perspective;
 import com.first1444.frc.robot2019.Robot;
+import com.first1444.frc.robot2019.RobotDimensions;
+import com.first1444.frc.robot2019.autonomous.actions.LineUpAction;
 import com.first1444.frc.robot2019.input.RobotInput;
 import com.first1444.frc.robot2019.subsystems.swerve.SwerveDrive;
 import com.first1444.frc.robot2019.subsystems.swerve.SwerveModule;
+import com.first1444.frc.robot2019.vision.BestVisionPacketSelector;
+import com.first1444.frc.robot2019.vision.VisionSupplier;
 import com.first1444.frc.util.MathUtil;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import me.retrodaredevil.action.SimpleAction;
+import me.retrodaredevil.action.*;
 import me.retrodaredevil.controller.input.InputPart;
 import me.retrodaredevil.controller.input.JoystickPart;
 import me.retrodaredevil.controller.output.ControllerRumble;
@@ -21,12 +25,18 @@ import java.util.function.Supplier;
 public class SwerveDriveAction extends SimpleAction {
 	private final Supplier<SwerveDrive> driveSupplier;
 	private final RobotInput input;
+	private final ActionChooser actionChooser;
+	private final VisionSupplier visionSupplier;
+	private final RobotDimensions dimensions;
 	private Perspective perspective = Perspective.DRIVER_STATION;
 	
-	public SwerveDriveAction(Supplier<SwerveDrive> driveSupplier, RobotInput input) {
+	public SwerveDriveAction(Supplier<SwerveDrive> driveSupplier, RobotInput input, VisionSupplier visionSupplier, RobotDimensions dimensions) {
 		super(true);
 		this.driveSupplier = Objects.requireNonNull(driveSupplier);
 		this.input = Objects.requireNonNull(input);
+		this.actionChooser = Actions.createActionChooserRecyclable(WhenDone.BE_DONE);
+		this.visionSupplier = visionSupplier;
+		this.dimensions = dimensions;
 	}
 	public void setPerspective(Perspective perspective){
 		this.perspective = Objects.requireNonNull(perspective);
@@ -45,23 +55,36 @@ public class SwerveDriveAction extends SimpleAction {
 	@Override
 	protected void onUpdate() {
 		super.onUpdate();
-		final SwerveDrive drive = Objects.requireNonNull(driveSupplier.get());
-
-		final JoystickPart joystick = input.getMovementJoy();
-		final double x = joystick.getZonedCorrectX();
-		final double y = joystick.getZonedCorrectY();
-
-		final double turnAmount = input.getTurnAmount().getZonedPosition();
-
-		final InputPart speedInputPart = input.getMovementSpeed();
-		final double speed;
-		if(speedInputPart.isDeadzone()){
-			speed = 0;
+		if(input.getVisionAlign().isDown()){
+			if(input.getVisionAlign().isPressed()){
+				actionChooser.setNextAction(new LineUpAction(visionSupplier, dimensions.getHatchCameraID(), dimensions.getHatchManipulatorPerspective(), new BestVisionPacketSelector(), driveSupplier, null, null, null));
+			}
+			actionChooser.update();
+			if(actionChooser.isDone()){
+				input.getDriverRumble().rumbleTimeout(100, .2);
+			}
 		} else {
-			speed = MathUtil.conservePow(speedInputPart.getPosition(), 2);
+			if(actionChooser.isActive()){
+				actionChooser.end();
+			}
+			final SwerveDrive drive = Objects.requireNonNull(driveSupplier.get());
+			
+			final JoystickPart joystick = input.getMovementJoy();
+			final double x = joystick.getZonedCorrectX();
+			final double y = joystick.getZonedCorrectY();
+			
+			final double turnAmount = input.getTurnAmount().getZonedPosition();
+			
+			final InputPart speedInputPart = input.getMovementSpeed();
+			final double speed;
+			if (speedInputPart.isDeadzone()) {
+				speed = 0;
+			} else {
+				speed = MathUtil.conservePow(speedInputPart.getPosition(), 2);
+			}
+			
+			drive.setControl(x, y, turnAmount, speed, perspective);
 		}
-
-		drive.setControl(x, y, turnAmount, speed, perspective);
 	}
 
 }

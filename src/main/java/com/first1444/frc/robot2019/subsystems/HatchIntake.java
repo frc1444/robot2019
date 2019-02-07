@@ -12,4 +12,15 @@ public class HatchIntake extends SimpleAction {
 	public void drop(){
 		
 	}
+	
+	public void groundPosition(){
+	
+	}
+	public void readyPosition(){
+	
+	}
+	public void stowedPosition(){
+	
+	}
+	
 }

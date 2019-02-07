@@ -16,19 +16,30 @@ public interface RobotInput extends ControllerInput {
 	/** @return An InputPart that can have a range of [0..1] or [-1..1] representing the speed multiplier */
 	InputPart getMovementSpeed();
 	
+	InputPart getVisionAlign();
+	
+	/** The manual speed of the lift. Should be activated when this {@link InputPart}'s is not in a deadzone*/
 	InputPart getLiftManualSpeed();
-	InputPart getManualCargoAllowed();
+	/** Should be used with {@link #getLiftManualSpeed()}. When pressed you can manually go below the limit to pickup cargo.*/
+	InputPart getCargoLiftManualAllowed();
 	
 	/** @return An InputPart with a range of [-1..1] where a negative value is intaking and positive is spitting*/
 	InputPart getCargoIntakeSpeed();
 	
 	InputPart getHatchManualPivotSpeed();
+	InputPart getHatchPivotGroundPreset();
+	InputPart getHatchPivotReadyPreset();
+	InputPart getHatchPivotStowedPreset();
 	
 	InputPart getLevel1Preset();
 	InputPart getLevel2Preset();
 	InputPart getLevel3Preset();
 	InputPart getLevelCargoShipCargoPreset();
 	InputPart getCargoPickupPreset();
+	
+	InputPart getDefenseButton();
+	
+	InputPart getClimbSpeed();
 	
 	InputPart getAutonomousCancelButton();
 	JoystickPart getResetGyroJoy();

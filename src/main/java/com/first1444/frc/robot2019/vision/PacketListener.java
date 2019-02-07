@@ -11,19 +11,18 @@ import java.util.*;
 public class PacketListener extends Thread implements VisionSupplier{
 	private static final double MILLIMETERS_IN_INCH = 25.4;
 	private final int port;
-	private Map<Integer, VisionInstant> visionMap = null;
+	private volatile Map<Integer, VisionInstant> visionMap = null;
 	public PacketListener(int port){
 		this.port = port;
 		setDaemon(true);
 	}
 	@Override
 	public VisionInstant getInstant(int cameraID){
-		synchronized (this){
-			if(visionMap == null){
-				return null;
-			}
-			return Objects.requireNonNull(visionMap.computeIfAbsent(cameraID, key -> { throw new NoSuchElementException(); }), "This is bad! My own code put a null element in a map!");
+		final Map<Integer, VisionInstant> visionMap = this.visionMap;
+		if(visionMap == null){
+			return null;
 		}
+		return Objects.requireNonNull(visionMap.computeIfAbsent(cameraID, key -> { throw new NoSuchElementException(); }), "This is bad! My own code put a null element in a map!");
 	}
 	
 	@Override
@@ -75,8 +74,6 @@ public class PacketListener extends Thread implements VisionSupplier{
 			instantMap.put(cameraID, instant);
 //			System.out.println(instant);
 		}
-		synchronized (this){
-			this.visionMap = instantMap;
-		}
+		this.visionMap = instantMap;
 	}
 }

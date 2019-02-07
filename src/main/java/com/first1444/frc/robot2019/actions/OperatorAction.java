@@ -19,9 +19,11 @@ public class OperatorAction extends SimpleAction {
 	@Override
 	protected void onUpdate() {
 		super.onUpdate();
+		final boolean isDefense = input.getDefenseButton().isDown();
+		
 		{ // lift
 			final Lift lift = robot.getLift();
-			if(input.getLevel1Preset().isDown()){
+			if(isDefense || input.getLevel1Preset().isDown()){
 				lift.setDesiredPosition(Lift.Position.LEVEL1);
 			} else if(input.getLevel2Preset().isDown()){
 				lift.setDesiredPosition(Lift.Position.LEVEL2);
@@ -43,6 +45,17 @@ public class OperatorAction extends SimpleAction {
 		{ // hatch intake
 			final HatchIntake hatchIntake = robot.getHatchIntake();
 			
+			if(isDefense || input.getHatchPivotStowedPreset().isDown()){
+				hatchIntake.stowedPosition();
+			} else if(input.getHatchPivotReadyPreset().isDown()){
+				hatchIntake.readyPosition();
+			} else if(input.getHatchPivotGroundPreset().isDown()){
+				hatchIntake.groundPosition();
+			} else {
+				// TODO Manual control
+			}
+			
 		}
+		
 	}
 }

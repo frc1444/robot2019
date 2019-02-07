@@ -78,11 +78,13 @@ public class TalonSwerveModule extends SimpleAction implements SwerveModule {
 		final int min = (int) config.getDouble(ModuleConfig.MIN_ENCODER_VALUE);
 		final int max = (int) config.getDouble(ModuleConfig.MAX_ENCODER_VALUE);
 		final int difference = max - min;
-		final int quadEncoderOffset = (int) (config.getDouble(ModuleConfig.ABS_ENCODER_OFFSET) - min) * getCountsPerRevolution() / difference;
-		final int analogQuadCountsPosition = (steer.getSensorCollection().getAnalogInRaw() - min) * getCountsPerRevolution() / difference;
+//		final int quadEncoderOffset = (int) (config.getDouble(ModuleConfig.ABS_ENCODER_OFFSET) - min) * getCountsPerRevolution() / difference;
+//		final int analogQuadCountsPosition = (steer.getSensorCollection().getAnalogInRaw() - min) * getCountsPerRevolution() / difference;
+		final int currentPosition = (steer.getSensorCollection().getAnalogInRaw() - (int)config.getDouble(ModuleConfig.ABS_ENCODER_OFFSET)) * getCountsPerRevolution() / difference;
 		
 		steer.setSelectedSensorPosition(
-				analogQuadCountsPosition - quadEncoderOffset,
+//				analogQuadCountsPosition - quadEncoderOffset,
+				currentPosition,
 				Constants.PID_INDEX, Constants.LOOP_TIMEOUT
 		);
 	}
