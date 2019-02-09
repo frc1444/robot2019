@@ -5,6 +5,7 @@ import com.first1444.frc.robot2019.Robot;
 import com.first1444.frc.robot2019.RobotDimensions;
 import com.first1444.frc.robot2019.autonomous.actions.LineUpAction;
 import com.first1444.frc.robot2019.input.RobotInput;
+import com.first1444.frc.robot2019.sensors.Orientation;
 import com.first1444.frc.robot2019.subsystems.swerve.SwerveDrive;
 import com.first1444.frc.robot2019.subsystems.swerve.SwerveModule;
 import com.first1444.frc.robot2019.vision.BestVisionPacketSelector;
@@ -24,15 +25,17 @@ import java.util.function.Supplier;
  */
 public class SwerveDriveAction extends SimpleAction {
 	private final Supplier<SwerveDrive> driveSupplier;
+	private final Supplier<Orientation> orientationSupplier;
 	private final RobotInput input;
 	private final ActionChooser actionChooser;
 	private final VisionSupplier visionSupplier;
 	private final RobotDimensions dimensions;
 	private Perspective perspective = Perspective.DRIVER_STATION;
 	
-	public SwerveDriveAction(Supplier<SwerveDrive> driveSupplier, RobotInput input, VisionSupplier visionSupplier, RobotDimensions dimensions) {
+	public SwerveDriveAction(Supplier<SwerveDrive> driveSupplier, Supplier<Orientation> orientationSupplier, RobotInput input, VisionSupplier visionSupplier, RobotDimensions dimensions) {
 		super(true);
 		this.driveSupplier = Objects.requireNonNull(driveSupplier);
+		this.orientationSupplier = orientationSupplier;
 		this.input = Objects.requireNonNull(input);
 		this.actionChooser = Actions.createActionChooserRecyclable(WhenDone.BE_DONE);
 		this.visionSupplier = visionSupplier;
@@ -57,11 +60,14 @@ public class SwerveDriveAction extends SimpleAction {
 		super.onUpdate();
 		if(input.getVisionAlign().isDown()){
 			if(input.getVisionAlign().isPressed()){
-				actionChooser.setNextAction(new LineUpAction(visionSupplier, dimensions.getHatchCameraID(), dimensions.getHatchManipulatorPerspective(), new BestVisionPacketSelector(), driveSupplier, null, null, null));
+				actionChooser.setNextAction(new LineUpAction(
+						visionSupplier,
+						dimensions.getHatchCameraID(), dimensions.getHatchManipulatorPerspective(), new BestVisionPacketSelector(),
+						driveSupplier, orientationSupplier,  null, null, null));
 			}
 			actionChooser.update();
 			if(actionChooser.isDone()){
-				input.getDriverRumble().rumbleTimeout(100, .2);
+				input.getDriverRumble().rumbleTimeout(200, .3);
 			}
 		} else {
 			if(actionChooser.isActive()){

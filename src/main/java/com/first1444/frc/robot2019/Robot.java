@@ -184,7 +184,7 @@ public class Robot extends TimedRobot {
 		).clearAllOnEnd(false).canRecycle(false).build();
 		actionChooser = Actions.createActionChooser(WhenDone.CLEAR_ACTIVE);
 
-		swerveDriveAction = new SwerveDriveAction(this::getDrive, robotInput, getVisionSupplier(), getDimensions());
+		swerveDriveAction = new SwerveDriveAction(this::getDrive, this::getOrientation, robotInput, getVisionSupplier(), getDimensions());
 //		testAction = new TestAction(robotInput);
 		autonomousChooserState = new AutonomousChooserState(
 				shuffleboardMap,  // this will add stuff to the dashboard
@@ -320,7 +320,7 @@ public class Robot extends TimedRobot {
 				Actions.createLinkedActionRunner(
 						new LineUpAction(
 								packetListener, dimensions.getHatchCameraID(), Perspective.ROBOT_FORWARD_CAM,
-								new BestVisionPacketSelector(), this::getDrive,
+								new BestVisionPacketSelector(), this::getDrive, this::getOrientation,
 								Actions.createRunOnce(() -> System.out.println("Failed!")), Actions.createRunOnce(() -> System.out.println("Success!")),
 								getSoundSender()),
 						WhenDone.CLEAR_ACTIVE_AND_BE_DONE, false

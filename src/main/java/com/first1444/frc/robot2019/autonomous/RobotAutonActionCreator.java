@@ -48,7 +48,7 @@ public class RobotAutonActionCreator implements AutonActionCreator {
 		return new LineUpAction(
 				robot.getVisionSupplier(), robot.getDimensions().getCargoCameraID(),
 				robot.getDimensions().getCargoManipulatorPerspective(),
-				new BestVisionPacketSelector(), robot::getDrive,
+				new BestVisionPacketSelector(), robot::getDrive, robot::getOrientation,
 				failAction,
 				successAction, // TODO do something here
 				robot.getSoundSender());
@@ -61,7 +61,7 @@ public class RobotAutonActionCreator implements AutonActionCreator {
 				new LineUpAction(
 						robot.getVisionSupplier(), robot.getDimensions().getHatchCameraID(),
 						robot.getDimensions().getHatchManipulatorPerspective(),
-						new BestVisionPacketSelector(), robot::getDrive,
+						new BestVisionPacketSelector(), robot::getDrive, robot::getOrientation,
 						failAction,
 						successAction, // TODO do something here
 						robot.getSoundSender()
