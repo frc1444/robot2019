@@ -121,7 +121,7 @@ public class LineUpAction extends SimpleAction implements LinkedAction {
 		final double moveMagnitude = hypot(moveX, moveY);
 		
 		
-		final double turnAmount = max(-1, min(1,
+		final double turnAmount = .5 * max(-1, min(1,
 				max(-1, min(1, vision.getVisionYaw() / -30))
 						+ .5 * vision.getImageX()
 		));
@@ -138,13 +138,14 @@ public class LineUpAction extends SimpleAction implements LinkedAction {
 		Objects.requireNonNull(visionView);
 		final double orientation = orientationSupplier.get().getOrientation();
 		final double direction = visionView.directionToTarget - orientation; // forward is 90 degrees
+		final double directionRadians = toRadians(direction);
 		final double visionYaw = visionView.targetOrientation - orientation; // perfect is 0 degrees
 		final double distance = visionView.distanceToTarget;
 		
-		final double moveX = cos(direction);
-		final double moveY = sin(direction);
+		final double moveX = cos(directionRadians);
+		final double moveY = sin(directionRadians);
 		
-		driveSupplier.get().setControl(moveX, moveY, max(-1, min(1, visionYaw / -30)), MAX_SPEED, perspective);
+		driveSupplier.get().setControl(moveX, moveY, .5 * max(-1, min(1, visionYaw / -30)), MAX_SPEED, perspective);
 		if(visionView.tracker.calculateDistance() >= distance){
 			setDone(true);
 		}
