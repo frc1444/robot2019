@@ -8,6 +8,7 @@ import com.first1444.frc.robot2019.sensors.Orientation;
 import com.first1444.frc.robot2019.subsystems.swerve.SwerveDistanceTracker;
 import com.first1444.frc.robot2019.subsystems.swerve.SwerveDrive;
 import com.first1444.frc.robot2019.vision.*;
+import com.first1444.frc.util.MathUtil;
 import me.retrodaredevil.action.Action;
 import me.retrodaredevil.action.LinkedAction;
 import me.retrodaredevil.action.SimpleAction;
@@ -139,7 +140,7 @@ public class LineUpAction extends SimpleAction implements LinkedAction {
 		final double orientation = orientationSupplier.get().getOrientation();
 		final double direction = visionView.directionToTarget - orientation; // forward is 90 degrees
 		final double directionRadians = toRadians(direction);
-		final double visionYaw = visionView.targetOrientation - orientation; // perfect is 0 degrees
+		final double visionYaw = MathUtil.minChange(visionView.targetOrientation - orientation, 0, 360); // perfect is 0 degrees
 		final double distance = visionView.distanceToTarget;
 		
 		final double moveX = cos(directionRadians);

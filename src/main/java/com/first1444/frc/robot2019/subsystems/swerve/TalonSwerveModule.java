@@ -22,14 +22,16 @@ import static java.lang.Math.abs;
 public class TalonSwerveModule extends SimpleAction implements SwerveModule {
 	private static final int CLOSED_LOOP_TIME = 4;
 	private static final double WHEEL_CIRCUMFERENCE = 4 * Math.PI;
-	private static final boolean QUICK_REVERSE = true;
+//	private static final boolean QUICK_REVERSE = true;
 	private static final boolean VELOCITY_CONTROL = true;
 	
 	private final String name;
 	
 	private final BaseMotorController drive;
 	private final TalonSRX steer;
+	private final ValueMap<ModuleConfig> moduleConfig;
 
+	private boolean quickReverseAllowed = true;
 	private double speed = 0;
 	private double targetPositionDegrees = 0;
 	
@@ -46,6 +48,7 @@ public class TalonSwerveModule extends SimpleAction implements SwerveModule {
 		
 		drive = new WPI_TalonSRX(driveID);
 		steer = new WPI_TalonSRX(steerID);
+		this.moduleConfig = moduleConfig;
 
 		drive.configFactoryDefault(Constants.INIT_TIMEOUT);
 		steer.configFactoryDefault(Constants.INIT_TIMEOUT);
@@ -87,11 +90,17 @@ public class TalonSwerveModule extends SimpleAction implements SwerveModule {
 				currentPosition,
 				Constants.PID_INDEX, Constants.LOOP_TIMEOUT
 		);
+		steerEncoderCountsCache = currentPosition;
 	}
 	
 	@Override
-	public Action getCalibrateAction() {
-		return null;
+	public void recalibrate() {
+		updateEncoderOffset(moduleConfig);
+	}
+	
+	@Override
+	public void setQuickReverseAllowed(boolean quickReverseAllowed) {
+		this.quickReverseAllowed = quickReverseAllowed;
 	}
 	
 	@Override
@@ -104,7 +113,7 @@ public class TalonSwerveModule extends SimpleAction implements SwerveModule {
 			final int current = steerEncoderCountsCache;
 			final int desired = (int) Math.round(targetPositionDegrees * wrap / 360.0); // in encoder counts
 
-			if(QUICK_REVERSE){
+			if(quickReverseAllowed){
 				final int newPosition = (int) MathUtil.minChange(desired, current, wrap / 2.0) + current;
 				if(MathUtil.minDistance(newPosition, desired, wrap) < .001){ // check if equal
 					speedMultiplier = 1;

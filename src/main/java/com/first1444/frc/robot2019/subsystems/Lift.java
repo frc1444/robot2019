@@ -63,6 +63,14 @@ public class Lift extends SimpleAction {
 		mode = LiftMode.POSITION;
 		control = desiredPosition;
 	}
+	
+	/**
+	 *
+	 * @return true if the position set with {@link #setDesiredPosition(double)} or {@link #setPositionCargoIntake()} is reached
+	 */
+	public boolean isDesiredPositionReached(){
+		return false;
+	}
 	public void setPositionCargoIntake(){
 		setDesiredPosition(0); // TODO make this work
 	}

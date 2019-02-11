@@ -130,7 +130,7 @@ public class AutonomousModeCreator {
 					throw new IllegalArgumentException("A Slot Level must be specified for side rocket autonomous!");
 				}
 				actionQueue.add(actionCreator.createGoStraight(69.56, .3, isLeft ? 180 : 0, startingOrientation));
-				actionQueue.add(actionCreator.createGoStraight(201.13 - 95.28 - 40, .5, 90, startingOrientation)); // the 20 is random
+				actionQueue.add(actionCreator.createGoStraight(201.13 - 95.28 - 60, .5, 90, startingOrientation)); // the 20 is random
 //				actionQueue.add(actionCreator.createTurnToOrientation(90 - (isLeft ? -20 : 20)));
 				
 				if(gamePieceType == GamePieceType.HATCH){

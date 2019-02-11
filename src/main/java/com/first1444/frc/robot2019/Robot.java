@@ -12,6 +12,7 @@ import com.first1444.frc.input.WPIInputCreator;
 import com.first1444.frc.input.sendable.ControllerPartSendable;
 import com.first1444.frc.input.sendable.InputPartSendable;
 import com.first1444.frc.input.sendable.JoystickPartSendable;
+import com.first1444.frc.robot2019.actions.SwerveCalibrateAction;
 import com.first1444.frc.robot2019.actions.SwerveDriveAction;
 import com.first1444.frc.robot2019.autonomous.AutonomousChooserState;
 import com.first1444.frc.robot2019.autonomous.AutonomousModeCreator;
@@ -124,8 +125,10 @@ public class Robot extends TimedRobot {
 
 		final MutableValueMapSendable<PidKey> drivePidSendable = new MutableValueMapSendable<>(PidKey.class);
 		final MutableValueMapSendable<PidKey> steerPidSendable = new MutableValueMapSendable<>(PidKey.class);
-		shuffleboardMap.getDevTab().add("Drive PID", drivePidSendable);
-		shuffleboardMap.getDevTab().add("Steer PID", steerPidSendable);
+		if(Constants.DEBUG) {
+			shuffleboardMap.getDevTab().add("Drive PID", drivePidSendable);
+			shuffleboardMap.getDevTab().add("Steer PID", steerPidSendable);
+		}
 		final MutableValueMap<PidKey> drivePid = drivePidSendable.getMutableValueMap();
 		final MutableValueMap<PidKey> steerPid = steerPidSendable.getMutableValueMap();
 		drivePid
@@ -180,6 +183,7 @@ public class Robot extends TimedRobot {
 		
 		constantSubsystemUpdater = new Actions.ActionMultiplexerBuilder(
 				orientationSystem,
+				new SwerveCalibrateAction(this::getDrive, robotInput),
 				new LEDHandler(this)
 		).clearAllOnEnd(false).canRecycle(false).build();
 		actionChooser = Actions.createActionChooser(WhenDone.CLEAR_ACTIVE);
@@ -192,32 +196,24 @@ public class Robot extends TimedRobot {
 				robotInput
 		);
 
-		final ShuffleboardTab inputTab = shuffleboardMap.getDebugTab();
-		inputTab.add("Movement Joy", new JoystickPartSendable(robotInput::getMovementJoy));
-		inputTab.add("Movement Speed", new InputPartSendable(robotInput::getMovementSpeed));
-		inputTab.add("Driver Rumble", new ControllerPartSendable(robotInput::getDriverRumble));
-		
-		inputTab.add("Cargo Intake", new InputPartSendable(robotInput::getCargoIntakeSpeed));
-		inputTab.add("Lift Speed", new InputPartSendable(robotInput::getLiftManualSpeed));
-		inputTab.add("Hatch Pivot Speed", new InputPartSendable(robotInput::getHatchManualPivotSpeed));
-
-
+		if(Constants.DEBUG) {
+			final ShuffleboardTab inputTab = shuffleboardMap.getDebugTab();
+			inputTab.add("Movement Joy", new JoystickPartSendable(robotInput::getMovementJoy));
+			inputTab.add("Movement Speed", new InputPartSendable(robotInput::getMovementSpeed));
+			inputTab.add("Driver Rumble", new ControllerPartSendable(robotInput::getDriverRumble));
+			
+			inputTab.add("Cargo Intake", new InputPartSendable(robotInput::getCargoIntakeSpeed));
+			inputTab.add("Lift Speed", new InputPartSendable(robotInput::getLiftManualSpeed));
+			inputTab.add("Hatch Pivot Speed", new InputPartSendable(robotInput::getHatchManualPivotSpeed));
+		}
 		System.out.println("Finished constructor");
 	}
 	private MutableValueMap<ModuleConfig> createModuleConfig(String name){
 		final MutableValueMapSendable<ModuleConfig> config = new MutableValueMapSendable<>(ModuleConfig.class);
-		shuffleboardMap.getDevTab().add(name, config);
-		return config.getMutableValueMap();
-	}
-	private Action getDriveCalibrateAction(){
-		final ActionMultiplexer multiplexer = new Actions.ActionMultiplexerBuilder().canBeDone(true).clearAllOnEnd(true).canRecycle(false).build();
-		for(SwerveModule module : drive.getModules()){
-			final Action action = module.getCalibrateAction();
-			if(action != null){
-				multiplexer.add(action);
-			}
+		if(Constants.DEBUG) {
+			shuffleboardMap.getDevTab().add(name, config);
 		}
-		return multiplexer;
+		return config.getMutableValueMap();
 	}
 
 	/** Just a second way to initialize things*/
@@ -274,7 +270,6 @@ public class Robot extends TimedRobot {
 	@Override
 	public void teleopInit() {
 		actionChooser.setNextAction(new Actions.ActionMultiplexerBuilder(
-				getDriveCalibrateAction(),
 				swerveDriveAction
 		).canRecycle(false).canBeDone(true).build());
 		swerveDriveAction.setPerspective(Perspective.DRIVER_STATION);
@@ -290,7 +285,6 @@ public class Robot extends TimedRobot {
 		
 		actionChooser.setNextAction(
 				new Actions.ActionQueueBuilder(
-						getDriveCalibrateAction(),
 						autonomousChooserState.createAutonomousAction(orientationSystem.getStartingOrientation()),
 						swerveDriveAction
 				) .immediatelyDoNextWhenDone(true) .canBeDone(false) .canRecycle(false) .build()
@@ -314,7 +308,6 @@ public class Robot extends TimedRobot {
 	public void testInit() {
 //		actionChooser.setNextAction(testAction);
 		actionChooser.setNextAction(new Actions.ActionQueueBuilder(
-				getDriveCalibrateAction(),
 //				new TurnToOrientation(-90, this::getDrive, this::getOrientation),
 //				new GoStraight(10, .2, 0, 1, 90.0, this::getDrive, this::getOrientation),
 				Actions.createLinkedActionRunner(

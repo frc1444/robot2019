@@ -1,5 +1,6 @@
 package com.first1444.frc.robot2019.subsystems;
 
+import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.can.BaseMotorController;
 import me.retrodaredevil.action.SimpleAction;
 
@@ -35,5 +36,7 @@ public class Climber extends SimpleAction {
 	@Override
 	protected void onUpdate() {
 		super.onUpdate();
+		climbMotor.set(ControlMode.PercentOutput, climbSpeed);
+		driveMotor.set(ControlMode.PercentOutput, driveSpeed);
 	}
 }

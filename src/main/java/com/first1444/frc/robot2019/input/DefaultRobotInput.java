@@ -27,7 +27,8 @@ public class DefaultRobotInput extends SimpleControllerInput implements RobotInp
 	private final InputPart liftManualSpeed;
 	private final InputPart cargoIntakeSpeed;
 	private final InputPart hatchManualPivotSpeed;
-	private final InputPart climbSpeed;
+	private final InputPart climbLiftSpeed;
+	private final InputPart climbWheelSpeed;
 	
 	/**
 	 * The passed controllers cannot have parents.
@@ -78,11 +79,15 @@ public class DefaultRobotInput extends SimpleControllerInput implements RobotInp
 				References.create(climbJoy::getThumbUpper) // digital
 		);
 		addChildren(false, false, hatchManualPivotSpeed);
-		climbSpeed = new MultiplierInputPart(
+		climbLiftSpeed = new MultiplierInputPart(
 				References.create(() -> climbJoy.getMainJoystick().getYAxis()),
 				References.create(climbJoy::getTrigger)
 		);
-		addChildren(false, false, climbSpeed);
+		addChildren(false, false, climbLiftSpeed);
+		climbWheelSpeed = new MultiplierInputPart(
+				References.create(() -> climbJoy.getMainJoystick().getYAxis()),
+				References.create(climbJoy::getThumbLower)
+		);
 	}
 
 	// region Drive Controls
@@ -172,8 +177,13 @@ public class DefaultRobotInput extends SimpleControllerInput implements RobotInp
 	}
 	
 	@Override
-	public InputPart getClimbSpeed() {
-		return climbSpeed;
+	public InputPart getClimbLiftSpeed() {
+		return climbLiftSpeed;
+	}
+	
+	@Override
+	public InputPart getClimbWheelSpeed() {
+		return climbWheelSpeed;
 	}
 	
 	@Override
@@ -199,6 +209,16 @@ public class DefaultRobotInput extends SimpleControllerInput implements RobotInp
 	@Override
 	public InputPart getAutonomousStartButton() {
 		return climbJoy.getLeftUpper();
+	}
+	
+	@Override
+	public InputPart getSwerveQuickReverseCancel() {
+		return controller.getSelect();
+	}
+	
+	@Override
+	public InputPart getSwerveRecalibrate() {
+		return controller.getStart();
 	}
 	
 	@Override

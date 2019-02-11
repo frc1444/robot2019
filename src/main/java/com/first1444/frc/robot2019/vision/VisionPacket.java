@@ -18,7 +18,7 @@ public interface VisionPacket {
 	/** @return the z position of the vision relative to the robot where the camera's perspective is forward. Should be positive*/
 	double getVisionZ();
 	
-	/** @return Same as {@link Math#toDegrees(double), Math.toDegrees}({@link Math#hypot(double, double) Math.hypot}({@link #getVisionX()}, {@link #getVisionZ()}))*/
+	/** @return Same as {@link Math#toDegrees(double) Math.toDegrees}({@link Math#hypot(double, double) Math.hypot}({@link #getVisionX()}, {@link #getVisionZ()}))*/
 	double getGroundDistance();
 	/** @return the angle from the robot to the vision where the camera's perspective is forward. In degrees.
 	 * Same as {@link Math#atan2(double, double) Math.atan2}({@link #getVisionZ()}, {@link #getVisionX()})*/

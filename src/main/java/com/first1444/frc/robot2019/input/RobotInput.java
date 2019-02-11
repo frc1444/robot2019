@@ -39,7 +39,8 @@ public interface RobotInput extends ControllerInput {
 	
 	InputPart getDefenseButton();
 	
-	InputPart getClimbSpeed();
+	InputPart getClimbLiftSpeed();
+	InputPart getClimbWheelSpeed();
 	
 	InputPart getAutonomousCancelButton();
 	JoystickPart getResetGyroJoy();
@@ -48,4 +49,7 @@ public interface RobotInput extends ControllerInput {
 	
 	InputPart getAutonomousWaitButton();
 	InputPart getAutonomousStartButton();
+	
+	InputPart getSwerveQuickReverseCancel();
+	InputPart getSwerveRecalibrate();
 }

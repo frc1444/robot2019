@@ -1,14 +1,15 @@
 package com.first1444.frc.robot2019.subsystems.swerve;
 
 
-import me.retrodaredevil.action.Action;
-
 public interface SwerveModule {
 	
-	default Action getCalibrateAction(){
-		return null;
+	
+	default void recalibrate(){
 	}
-
+	default void setQuickReverseAllowed(boolean quickReverseAllowed){
+	
+	}
+	
 	/**
 	 * @param speed A number in range [-1..1] representing the speed as a percentage
 	 */

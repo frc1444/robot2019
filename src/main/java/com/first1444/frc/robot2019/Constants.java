@@ -6,6 +6,8 @@ public final class Constants {
 	
 	private Constants(){ throw new UnsupportedOperationException(); }
 	
+	public static final boolean DEBUG = false;
+	public static final boolean PRINT_DEBUG = true;
 	public static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat(" #0.00;-#0.00");
 	
 	public static final int PID_INDEX = 0;
