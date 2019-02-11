@@ -222,6 +222,11 @@ public class DefaultRobotInput extends SimpleControllerInput implements RobotInp
 	}
 	
 	@Override
+	public InputPart getCameraToggleButton() {
+		return controller.getFaceRight();
+	}
+	
+	@Override
 	public boolean isConnected() {
 		return controller.isConnected() && operatorJoy.isConnected();
 	}

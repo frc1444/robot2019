@@ -6,6 +6,7 @@ import com.first1444.frc.robot2019.subsystems.CargoIntake;
 import com.first1444.frc.robot2019.subsystems.HatchIntake;
 import com.first1444.frc.robot2019.subsystems.Lift;
 import me.retrodaredevil.action.SimpleAction;
+import me.retrodaredevil.controller.input.InputPart;
 
 public class OperatorAction extends SimpleAction {
 	private final Robot robot;
@@ -34,7 +35,14 @@ public class OperatorAction extends SimpleAction {
 			} else if(input.getLevelCargoShipCargoPreset().isDown()){
 				lift.setDesiredPosition(Lift.Position.CARGO_CARGO_SHIP);
 			} else {
-				lift.setManualSpeed(input.getLiftManualSpeed().getZonedPosition());
+				final InputPart speedInputPart = input.getLiftManualSpeed();
+				if(speedInputPart.isDeadzone()){
+					if(lift.getLiftMode() == Lift.LiftMode.SPEED) {
+						lift.lockCurrentPosition();
+					}
+				} else {
+					lift.setManualSpeed(speedInputPart.getPosition(), input.getCargoLiftManualAllowed().isDown());
+				}
 			}
 
 		}

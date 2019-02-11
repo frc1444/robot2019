@@ -27,6 +27,10 @@ import com.first1444.frc.robot2019.input.RobotInput;
 import com.first1444.frc.robot2019.sensors.BNO055;
 import com.first1444.frc.robot2019.sensors.Orientation;
 import com.first1444.frc.robot2019.subsystems.*;
+import com.first1444.frc.robot2019.subsystems.implementations.DummyCargoIntake;
+import com.first1444.frc.robot2019.subsystems.implementations.DummyClimber;
+import com.first1444.frc.robot2019.subsystems.implementations.DummyHatchIntake;
+import com.first1444.frc.robot2019.subsystems.implementations.DummyLift;
 import com.first1444.frc.robot2019.subsystems.swerve.*;
 import com.first1444.frc.robot2019.vision.BestVisionPacketSelector;
 import com.first1444.frc.robot2019.vision.PacketListener;
@@ -34,12 +38,13 @@ import com.first1444.frc.robot2019.vision.VisionSupplier;
 import com.first1444.frc.util.DynamicSendableChooser;
 import com.first1444.frc.util.OrientationSendable;
 import com.first1444.frc.util.pid.PidKey;
+import com.first1444.frc.util.reportmap.PrintWriterReportMap;
 import com.first1444.frc.util.valuemap.MutableValueMap;
 import com.first1444.frc.util.valuemap.sendable.MutableValueMapSendable;
-import edu.wpi.cscore.UsbCamera;
-import edu.wpi.cscore.VideoMode;
-import edu.wpi.first.cameraserver.CameraServer;
-import edu.wpi.first.wpilibj.*;
+import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.Watchdog;
+import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import me.retrodaredevil.action.*;
 import me.retrodaredevil.controller.ControllerManager;
@@ -65,13 +70,17 @@ public class Robot extends TimedRobot {
 
 	private final DynamicSendableChooser<Perspective> autonomousPerspectiveChooser;
 	private final SwerveDrive drive;
+	private final CargoIntake cargoIntake;
+	private final Climber climber;
+	private final HatchIntake hatchIntake;
+	private final Lift lift;
 	
 	private final PacketListener packetListener;
 	private final EventSender soundSender;
 
 	/** An {@link Action} that updates certain subsystems only when the robot is enabled*/
 	private final ActionMultiplexer enabledSubsystemUpdater;
-	/** An {@link Action} that updates certain subsystems all the time*/
+	/** An {@link Action} that updates certain subsystems all the time. If {@link #enabledSubsystemUpdater} is updated, this is updated after that*/
 	private final ActionMultiplexer constantSubsystemUpdater;
 	/** The {@link ActionChooser} that handles an action that updates subsystems*/
 	private final ActionChooser actionChooser;
@@ -140,51 +149,51 @@ public class Robot extends TimedRobot {
 				.setDouble(PidKey.I, .03);
 
 		final ShuffleboardTab talonDebug = shuffleboardMap.getDebugTab();
-		final FourWheelSwerveDrive drive = new FourWheelSwerveDrive(
+		final var reportMap = new PrintWriterReportMap(System.out);
+		final SwerveSetup swerve = Constants.Swerve2018.INSTANCE;
+		final var drive = new FourWheelSwerveDrive(
 				this::getOrientation,
 				new ImmutableActionFourSwerveCollection(
-						new TalonSwerveModule("front left", Constants.FL_DRIVE, Constants.FL_STEER, drivePid, steerPid,
-								createModuleConfig("front left module")
-										.setDouble(ModuleConfig.ABS_ENCODER_OFFSET, 147)
-										.setDouble(ModuleConfig.MAX_ENCODER_VALUE, 899)
-										.setDouble(ModuleConfig.MIN_ENCODER_VALUE, 10), talonDebug),
+						new TalonSwerveModule("front left", swerve.getFLDriveCAN(), swerve.getFLSteerCAN(), drivePid, steerPid,
+								swerve.setupFL(createModuleConfig("front left module")), talonDebug),
 						
-						new TalonSwerveModule("front right", Constants.FR_DRIVE, Constants.FR_STEER, drivePid, steerPid,
-								createModuleConfig("front right module")
-										.setDouble(ModuleConfig.ABS_ENCODER_OFFSET, 705)
-										.setDouble(ModuleConfig.MAX_ENCODER_VALUE, 891)
-										.setDouble(ModuleConfig.MIN_ENCODER_VALUE, 12), talonDebug),
+						new TalonSwerveModule("front right", swerve.getFRDriveCAN(), swerve.getFRSteerCAN(), drivePid, steerPid,
+								swerve.setupFR(createModuleConfig("front right module")), talonDebug),
 						
-						new TalonSwerveModule("rear left", Constants.RL_DRIVE, Constants.RL_STEER, drivePid, steerPid,
-								createModuleConfig("rear left module")
-										.setDouble(ModuleConfig.ABS_ENCODER_OFFSET, 775)
-										.setDouble(ModuleConfig.MAX_ENCODER_VALUE, 872)
-										.setDouble(ModuleConfig.MIN_ENCODER_VALUE, 13), talonDebug),
+						new TalonSwerveModule("rear left", swerve.getRLDriveCAN(), swerve.getRLSteerCAN(), drivePid, steerPid,
+								swerve.setupRL(createModuleConfig("rear left module")), talonDebug),
 						
-						new TalonSwerveModule("rear right", Constants.RR_DRIVE, Constants.RR_STEER, drivePid, steerPid,
-								createModuleConfig("rear right module")
-										.setDouble(ModuleConfig.ABS_ENCODER_OFFSET, 604)
-										.setDouble(ModuleConfig.MAX_ENCODER_VALUE, 895)
-										.setDouble(ModuleConfig.MIN_ENCODER_VALUE, 9), talonDebug)
+						new TalonSwerveModule("rear right", swerve.getRRDriveCAN(), swerve.getRRSteerCAN(), drivePid, steerPid,
+								swerve.setupRR(createModuleConfig("rear right module")), talonDebug)
 
 						
 //						new DummySwerveModule(), new DummySwerveModule(), new DummySwerveModule(), new DummySwerveModule()
 				),
-				27.375, 22.25
+				swerve.getWheelBase(), swerve.getTrackWidth()
 		);
+		final var lift = new DummyLift(reportMap);
+		final var cargoIntake = new DummyCargoIntake(reportMap);
+		final var climber = new DummyClimber(reportMap);
+		final var hatchIntake = new DummyHatchIntake(reportMap);
 		this.drive = drive;
+		this.cargoIntake = cargoIntake;
+		this.climber = climber;
+		this.hatchIntake = hatchIntake;
+		this.lift = lift;
 		
-		this.packetListener = new PacketListener(5801); // start in robotInit()
-		this.soundSender = new TCPEventSender(5809);
+		packetListener = new PacketListener(5801); // start in robotInit()
+		soundSender = new TCPEventSender(5809);
 		
 		enabledSubsystemUpdater = new Actions.ActionMultiplexerBuilder(
-				drive
+				drive, lift, cargoIntake, climber, hatchIntake
 		).clearAllOnEnd(false).canRecycle(true).build();
 		
 		constantSubsystemUpdater = new Actions.ActionMultiplexerBuilder(
 				orientationSystem,
 				new SwerveCalibrateAction(this::getDrive, robotInput),
-				new LEDHandler(this)
+				new LEDHandler(this),
+				Actions.createRunForever(reportMap),
+				new CameraSystem(shuffleboardMap, robotInput)
 		).clearAllOnEnd(false).canRecycle(false).build();
 		actionChooser = Actions.createActionChooser(WhenDone.CLEAR_ACTIVE);
 
@@ -219,15 +228,6 @@ public class Robot extends TimedRobot {
 	/** Just a second way to initialize things*/
 	@Override
 	public void robotInit() {
-		try {
-			UsbCamera camera = CameraServer.getInstance().startAutomaticCapture();
-			camera.setVideoMode(VideoMode.PixelFormat.kMJPEG, 320, 240, 9);
-			
-			shuffleboardMap.getUserTab().add(camera);
-		} catch(Exception e){
-			e.printStackTrace();
-			System.out.println("Couldn't initialize the camera!");
-		}
 		packetListener.start();
 
 		System.out.println("Finished robot init!");
@@ -344,15 +344,15 @@ public class Robot extends TimedRobot {
 	}
 	
 	public Lift getLift(){
-		throw new UnsupportedOperationException();
+		return lift;
 	}
 	public CargoIntake getCargoIntake(){
-		throw new UnsupportedOperationException();
+		return cargoIntake;
 	}
 	public HatchIntake getHatchIntake(){
-		throw new UnsupportedOperationException();
+		return hatchIntake;
 	}
 	public Climber getClimber(){
-		throw new UnsupportedOperationException();
+		return climber;
 	}
 }

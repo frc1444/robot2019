@@ -52,4 +52,6 @@ public interface RobotInput extends ControllerInput {
 	
 	InputPart getSwerveQuickReverseCancel();
 	InputPart getSwerveRecalibrate();
+	
+	InputPart getCameraToggleButton();
 }

@@ -1,6 +1,7 @@
-package com.first1444.frc.robot2019.subsystems;
+package com.first1444.frc.robot2019.subsystems.implementations;
 
 import com.ctre.phoenix.motorcontrol.can.BaseMotorController;
+import com.first1444.frc.robot2019.subsystems.HatchIntake;
 import me.retrodaredevil.action.SimpleAction;
 
 public class MotorHatchIntake extends SimpleAction implements HatchIntake {
@@ -26,5 +27,25 @@ public class MotorHatchIntake extends SimpleAction implements HatchIntake {
 	}
 	public void stowedPosition(){
 	
+	}
+	
+	@Override
+	public void setManualPivotSpeed(double speed) {
+	
+	}
+	
+	@Override
+	public boolean isDesiredPositionReached() {
+		return false;
+	}
+	
+	@Override
+	public void lockCurrentPosition() {
+	
+	}
+	
+	@Override
+	public PivotMode getPivotMode() {
+		return null;
 	}
 }

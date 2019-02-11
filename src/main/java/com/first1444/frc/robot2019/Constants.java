@@ -1,13 +1,16 @@
 package com.first1444.frc.robot2019;
 
+import com.first1444.frc.robot2019.subsystems.swerve.ModuleConfig;
+import com.first1444.frc.util.valuemap.MutableValueMap;
+import com.first1444.frc.util.valuemap.ValueMap;
+
 import java.text.DecimalFormat;
 
 public final class Constants {
 	
 	private Constants(){ throw new UnsupportedOperationException(); }
 	
-	public static final boolean DEBUG = false;
-	public static final boolean PRINT_DEBUG = true;
+	public static final boolean DEBUG = true;
 	public static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat(" #0.00;-#0.00");
 	
 	public static final int PID_INDEX = 0;
@@ -23,17 +26,6 @@ public final class Constants {
 	/** The number of encoder counts per revolution on a drive wheel on the swerve drive*/
 	public static final int SWERVE_DRIVE_ENCODER_COUNTS_PER_REVOLUTION = 534;
 	
-	// region CAN IDs
-	public static final int FL_DRIVE = 4;
-	public static final int FR_DRIVE = 3;
-	public static final int RL_DRIVE = 2;
-	public static final int RR_DRIVE = 1;
-	
-	public static final int FL_STEER = 8;
-	public static final int FR_STEER = 7;
-	public static final int RL_STEER = 6;
-	public static final int RR_STEER = 5;
-	
 	public static final int LIFT_MASTER_ID = 16; // TODO make accurate
 	// endregion
 	
@@ -44,6 +36,58 @@ public final class Constants {
 	public static final int MAX_SWERVE_DRIVE_RPM = MAX_CIM_RPM;
 	/** Talon SRX counts every edge of the quadrature encoder, so 4 * 20 */
 	public static final int CIMCODER_COUNTS_PER_REVOLUTION = 80;
+	
+	public enum Swerve2018 implements SwerveSetup{
+		INSTANCE;
+		
+		@Override public int getFLDriveCAN() { return 4; }
+		@Override public int getFRDriveCAN() { return 3; }
+		@Override public int getRLDriveCAN() { return 2; }
+		@Override public int getRRDriveCAN() { return 1; }
+		
+		@Override public int getFLSteerCAN() { return 8; }
+		@Override public int getFRSteerCAN() { return 7; }
+		@Override public int getRLSteerCAN() { return 6; }
+		@Override public int getRRSteerCAN() { return 5; }
+		
+		@Override
+		public double getWheelBase() {
+			return 27.375;
+		}
+		
+		@Override
+		public double getTrackWidth() {
+			return 22.25;
+		}
+		
+		@Override
+		public MutableValueMap<ModuleConfig> setupFL(MutableValueMap<ModuleConfig> config) {
+			return config.setDouble(ModuleConfig.ABS_ENCODER_OFFSET, 147)
+					.setDouble(ModuleConfig.MAX_ENCODER_VALUE, 899)
+					.setDouble(ModuleConfig.MIN_ENCODER_VALUE, 10);
+		}
+		
+		@Override
+		public MutableValueMap<ModuleConfig> setupFR(MutableValueMap<ModuleConfig> config) {
+			return config.setDouble(ModuleConfig.ABS_ENCODER_OFFSET, 705)
+					.setDouble(ModuleConfig.MAX_ENCODER_VALUE, 891)
+					.setDouble(ModuleConfig.MIN_ENCODER_VALUE, 12);
+		}
+		
+		@Override
+		public MutableValueMap<ModuleConfig> setupRL(MutableValueMap<ModuleConfig> config) {
+			return config.setDouble(ModuleConfig.ABS_ENCODER_OFFSET, 775)
+					.setDouble(ModuleConfig.MAX_ENCODER_VALUE, 872)
+					.setDouble(ModuleConfig.MIN_ENCODER_VALUE, 13);
+		}
+		
+		@Override
+		public MutableValueMap<ModuleConfig> setupRR(MutableValueMap<ModuleConfig> config) {
+			return config.setDouble(ModuleConfig.ABS_ENCODER_OFFSET, 604)
+					.setDouble(ModuleConfig.MAX_ENCODER_VALUE, 895)
+					.setDouble(ModuleConfig.MIN_ENCODER_VALUE, 9);
+		}
+	}
 	
 	public enum Dimensions implements RobotDimensions {
 		INSTANCE;

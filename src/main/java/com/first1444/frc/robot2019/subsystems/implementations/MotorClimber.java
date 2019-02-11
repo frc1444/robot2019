@@ -1,7 +1,8 @@
-package com.first1444.frc.robot2019.subsystems;
+package com.first1444.frc.robot2019.subsystems.implementations;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.can.BaseMotorController;
+import com.first1444.frc.robot2019.subsystems.Climber;
 import me.retrodaredevil.action.SimpleAction;
 
 public class MotorClimber extends SimpleAction implements Climber {

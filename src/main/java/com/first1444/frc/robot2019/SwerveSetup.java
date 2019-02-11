@@ -1,0 +1,24 @@
+package com.first1444.frc.robot2019;
+
+import com.first1444.frc.robot2019.subsystems.swerve.ModuleConfig;
+import com.first1444.frc.util.valuemap.MutableValueMap;
+
+public interface SwerveSetup {
+	int getFLDriveCAN();
+	int getFRDriveCAN();
+	int getRLDriveCAN();
+	int getRRDriveCAN();
+	
+	int getFLSteerCAN();
+	int getFRSteerCAN();
+	int getRLSteerCAN();
+	int getRRSteerCAN();
+	
+	double getWheelBase();
+	double getTrackWidth();
+	
+	MutableValueMap<ModuleConfig> setupFL(MutableValueMap<ModuleConfig> config);
+	MutableValueMap<ModuleConfig> setupFR(MutableValueMap<ModuleConfig> config);
+	MutableValueMap<ModuleConfig> setupRL(MutableValueMap<ModuleConfig> config);
+	MutableValueMap<ModuleConfig> setupRR(MutableValueMap<ModuleConfig> config);
+}
