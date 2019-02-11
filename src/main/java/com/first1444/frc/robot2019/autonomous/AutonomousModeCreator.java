@@ -5,6 +5,7 @@ import com.first1444.frc.robot2019.autonomous.options.AutonomousType;
 import com.first1444.frc.robot2019.deepspace.GamePieceType;
 import com.first1444.frc.robot2019.deepspace.SlotLevel;
 import com.first1444.frc.robot2019.autonomous.options.StartingPosition;
+import com.first1444.frc.util.MathUtil;
 import me.retrodaredevil.action.Action;
 import me.retrodaredevil.action.ActionQueue;
 import me.retrodaredevil.action.Actions;
@@ -109,7 +110,9 @@ public class AutonomousModeCreator {
 				distance -= 170;
 				actionQueue.add(actionCreator.createGoStraight(distance, .3, 90, startingOrientation));
 				
-				actionQueue.add(actionCreator.createTurnToOrientation(faceAngle));
+				if(MathUtil.minDistance(faceAngle, startingOrientation, 360) > 5) {
+					actionQueue.add(actionCreator.createTurnToOrientation(faceAngle));
+				}
 				if(gamePieceType == GamePieceType.HATCH){
 					actionQueue.add(actionCreator.createCargoShipPlaceHatch(null, null));
 				} else {

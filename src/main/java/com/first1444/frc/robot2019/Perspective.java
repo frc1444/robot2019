@@ -34,6 +34,7 @@ public enum Perspective {
 		return useGyro;
 	}
 	/**
+	 * If this certain orientation does not rely on a gyro, you may pass null.
 	 * @return The amount to add to the desired direction to account for the given perspective
 	 */
 	public double getOffset(Double orientation){

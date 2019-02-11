@@ -116,19 +116,30 @@ public class LineUpAction extends SimpleAction implements LinkedAction {
 	private void usePacket(VisionPacket vision){
 		Objects.requireNonNull(vision);
 		
-		final double moveX = vision.getVisionX();
-		final double moveY = vision.getVisionZ();
+		final double moveX = vision.getVisionX() / vision.getGroundDistance();
+		final double moveY = vision.getVisionZ() / vision.getGroundDistance();
 		System.out.println("x: " + Constants.DECIMAL_FORMAT.format(moveX) + " z/y: " + Constants.DECIMAL_FORMAT.format(moveY));
-		final double moveMagnitude = hypot(moveX, moveY);
+		
+		final double yawTurnAmount = max(-1, min(1, vision.getVisionYaw() / -30));
+		final double faceTurnAmount = max(-1, min(1, MathUtil.minChange(vision.getGroundAngle(), 90, 360) / -30));
+		
+//		final double turnAmount = .5 * max(-1, min(1,
+//				max(-1, min(1, vision.getVisionYaw() / -30))
+//						+ .5 * vision.getImageX()
+//		));
+		final double turnAmount;
+		if(vision.getGroundDistance() > 40){
+			turnAmount = faceTurnAmount;
+		} else if(vision.getGroundDistance() > 20){
+			final double percentage = (vision.getGroundDistance() - 20) / 20.0;
+			turnAmount = percentage * faceTurnAmount + (1 - percentage) * yawTurnAmount;
+		} else {
+			turnAmount = yawTurnAmount;
+		}
 		
 		
-		final double turnAmount = .5 * max(-1, min(1,
-				max(-1, min(1, vision.getVisionYaw() / -30))
-						+ .5 * vision.getImageX()
-		));
 		
-		
-		driveSupplier.get().setControl(moveX / moveMagnitude, moveY / moveMagnitude, turnAmount, MAX_SPEED, perspective);
+		driveSupplier.get().setControl(moveX, moveY, turnAmount, MAX_SPEED, perspective);
 		if(moveY < 15){
 			System.out.println("Move y is " + moveY);
 			nextAction = successAction;
