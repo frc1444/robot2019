@@ -15,3 +15,4 @@ Some times you must run ```gradlew downloadAll``` to get everything.
 * Use doubles instead of floats
 * Parameters involving left and right should be in the order: left, right
 * Only use ```this.``` when necessary
+* Use Shuffleboard for as much as possible and use SmartDashboard for unimportant debugging

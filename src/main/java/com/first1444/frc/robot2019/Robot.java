@@ -213,17 +213,6 @@ public class Robot extends TimedRobot {
 				robotInput
 		);
 
-		if(Constants.DEBUG) {
-			final ShuffleboardTab inputTab = shuffleboardMap.getDebugTab();
-//			inputTab.add("Movement Joy", new JoystickPartSendable(robotInput::getMovementJoy));
-//			inputTab.add("Movement Speed", new InputPartSendable(robotInput::getMovementSpeed));
-//			inputTab.add("Driver Rumble", new ControllerPartSendable(robotInput::getDriverRumble));
-			
-//			inputTab.add("Cargo Intake", new InputPartSendable(robotInput::getCargoIntakeSpeed));
-//			inputTab.add("Lift Speed", new InputPartSendable(robotInput::getLiftManualSpeed));
-//			inputTab.add("Hatch Pivot Speed", new InputPartSendable(robotInput::getHatchManualPivotSpeed));
-			inputTab.add("Defense Button", new InputPartSendable(robotInput::getDefenseButton));
-		}
 		System.out.println("Finished constructor");
 	}
 	private MutableValueMap<ModuleConfig> createModuleConfig(String name){

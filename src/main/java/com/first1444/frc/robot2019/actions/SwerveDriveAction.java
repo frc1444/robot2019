@@ -51,7 +51,6 @@ public class SwerveDriveAction extends SimpleAction {
 		final ControllerRumble rumble = input.getDriverRumble();
 		if(rumble.isConnected()){
 			rumble.rumbleTime(250, .4);
-			System.out.println("Doing rumble for teleop start");
 		}
 	}
 
@@ -67,7 +66,10 @@ public class SwerveDriveAction extends SimpleAction {
 			}
 			actionChooser.update();
 			if(actionChooser.isDone()){
-				input.getDriverRumble().rumbleTimeout(200, .3);
+				final ControllerRumble rumble = input.getDriverRumble();
+				if(rumble.isConnected()) {
+					rumble.rumbleTimeout(200, .3);
+				}
 			}
 		} else {
 			if(actionChooser.isActive()){

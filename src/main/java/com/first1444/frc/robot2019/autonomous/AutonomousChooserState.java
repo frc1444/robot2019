@@ -15,6 +15,8 @@ import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardLayout;
 import me.retrodaredevil.action.Action;
 import me.retrodaredevil.action.Actions;
 
+import java.util.Collection;
+
 public class AutonomousChooserState {
 	private final AutonomousModeCreator autonomousModeCreator;
 	private final RobotInput robotInput;
@@ -74,7 +76,7 @@ public class AutonomousChooserState {
 			ex.printStackTrace();
 			System.out.println("One of our choosers must not have been set correctly!");
 		}
-		return Actions.createRunOnce(() -> {});
+		return Actions.createRunOnce(() -> System.out.println("This is the autonomous action because there was an exception when creating the one we wanted."));
 	}
 	private void addAutoOptions(){
 		autonomousChooser.setDefaultOption(AutonomousType.DO_NOTHING.getName(), AutonomousType.DO_NOTHING);
@@ -87,53 +89,37 @@ public class AutonomousChooserState {
 	private void updateStartingPositionChooser(){
 		startingPositionChooser.reset();
 		final AutonomousType type = autonomousChooser.getSelected();
-		boolean supportsEither = false;
-		if(type.isSupportsLeftSide()){
-			startingPositionChooser.setDefaultOption("Left", StartingPosition.LEFT);
-			supportsEither = true;
-		}
-		if(type.isSupportsRightSide()){
-			startingPositionChooser.setDefaultOption("Right", StartingPosition.RIGHT);
-			supportsEither = true;
-		}
-		if(!supportsEither){
+		final Collection<StartingPosition> startingPositions = type.getStartingPositions();
+		if(startingPositions.isEmpty()){
 			startingPositionChooser.setDefaultOption("Neither", null);
+		} else {
+			for(StartingPosition position : startingPositions){
+				startingPositionChooser.setDefaultOption(position.toString(), position);
+			}
 		}
 	}
 	private void updateGamePieceChooser(){
 		gamePieceChooser.reset();
 		final AutonomousType type = autonomousChooser.getSelected();
-		boolean supportsEither = false;
-		if(type.isSupportsCargo()){
-			gamePieceChooser.setDefaultOption("Cargo", GamePieceType.CARGO);
-			supportsEither = true;
-		}
-		if(type.isSupportsHatch()){
-			gamePieceChooser.setDefaultOption("Hatch", GamePieceType.HATCH);
-			supportsEither = true;
-		}
-		if(!supportsEither){
+		final Collection<GamePieceType> gamePieces = type.getGamePieces();
+		if(gamePieces.isEmpty()){
 			gamePieceChooser.setDefaultOption("Neither", null);
+		} else {
+			for(GamePieceType gamePiece : gamePieces){
+				gamePieceChooser.setDefaultOption(gamePiece.toString(), gamePiece);
+			}
 		}
 	}
 	private void updateLevelChooser(){
 		levelChooser.reset();
 		final AutonomousType type = autonomousChooser.getSelected();
-		boolean supportsAny = false;
-		if(type.isSupportsLevel1()){
-			levelChooser.setDefaultOption("Level 1", SlotLevel.LEVEL1);
-			supportsAny = true;
-		}
-		if(type.isSupportsLevel2()){
-			levelChooser.setDefaultOption("Level 2", SlotLevel.LEVEL2);
-			supportsAny = true;
-		}
-		if(type.isSupportsLevel3()){
-			levelChooser.setDefaultOption("Level 3", SlotLevel.LEVEL3);
-			supportsAny = true;
-		}
-		if(!supportsAny){
+		final Collection<SlotLevel> slotLevels = type.getSlotLevels();
+		if(slotLevels.isEmpty()){
 			levelChooser.setDefaultOption("None", null);
+		} else {
+			for(SlotLevel level : slotLevels){
+				levelChooser.setDefaultOption(level.toString(), level);
+			}
 		}
 	}
 	

@@ -45,13 +45,17 @@ public class RobotAutonActionCreator implements AutonActionCreator {
 	@Override
 	public Action createRocketPlaceCargo(SlotLevel slotLevel, Action failAction, Action successAction) {
 		
-		return new LineUpAction(
-				robot.getVisionSupplier(), robot.getDimensions().getCargoCameraID(),
-				robot.getDimensions().getCargoManipulatorPerspective(),
-				new BestVisionPacketSelector(), robot::getDrive, robot::getOrientation,
-				failAction,
-				successAction, // TODO do something here
-				robot.getSoundSender());
+		return Actions.createLinkedActionRunner(
+				new LineUpAction(
+						robot.getVisionSupplier(), robot.getDimensions().getCargoCameraID(),
+						robot.getDimensions().getCargoManipulatorPerspective(),
+						new BestVisionPacketSelector(), robot::getDrive, robot::getOrientation,
+						failAction,
+						successAction, // TODO do something here
+						robot.getSoundSender()
+				),
+				WhenDone.CLEAR_ACTIVE_AND_BE_DONE, true
+		);
 
 	}
 	
@@ -66,7 +70,7 @@ public class RobotAutonActionCreator implements AutonActionCreator {
 						successAction, // TODO do something here
 						robot.getSoundSender()
 				),
-				WhenDone.CLEAR_ACTIVE_AND_BE_DONE, false
+				WhenDone.CLEAR_ACTIVE_AND_BE_DONE, true
 		);
 
 	}

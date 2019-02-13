@@ -1,63 +1,64 @@
 package com.first1444.frc.robot2019.autonomous.options;
 
+import com.first1444.frc.robot2019.deepspace.GamePieceType;
+import com.first1444.frc.robot2019.deepspace.SlotLevel;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.EnumSet;
+
 public enum AutonomousType {
-	DO_NOTHING("Do Nothing", false, false, false, false, false, false, false),
+	DO_NOTHING("Do Nothing", EnumSet.noneOf(StartingPosition.class),
+			EnumSet.noneOf(GamePieceType.class),
+			EnumSet.noneOf(SlotLevel.class)),
+	CROSS_LINE_FORWARD("Cross Line", EnumSet.noneOf(StartingPosition.class),
+			EnumSet.noneOf(GamePieceType.class),
+			EnumSet.noneOf(SlotLevel.class)),
+	CROSS_LINE_SIDE("Cross Line to the Side", EnumSet.of(StartingPosition.LEFT, StartingPosition.RIGHT),
+			EnumSet.noneOf(GamePieceType.class),
+			EnumSet.noneOf(SlotLevel.class)),
+	
+	OFF_CENTER_CARGO_SHIP("Off Center Cargo Ship (Goes straight)", EnumSet.of(StartingPosition.MIDDLE_LEFT, StartingPosition.MIDDLE_RIGHT),
+		EnumSet.of(GamePieceType.HATCH, GamePieceType.CARGO),
+		EnumSet.of(SlotLevel.LEVEL1)),
 
-	CROSS_LINE_FORWARD("Cross Line"		 , false, false, false, false, false, false, false),
-	CROSS_LINE_SIDE("Cross Line to the Side", true, true, false, false, false, false, false),
+	SIDE_CARGO_SHIP("Side Cargo Ship", EnumSet.of(StartingPosition.LEFT, StartingPosition.RIGHT),
+			EnumSet.of(GamePieceType.HATCH, GamePieceType.CARGO),
+			EnumSet.of(SlotLevel.LEVEL1, SlotLevel.LEVEL2, SlotLevel.LEVEL3)),
 
-//	CENTER_CARGO_SHIP("Center Cargo Ship (Goes at Angle)"		, true, true, true, true, true, false, false),
-	OFF_CENTER_CARGO_SHIP("Off Center Cargo Ship (Goes straight)", true, true, true, true, true, false, false),
-
-	SIDE_CARGO_SHIP("Side Cargo Ship", true, true, true, true, true, false, false),
-
-	SIDE_ROCKET("Side Rocket", true, true, false, true, true, true, true);
+	SIDE_ROCKET("Side Rocket", EnumSet.of(StartingPosition.LEFT, StartingPosition.RIGHT),
+			EnumSet.of(GamePieceType.HATCH),
+			EnumSet.of(SlotLevel.LEVEL1, SlotLevel.LEVEL2, SlotLevel.LEVEL3));
 
 	private final String name;
-	private final boolean left, right;
-	private final boolean cargo, hatch;
-	private final boolean level1, level2, level3;
+	private final Collection<StartingPosition> startingPositions;
+	private final Collection<GamePieceType> gamePieces;
+	private final Collection<SlotLevel> slotLevels;
 
 	AutonomousType(String name,
-				   boolean left, boolean right,
-				   boolean cargo, boolean hatch,
-				   boolean level1, boolean level2, boolean level3) {
+				   Collection<StartingPosition> startingPositions,
+				   Collection<GamePieceType> gamePieces,
+				   Collection<SlotLevel> slotLevels) {
 		this.name = name;
-		this.left = left;
-		this.right = right;
-		this.cargo = cargo;
-		this.hatch = hatch;
-		this.level1 = level1;
-		this.level2 = level2;
-		this.level3 = level3;
+		this.startingPositions = Collections.unmodifiableCollection(startingPositions);
+		this.gamePieces = gamePieces;
+		this.slotLevels = Collections.unmodifiableCollection(slotLevels);
 	}
 
 
 	public String getName(){
 		return name;
 	}
-
-	public boolean isSupportsLeftSide(){
-		return left;
+	
+	public Collection<StartingPosition> getStartingPositions(){
+		return startingPositions;
 	}
-	public boolean isSupportsRightSide(){
-		return right;
-	}
-
-	public boolean isSupportsCargo(){
-		return cargo;
-	}
-	public boolean isSupportsHatch(){
-		return hatch;
+	
+	public Collection<GamePieceType> getGamePieces(){
+		return gamePieces;
 	}
 
-	public boolean isSupportsLevel1(){
-		return level1;
-	}
-	public boolean isSupportsLevel2(){
-		return level2;
-	}
-	public boolean isSupportsLevel3(){
-		return level3;
+	public Collection<SlotLevel> getSlotLevels(){
+		return slotLevels;
 	}
 }

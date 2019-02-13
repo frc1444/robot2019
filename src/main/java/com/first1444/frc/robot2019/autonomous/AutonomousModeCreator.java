@@ -110,13 +110,23 @@ public class AutonomousModeCreator {
 				distance -= 170;
 				actionQueue.add(actionCreator.createGoStraight(distance, .3, 90, startingOrientation));
 				
-				if(MathUtil.minDistance(faceAngle, startingOrientation, 360) > 5) {
+				if(MathUtil.minDistance(faceAngle, startingOrientation, 360) > 5) { // only rotate if we need to
 					actionQueue.add(actionCreator.createTurnToOrientation(faceAngle));
 				}
+				final Action cargoShipSuccess = new Actions.ActionQueueBuilder(
+						Actions.createRunOnce(() -> System.out.println("We successfully placed something on the cargo ship. TODO: Write code to make this do more stuff."))
+				).immediatelyDoNextWhenDone(true).canBeDone(true).canRecycle(false).build();
+				
 				if(gamePieceType == GamePieceType.HATCH){
-					actionQueue.add(actionCreator.createCargoShipPlaceHatch(null, null));
+					actionQueue.add(actionCreator.createCargoShipPlaceHatch(
+							Actions.createRunOnce(() -> System.out.println("Failed to place Hatch!")),
+							cargoShipSuccess
+					));
 				} else {
-					actionQueue.add(actionCreator.createCargoShipPlaceCargo(null, null));
+					actionQueue.add(actionCreator.createCargoShipPlaceCargo(
+							Actions.createRunOnce(() -> System.out.println("Failed to place Cargo!")),
+							cargoShipSuccess
+					));
 				}
 				
 				
@@ -133,13 +143,25 @@ public class AutonomousModeCreator {
 					throw new IllegalArgumentException("A Slot Level must be specified for side rocket autonomous!");
 				}
 				actionQueue.add(actionCreator.createGoStraight(69.56, .3, isLeft ? 180 : 0, startingOrientation));
-				actionQueue.add(actionCreator.createGoStraight(201.13 - 95.28 - 60, .5, 90, startingOrientation)); // the 20 is random
+				actionQueue.add(actionCreator.createGoStraight(201.13 - 95.28 - 60, .5, 90, startingOrientation)); // the 60 is random
 //				actionQueue.add(actionCreator.createTurnToOrientation(90 - (isLeft ? -20 : 20)));
 				
+				final Action rocketSuccess = new Actions.ActionQueueBuilder(
+						Actions.createRunOnce(() -> System.out.println("We successfully placed something on the rocket. TODO: Write code to make this do more stuff."))
+				).immediatelyDoNextWhenDone(true).canBeDone(true).canRecycle(false).build();
+				
 				if(gamePieceType == GamePieceType.HATCH){
-					actionQueue.add(actionCreator.createRocketPlaceHatch(slotLevel, null, null));
+					actionQueue.add(actionCreator.createRocketPlaceHatch(
+							slotLevel,
+							Actions.createRunOnce(() -> System.out.println("Failed to place hatch on rocket")),
+							rocketSuccess
+					));
 				} else {
-					actionQueue.add(actionCreator.createRocketPlaceCargo(slotLevel, null, null));
+					actionQueue.add(actionCreator.createRocketPlaceCargo(
+							slotLevel,
+							Actions.createRunOnce(() -> System.out.println("Failed to place cargo on rocket")),
+							rocketSuccess
+					));
 				}
 				
 				break;

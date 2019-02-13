@@ -119,17 +119,9 @@ public class LineUpAction extends SimpleAction implements LinkedAction {
 		
 		final double moveX = vision.getVisionX() / vision.getGroundDistance();
 		final double moveY = vision.getVisionZ() / vision.getGroundDistance();
-		System.out.println("x: " + Constants.DECIMAL_FORMAT.format(moveX) + " z/y: " + Constants.DECIMAL_FORMAT.format(moveY));
 		
 		final double yawTurnAmount = max(-1, min(1, vision.getVisionYaw() / -30));
 		final double zeroGroundAngle = MathUtil.minChange(vision.getGroundAngle(), 90, 360); // we want this to get close to 0
-		SmartDashboard.putNumber("robotX", vision.getRobotX());
-		SmartDashboard.putNumber("robotZ", vision.getRobotZ());
-		SmartDashboard.putNumber("yaw", vision.getVisionYaw());
-		
-		SmartDashboard.putNumber("visionX", vision.getVisionX());
-		SmartDashboard.putNumber("visionZ", vision.getVisionZ());
-		SmartDashboard.putNumber("zero ground angle", zeroGroundAngle);
 		final double faceTurnAmount = max(-1, min(1, zeroGroundAngle / -90));
 		SmartDashboard.putNumber("yawTurnAmount", yawTurnAmount);
 		SmartDashboard.putNumber("faceTurnAmount", faceTurnAmount);
