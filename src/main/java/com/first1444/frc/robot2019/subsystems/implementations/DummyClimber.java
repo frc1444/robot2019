@@ -6,8 +6,8 @@ import com.first1444.frc.util.reportmap.ReportMap;
 import me.retrodaredevil.action.SimpleAction;
 
 public class DummyClimber extends SimpleAction implements Climber {
-	private static final String CLIMB_SPEED = "Climb Speed";
-	private static final String DRIVE_SPEED = "Drive Speed";
+	private static final String CLIMB_SPEED = "Climb Climb Speed";
+	private static final String DRIVE_SPEED = "Climb Drive Speed";
 	private final ReportMap reportMap;
 	
 	public DummyClimber(ReportMap reportMap) {
@@ -18,24 +18,30 @@ public class DummyClimber extends SimpleAction implements Climber {
 	@Override
 	protected void onStart() {
 		super.onStart();
-		reportMap.report(CLIMB_SPEED, "enabled");
-		reportMap.report(DRIVE_SPEED, "enabled");
+		reportMap.report(CLIMB_SPEED, "robot enabled");
+		reportMap.report(DRIVE_SPEED, "robot enabled");
 	}
 	
 	@Override
 	protected void onEnd(boolean peacefullyEnded) {
 		super.onEnd(peacefullyEnded);
-		reportMap.report(CLIMB_SPEED, "disabled");
-		reportMap.report(DRIVE_SPEED, "disabled");
+		reportMap.report(CLIMB_SPEED, "robot disabled");
+		reportMap.report(DRIVE_SPEED, "robot disabled");
 	}
 	
 	@Override
 	public void setClimbSpeed(double speed) {
+		if(!isActive()){
+			System.err.println("climber not active but setting climb speed");
+		}
 		reportMap.report(CLIMB_SPEED, Constants.DECIMAL_FORMAT.format(speed));
 	}
 	
 	@Override
 	public void setDriveSpeed(double speed) {
+		if(!isActive()){
+			System.err.println("climber not active but setting climb drive speed");
+		}
 		reportMap.report(DRIVE_SPEED, Constants.DECIMAL_FORMAT.format(speed));
 	}
 }

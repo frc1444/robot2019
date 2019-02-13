@@ -3,6 +3,7 @@ package com.first1444.frc.robot2019.actions;
 import com.first1444.frc.robot2019.Robot;
 import com.first1444.frc.robot2019.input.RobotInput;
 import com.first1444.frc.robot2019.subsystems.CargoIntake;
+import com.first1444.frc.robot2019.subsystems.Climber;
 import com.first1444.frc.robot2019.subsystems.HatchIntake;
 import com.first1444.frc.robot2019.subsystems.Lift;
 import me.retrodaredevil.action.SimpleAction;
@@ -60,9 +61,27 @@ public class OperatorAction extends SimpleAction {
 			} else if(input.getHatchPivotGroundPreset().isDown()){
 				hatchIntake.groundPosition();
 			} else {
-				// TODO Manual control
+				final InputPart pivotSpeed = input.getHatchManualPivotSpeed();
+				if (pivotSpeed.isDeadzone()) {
+					if(hatchIntake.getPivotMode() == HatchIntake.PivotMode.SPEED){
+						hatchIntake.lockCurrentPosition();
+					}
+				} else {
+					hatchIntake.setManualPivotSpeed(pivotSpeed.getPosition());
+				}
 			}
 			
+			if(input.getHatchDrop().isDown()){
+				hatchIntake.drop();
+			} else if(input.getHatchGrab().isDown()){
+				hatchIntake.hold();
+			}
+			
+		}
+		{
+			final Climber climber = robot.getClimber();
+			climber.setDriveSpeed(input.getClimbWheelSpeed().getZonedPosition());
+			climber.setClimbSpeed(input.getClimbLiftSpeed().getZonedPosition());
 		}
 		
 	}

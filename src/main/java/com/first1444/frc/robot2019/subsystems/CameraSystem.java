@@ -2,11 +2,11 @@ package com.first1444.frc.robot2019.subsystems;
 
 import com.first1444.frc.robot2019.ShuffleboardMap;
 import com.first1444.frc.robot2019.input.RobotInput;
-import edu.wpi.cscore.MjpegServer;
 import edu.wpi.cscore.UsbCamera;
 import edu.wpi.cscore.VideoMode;
 import edu.wpi.cscore.VideoSink;
 import edu.wpi.first.cameraserver.CameraServer;
+import edu.wpi.first.wpilibj.shuffleboard.SendableCameraWrapper;
 import me.retrodaredevil.action.SimpleAction;
 
 public class CameraSystem extends SimpleAction {
@@ -23,9 +23,9 @@ public class CameraSystem extends SimpleAction {
 		setupCamera(hatch);
 		setupCamera(cargo);
 		
-		server = CameraServer.getInstance().getServer("serve_cameraServer");
+		server = CameraServer.getInstance().getServer();
 		server.setSource(hatch);
-		shuffleboardMap.getUserTab().add("Camera", server);
+		shuffleboardMap.getUserTab().add("Camera", SendableCameraWrapper.wrap(server.getSource()));
 	}
 	private void setupCamera(UsbCamera camera){
 		camera.setVideoMode(VideoMode.PixelFormat.kMJPEG, 320, 240, 9);

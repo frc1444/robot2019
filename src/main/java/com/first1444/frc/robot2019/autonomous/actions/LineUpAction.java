@@ -127,6 +127,7 @@ public class LineUpAction extends SimpleAction implements LinkedAction {
 //				max(-1, min(1, vision.getVisionYaw() / -30))
 //						+ .5 * vision.getImageX()
 //		));
+		// TODO this doesn't work, fix it
 		final double turnAmount;
 		if(vision.getGroundDistance() > 40){
 			turnAmount = faceTurnAmount;

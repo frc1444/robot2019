@@ -12,6 +12,7 @@ import com.first1444.frc.input.WPIInputCreator;
 import com.first1444.frc.input.sendable.ControllerPartSendable;
 import com.first1444.frc.input.sendable.InputPartSendable;
 import com.first1444.frc.input.sendable.JoystickPartSendable;
+import com.first1444.frc.robot2019.actions.OperatorAction;
 import com.first1444.frc.robot2019.actions.SwerveCalibrateAction;
 import com.first1444.frc.robot2019.actions.SwerveDriveAction;
 import com.first1444.frc.robot2019.autonomous.AutonomousChooserState;
@@ -39,12 +40,15 @@ import com.first1444.frc.util.DynamicSendableChooser;
 import com.first1444.frc.util.OrientationSendable;
 import com.first1444.frc.util.pid.PidKey;
 import com.first1444.frc.util.reportmap.PrintWriterReportMap;
+import com.first1444.frc.util.reportmap.ReportMap;
+import com.first1444.frc.util.reportmap.ShuffleboardReportMap;
 import com.first1444.frc.util.valuemap.MutableValueMap;
 import com.first1444.frc.util.valuemap.sendable.MutableValueMapSendable;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Watchdog;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import me.retrodaredevil.action.*;
 import me.retrodaredevil.controller.ControllerManager;
@@ -85,6 +89,7 @@ public class Robot extends TimedRobot {
 	/** The {@link ActionChooser} that handles an action that updates subsystems*/
 	private final ActionChooser actionChooser;
 
+	private final Action teleopAction;
 	private final SwerveDriveAction swerveDriveAction;
 //	private final Action testAction;
 	private final AutonomousChooserState autonomousChooserState;
@@ -149,7 +154,7 @@ public class Robot extends TimedRobot {
 				.setDouble(PidKey.I, .03);
 
 		final ShuffleboardTab talonDebug = shuffleboardMap.getDebugTab();
-		final var reportMap = new PrintWriterReportMap(System.out);
+		final ReportMap reportMap = new ShuffleboardReportMap(shuffleboardMap.getDebugTab().getLayout("Report Map", BuiltInLayouts.kList));
 		final SwerveSetup swerve = Constants.Swerve2018.INSTANCE;
 		final var drive = new FourWheelSwerveDrive(
 				this::getOrientation,
@@ -192,12 +197,15 @@ public class Robot extends TimedRobot {
 				orientationSystem,
 				new SwerveCalibrateAction(this::getDrive, robotInput),
 				new LEDHandler(this),
-				Actions.createRunForever(reportMap),
 				new CameraSystem(shuffleboardMap, robotInput)
 		).clearAllOnEnd(false).canRecycle(false).build();
 		actionChooser = Actions.createActionChooser(WhenDone.CLEAR_ACTIVE);
 
 		swerveDriveAction = new SwerveDriveAction(this::getDrive, this::getOrientation, robotInput, getVisionSupplier(), getDimensions());
+		teleopAction = new Actions.ActionMultiplexerBuilder(
+				swerveDriveAction,
+				new OperatorAction(this, robotInput)
+		).clearAllOnEnd(false).canBeDone(true).canRecycle(true).build();
 //		testAction = new TestAction(robotInput);
 		autonomousChooserState = new AutonomousChooserState(
 				shuffleboardMap,  // this will add stuff to the dashboard
@@ -207,13 +215,14 @@ public class Robot extends TimedRobot {
 
 		if(Constants.DEBUG) {
 			final ShuffleboardTab inputTab = shuffleboardMap.getDebugTab();
-			inputTab.add("Movement Joy", new JoystickPartSendable(robotInput::getMovementJoy));
-			inputTab.add("Movement Speed", new InputPartSendable(robotInput::getMovementSpeed));
-			inputTab.add("Driver Rumble", new ControllerPartSendable(robotInput::getDriverRumble));
+//			inputTab.add("Movement Joy", new JoystickPartSendable(robotInput::getMovementJoy));
+//			inputTab.add("Movement Speed", new InputPartSendable(robotInput::getMovementSpeed));
+//			inputTab.add("Driver Rumble", new ControllerPartSendable(robotInput::getDriverRumble));
 			
-			inputTab.add("Cargo Intake", new InputPartSendable(robotInput::getCargoIntakeSpeed));
-			inputTab.add("Lift Speed", new InputPartSendable(robotInput::getLiftManualSpeed));
-			inputTab.add("Hatch Pivot Speed", new InputPartSendable(robotInput::getHatchManualPivotSpeed));
+//			inputTab.add("Cargo Intake", new InputPartSendable(robotInput::getCargoIntakeSpeed));
+//			inputTab.add("Lift Speed", new InputPartSendable(robotInput::getLiftManualSpeed));
+//			inputTab.add("Hatch Pivot Speed", new InputPartSendable(robotInput::getHatchManualPivotSpeed));
+			inputTab.add("Defense Button", new InputPartSendable(robotInput::getDefenseButton));
 		}
 		System.out.println("Finished constructor");
 	}
@@ -270,7 +279,7 @@ public class Robot extends TimedRobot {
 	@Override
 	public void teleopInit() {
 		actionChooser.setNextAction(new Actions.ActionMultiplexerBuilder(
-				swerveDriveAction
+				teleopAction
 		).canRecycle(false).canBeDone(true).build());
 		swerveDriveAction.setPerspective(Perspective.DRIVER_STATION);
 		soundSender.sendEvent(SoundEvents.TELEOP_ENABLE);
@@ -286,7 +295,7 @@ public class Robot extends TimedRobot {
 		actionChooser.setNextAction(
 				new Actions.ActionQueueBuilder(
 						autonomousChooserState.createAutonomousAction(orientationSystem.getStartingOrientation()),
-						swerveDriveAction
+						teleopAction
 				) .immediatelyDoNextWhenDone(true) .canBeDone(false) .canRecycle(false) .build()
 		);
 		swerveDriveAction.setPerspective(autonomousPerspectiveChooser.getSelected());
@@ -296,9 +305,9 @@ public class Robot extends TimedRobot {
 	/** Called constantly during autonomous*/
 	@Override
 	public void autonomousPeriodic() {
-		if(!swerveDriveAction.isActive()){
+		if(!teleopAction.isActive()){
 			if(robotInput.getAutonomousCancelButton().isDown()){
-				actionChooser.setNextAction(swerveDriveAction);
+				actionChooser.setNextAction(teleopAction);
 				System.out.println("Letting teleop take over now");
 			}
 		}

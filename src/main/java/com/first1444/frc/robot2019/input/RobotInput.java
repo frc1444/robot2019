@@ -31,6 +31,9 @@ public interface RobotInput extends ControllerInput {
 	InputPart getHatchPivotReadyPreset();
 	InputPart getHatchPivotStowedPreset();
 	
+	InputPart getHatchGrab();
+	InputPart getHatchDrop();
+	
 	InputPart getLevel1Preset();
 	InputPart getLevel2Preset();
 	InputPart getLevel3Preset();

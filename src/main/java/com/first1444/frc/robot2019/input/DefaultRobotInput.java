@@ -65,7 +65,10 @@ public class DefaultRobotInput extends SimpleControllerInput implements RobotInp
 		addChildren(false, false, movementSpeed);
 		liftManualSpeed = new MultiplierInputPart(
 				References.create(() -> operatorJoy.getMainJoystick().getYAxis()), // analog full
-				References.create(operatorJoy::getTrigger) // digital
+				new HighestPositionInputPart(
+						References.create(operatorJoy::getTrigger),
+						References.create(this::getCargoLiftManualAllowed)
+				)
 		);
 		addChildren(false, false, liftManualSpeed);
 		cargoIntakeSpeed = new MultiplierInputPart(
@@ -88,6 +91,7 @@ public class DefaultRobotInput extends SimpleControllerInput implements RobotInp
 				References.create(() -> climbJoy.getMainJoystick().getYAxis()),
 				References.create(climbJoy::getThumbLower)
 		);
+		addChildren(false, false, climbWheelSpeed);
 	}
 
 	// region Drive Controls
@@ -120,7 +124,7 @@ public class DefaultRobotInput extends SimpleControllerInput implements RobotInp
 	
 	@Override
 	public InputPart getCargoLiftManualAllowed() {
-		return operatorJoy.getThumbLeftLower();
+		return operatorJoy.getGridUpperRight();
 	}
 	
 	@Override
@@ -143,9 +147,20 @@ public class DefaultRobotInput extends SimpleControllerInput implements RobotInp
 	}
 	@Override
 	public InputPart getHatchPivotStowedPreset() {
-		return operatorJoy.getThumbLeftUpper();
+		return operatorJoy.getThumbRightLower();
 	}
 	// endregion
+	
+	
+	@Override
+	public InputPart getHatchDrop() {
+		return operatorJoy.getThumbLeftUpper();
+	}
+	
+	@Override
+	public InputPart getHatchGrab() {
+		return operatorJoy.getThumbRightUpper();
+	}
 	
 	// region Lift Presets
 	@Override
@@ -173,7 +188,7 @@ public class DefaultRobotInput extends SimpleControllerInput implements RobotInp
 	
 	@Override
 	public InputPart getDefenseButton() {
-		return climbJoy.getLeftUpper();
+		return climbJoy.getRightUpper();
 	}
 	
 	@Override
