@@ -33,7 +33,7 @@ class ImmutableVisionPacket implements VisionPacket{
 		
 		final double yawRadians = toRadians(yaw);
 		
-		final double rotationRadians = -yawRadians;
+		final double rotationRadians = yawRadians;
 		final double sinRotation = sin(rotationRadians);
 		final double cosRotation = cos(rotationRadians);
 		

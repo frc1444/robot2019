@@ -2,20 +2,20 @@ package com.first1444.frc.robot2019.subsystems;
 
 import com.first1444.frc.robot2019.ShuffleboardMap;
 import com.first1444.frc.robot2019.input.RobotInput;
-import edu.wpi.cscore.UsbCamera;
-import edu.wpi.cscore.VideoMode;
-import edu.wpi.cscore.VideoSink;
+import edu.wpi.cscore.*;
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.wpilibj.shuffleboard.SendableCameraWrapper;
 import me.retrodaredevil.action.SimpleAction;
 
 public class CameraSystem extends SimpleAction {
+	private final ShuffleboardMap shuffleboardMap;
 	private final RobotInput input;
 	private final UsbCamera hatch;
 	private final UsbCamera cargo;
 	private final VideoSink server;
 	public CameraSystem(ShuffleboardMap shuffleboardMap, RobotInput input) {
 		super(false);
+		this.shuffleboardMap = shuffleboardMap;
 		this.input = input;
 		
 		hatch = CameraServer.getInstance().startAutomaticCapture(0);
@@ -23,7 +23,8 @@ public class CameraSystem extends SimpleAction {
 		setupCamera(hatch);
 		setupCamera(cargo);
 		
-		server = CameraServer.getInstance().getServer();
+		server = new CvSink("Camera asdf");
+		CameraServer.getInstance().addServer(server);
 		server.setSource(hatch);
 		shuffleboardMap.getUserTab().add("Camera", SendableCameraWrapper.wrap(server.getSource()));
 	}
@@ -35,7 +36,7 @@ public class CameraSystem extends SimpleAction {
 	@Override
 	protected void onUpdate() {
 		super.onUpdate();
-		if(input.getCameraToggleButton().isDown()){
+		if(input.getCameraToggleButton().isPressed()){
 			if(server.getSource() == hatch){
 				server.setSource(cargo);
 			} else {

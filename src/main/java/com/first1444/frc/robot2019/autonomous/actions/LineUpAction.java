@@ -9,6 +9,7 @@ import com.first1444.frc.robot2019.subsystems.swerve.SwerveDistanceTracker;
 import com.first1444.frc.robot2019.subsystems.swerve.SwerveDrive;
 import com.first1444.frc.robot2019.vision.*;
 import com.first1444.frc.util.MathUtil;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import me.retrodaredevil.action.Action;
 import me.retrodaredevil.action.LinkedAction;
 import me.retrodaredevil.action.SimpleAction;
@@ -121,18 +122,28 @@ public class LineUpAction extends SimpleAction implements LinkedAction {
 		System.out.println("x: " + Constants.DECIMAL_FORMAT.format(moveX) + " z/y: " + Constants.DECIMAL_FORMAT.format(moveY));
 		
 		final double yawTurnAmount = max(-1, min(1, vision.getVisionYaw() / -30));
-		final double faceTurnAmount = max(-1, min(1, MathUtil.minChange(vision.getGroundAngle(), 90, 360) / -30));
+		final double zeroGroundAngle = MathUtil.minChange(vision.getGroundAngle(), 90, 360); // we want this to get close to 0
+		SmartDashboard.putNumber("robotX", vision.getRobotX());
+		SmartDashboard.putNumber("robotZ", vision.getRobotZ());
+		SmartDashboard.putNumber("yaw", vision.getVisionYaw());
+		
+		SmartDashboard.putNumber("visionX", vision.getVisionX());
+		SmartDashboard.putNumber("visionZ", vision.getVisionZ());
+		SmartDashboard.putNumber("zero ground angle", zeroGroundAngle);
+		final double faceTurnAmount = max(-1, min(1, zeroGroundAngle / -90));
+		SmartDashboard.putNumber("yawTurnAmount", yawTurnAmount);
+		SmartDashboard.putNumber("faceTurnAmount", faceTurnAmount);
 		
 //		final double turnAmount = .5 * max(-1, min(1,
 //				max(-1, min(1, vision.getVisionYaw() / -30))
 //						+ .5 * vision.getImageX()
 //		));
-		// TODO this doesn't work, fix it
 		final double turnAmount;
-		if(vision.getGroundDistance() > 40){
+		final double groundDistance = vision.getGroundDistance();
+		if(groundDistance > 40){
 			turnAmount = faceTurnAmount;
-		} else if(vision.getGroundDistance() > 20){
-			final double percentage = (vision.getGroundDistance() - 20) / 20.0;
+		} else if(groundDistance > 20){
+			final double percentage = (groundDistance - 20) / 20.0;
 			turnAmount = percentage * faceTurnAmount + (1 - percentage) * yawTurnAmount;
 		} else {
 			turnAmount = yawTurnAmount;
