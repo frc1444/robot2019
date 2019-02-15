@@ -46,6 +46,9 @@ public class PacketListener extends Thread implements VisionSupplier{
 		} catch(IllegalStateException ex){
 			ex.printStackTrace();
 			System.err.println("Got error while parsing vision!");
+		} catch(Exception ex){
+			ex.printStackTrace();
+			System.err.println("Got exception while parsing vision");
 		}
 	}
 	private void updatePackets(JsonArray jsonArray){

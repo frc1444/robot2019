@@ -24,7 +24,7 @@ public enum AutonomousType {
 
 	SIDE_CARGO_SHIP("Side Cargo Ship", EnumSet.of(StartingPosition.LEFT, StartingPosition.RIGHT),
 			EnumSet.of(GamePieceType.HATCH, GamePieceType.CARGO),
-			EnumSet.of(SlotLevel.LEVEL1, SlotLevel.LEVEL2, SlotLevel.LEVEL3)),
+			EnumSet.of(SlotLevel.LEVEL1)),
 
 	SIDE_ROCKET("Side Rocket", EnumSet.of(StartingPosition.LEFT, StartingPosition.RIGHT),
 			EnumSet.of(GamePieceType.HATCH),
@@ -41,7 +41,7 @@ public enum AutonomousType {
 				   Collection<SlotLevel> slotLevels) {
 		this.name = name;
 		this.startingPositions = Collections.unmodifiableCollection(startingPositions);
-		this.gamePieces = gamePieces;
+		this.gamePieces = Collections.unmodifiableCollection(gamePieces);
 		this.slotLevels = Collections.unmodifiableCollection(slotLevels);
 	}
 

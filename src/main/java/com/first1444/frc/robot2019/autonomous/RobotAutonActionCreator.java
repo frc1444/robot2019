@@ -2,7 +2,7 @@ package com.first1444.frc.robot2019.autonomous;
 
 import com.first1444.frc.robot2019.Robot;
 import com.first1444.frc.robot2019.autonomous.actions.GoStraight;
-import com.first1444.frc.robot2019.autonomous.actions.LineUpAction;
+import com.first1444.frc.robot2019.autonomous.actions.vision.LineUpAction;
 import com.first1444.frc.robot2019.autonomous.actions.TurnToOrientation;
 import com.first1444.frc.robot2019.deepspace.SlotLevel;
 import com.first1444.frc.robot2019.vision.BestVisionPacketSelector;

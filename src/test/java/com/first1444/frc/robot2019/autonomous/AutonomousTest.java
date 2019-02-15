@@ -6,11 +6,12 @@ import com.first1444.frc.robot2019.autonomous.options.StartingPosition;
 import com.first1444.frc.robot2019.deepspace.GamePieceType;
 import com.first1444.frc.robot2019.deepspace.SlotLevel;
 import me.retrodaredevil.action.Action;
+import org.junit.jupiter.api.Test;
 
 public class AutonomousTest {
 	public static void main(String[] args){
 		final AutonomousModeCreator modeCreator = new AutonomousModeCreator(new TestAutonActionCreator(System.out), Constants.Dimensions.INSTANCE);
-		runMode(modeCreator, AutonomousType.OFF_CENTER_CARGO_SHIP, StartingPosition.RIGHT, GamePieceType.HATCH, SlotLevel.LEVEL1, 90);
+		runMode(modeCreator, AutonomousType.OFF_CENTER_CARGO_SHIP, StartingPosition.MIDDLE_RIGHT, GamePieceType.HATCH, SlotLevel.LEVEL1, 90);
 		runMode(modeCreator, AutonomousType.DO_NOTHING, null, null, null, 90);
 		runMode(modeCreator, AutonomousType.CROSS_LINE_FORWARD, null, null, null, 90);
 		runMode(modeCreator, AutonomousType.CROSS_LINE_SIDE, StartingPosition.RIGHT, null, null, 90);
@@ -39,5 +40,14 @@ public class AutonomousTest {
 		} while (!action.isDone());
 		action.end();
 		System.out.println("Ended!");
+	}
+	@Test
+	void testAllAuto(){
+		final AutonomousModeCreator modeCreator = new AutonomousModeCreator(new TestAutonActionCreator(System.out), Constants.Dimensions.INSTANCE);
+		for(AutonomousType type : AutonomousType.values()) for(GamePieceType gamePiece : type.getGamePieces()) for(StartingPosition startingPosition : type.getStartingPositions()) for(SlotLevel slotLevel : type.getSlotLevels()){
+			for(double startingOrientation : new double[] {0, 90, 180, 270}) {
+				runMode(modeCreator, type, startingPosition, gamePiece, slotLevel, startingOrientation);
+			}
+		}
 	}
 }

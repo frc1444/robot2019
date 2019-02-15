@@ -2,7 +2,7 @@ package com.first1444.frc.robot2019.vision;
 
 import static java.lang.Math.*;
 
-class ImmutableVisionPacket implements VisionPacket{
+public class ImmutableVisionPacket implements VisionPacket{
 	private final double robotX, robotY, robotZ, yaw, pitch, roll, imageX, imageY;
 	private final double visionX, visionY, visionZ;
 	private final double groundDistance, groundAngle;
@@ -17,7 +17,7 @@ class ImmutableVisionPacket implements VisionPacket{
 	 * @param imageX The x position of the vision from the perspective of the camera in range [-1..1]. A positive value is right
 	 * @param imageY The y position of the vision from the perspective of the camera in range [-1..1]. A positive value is up
 	 */
-	ImmutableVisionPacket(double robotX, double robotY, double robotZ, double yaw, double pitch, double roll, double imageX, double imageY) {
+	public ImmutableVisionPacket(double robotX, double robotY, double robotZ, double yaw, double pitch, double roll, double imageX, double imageY) {
 		if(abs(imageX) > 1)
 			throw new IllegalArgumentException();
 		if(abs(imageY) > 1)

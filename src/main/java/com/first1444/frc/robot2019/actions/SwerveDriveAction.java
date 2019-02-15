@@ -1,17 +1,14 @@
 package com.first1444.frc.robot2019.actions;
 
 import com.first1444.frc.robot2019.Perspective;
-import com.first1444.frc.robot2019.Robot;
 import com.first1444.frc.robot2019.RobotDimensions;
-import com.first1444.frc.robot2019.autonomous.actions.LineUpAction;
+import com.first1444.frc.robot2019.autonomous.actions.vision.LineUpAction;
 import com.first1444.frc.robot2019.input.RobotInput;
 import com.first1444.frc.robot2019.sensors.Orientation;
 import com.first1444.frc.robot2019.subsystems.swerve.SwerveDrive;
-import com.first1444.frc.robot2019.subsystems.swerve.SwerveModule;
 import com.first1444.frc.robot2019.vision.BestVisionPacketSelector;
 import com.first1444.frc.robot2019.vision.VisionSupplier;
 import com.first1444.frc.util.MathUtil;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import me.retrodaredevil.action.*;
 import me.retrodaredevil.controller.input.InputPart;
 import me.retrodaredevil.controller.input.JoystickPart;

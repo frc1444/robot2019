@@ -89,6 +89,58 @@ public final class Constants {
 		}
 	}
 	
+	public enum Swerve2019 implements SwerveSetup{
+		INSTANCE;
+		
+		@Override public int getFLDriveCAN() { return 4; }
+		@Override public int getFRDriveCAN() { return 3; }
+		@Override public int getRLDriveCAN() { return 2; }
+		@Override public int getRRDriveCAN() { return 1; }
+		
+		@Override public int getFLSteerCAN() { return 8; }
+		@Override public int getFRSteerCAN() { return 7; }
+		@Override public int getRLSteerCAN() { return 6; }
+		@Override public int getRRSteerCAN() { return 5; }
+		
+		@Override
+		public double getWheelBase() {
+			return 22.75;
+		}
+		
+		@Override
+		public double getTrackWidth() {
+			return 24;
+		}
+		
+		@Override
+		public MutableValueMap<ModuleConfig> setupFL(MutableValueMap<ModuleConfig> config) {
+			return config.setDouble(ModuleConfig.ABS_ENCODER_OFFSET, 147)
+					.setDouble(ModuleConfig.MAX_ENCODER_VALUE, 899)
+					.setDouble(ModuleConfig.MIN_ENCODER_VALUE, 10);
+		}
+		
+		@Override
+		public MutableValueMap<ModuleConfig> setupFR(MutableValueMap<ModuleConfig> config) {
+			return config.setDouble(ModuleConfig.ABS_ENCODER_OFFSET, 705)
+					.setDouble(ModuleConfig.MAX_ENCODER_VALUE, 891)
+					.setDouble(ModuleConfig.MIN_ENCODER_VALUE, 12);
+		}
+		
+		@Override
+		public MutableValueMap<ModuleConfig> setupRL(MutableValueMap<ModuleConfig> config) {
+			return config.setDouble(ModuleConfig.ABS_ENCODER_OFFSET, 775)
+					.setDouble(ModuleConfig.MAX_ENCODER_VALUE, 872)
+					.setDouble(ModuleConfig.MIN_ENCODER_VALUE, 13);
+		}
+		
+		@Override
+		public MutableValueMap<ModuleConfig> setupRR(MutableValueMap<ModuleConfig> config) {
+			return config.setDouble(ModuleConfig.ABS_ENCODER_OFFSET, 604)
+					.setDouble(ModuleConfig.MAX_ENCODER_VALUE, 895)
+					.setDouble(ModuleConfig.MIN_ENCODER_VALUE, 9);
+		}
+	}
+	
 	public enum Dimensions implements RobotDimensions {
 		INSTANCE;
 		

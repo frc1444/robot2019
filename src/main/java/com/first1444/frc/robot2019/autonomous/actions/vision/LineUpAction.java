@@ -1,11 +1,9 @@
-package com.first1444.frc.robot2019.autonomous.actions;
+package com.first1444.frc.robot2019.autonomous.actions.vision;
 
-import com.first1444.frc.robot2019.Constants;
 import com.first1444.frc.robot2019.Perspective;
 import com.first1444.frc.robot2019.event.EventSender;
 import com.first1444.frc.robot2019.event.SoundEvents;
 import com.first1444.frc.robot2019.sensors.Orientation;
-import com.first1444.frc.robot2019.subsystems.swerve.SwerveDistanceTracker;
 import com.first1444.frc.robot2019.subsystems.swerve.SwerveDrive;
 import com.first1444.frc.robot2019.vision.*;
 import com.first1444.frc.util.MathUtil;
@@ -21,7 +19,7 @@ import java.util.function.Supplier;
 import static java.lang.Math.*;
 
 public class LineUpAction extends SimpleAction implements LinkedAction {
-	private static final double MAX_SPEED = .3;
+	public static final double MAX_SPEED = .3;
 	private static final long FAIL_NOTIFY_TIME = 100;
 	private static final long MAX_FAIL_TIME = 500;
 	
@@ -75,22 +73,23 @@ public class LineUpAction extends SimpleAction implements LinkedAction {
 				}
 				failed = false;
 				final VisionPacket vision = selector.getPreferredTarget(packets);
-				updateVisionView(vision);
+//				if(MathUtil.minDistance(toDegrees(atan2(v.getRobotZ(), v.getRobotX())), 90, 360) > 20){
+//					vision = new ImmutableVisionPacket(v.getRobotX(), v.getRobotY(), v.getRobotZ() - 20, v.getVisionYaw(), v.getVisionPitch(), v.getVisionRoll(), v.getImageX(), v.getImageY());
+//				} else {
+//					vision = v;
+//				}
 				usePacket(vision);
 			} else {
-				if(visionView != null){
-					useVisionView(visionView);
-				}
 				System.out.println("No visible packets!");
 				failed = true;
 			}
 		} else {
-			if(visionView != null){
-				useVisionView(visionView);
-			}
 			failed = true;
 		}
 		if(failed){
+			if(visionView != null){
+				useVisionView(visionView);
+			}
 			if(failureStartTime == null){
 				failureStartTime = System.currentTimeMillis();
 			}
@@ -114,14 +113,25 @@ public class LineUpAction extends SimpleAction implements LinkedAction {
 		final double direction = vision.getGroundAngle() + orientation;
 		visionView = new VisionView(direction, vision.getGroundDistance(), visionYaw, driveSupplier.get());
 	}
-	private void usePacket(VisionPacket vision){
-		Objects.requireNonNull(vision);
+	private void usePacket(final VisionPacket targetVision){
+		Objects.requireNonNull(targetVision);
 		
-		final double moveX = vision.getVisionX() / vision.getGroundDistance();
-		final double moveY = vision.getVisionZ() / vision.getGroundDistance();
+		final VisionPacket moveVision;
+		final boolean usingTarget;
+		if(MathUtil.minDistance(toDegrees(atan(targetVision.getRobotZ() / targetVision.getRobotX())), 90, 360) > 20){
+			moveVision = new ImmutableVisionPacket(targetVision.getRobotX(), targetVision.getRobotY(), targetVision.getRobotZ() - 30, targetVision.getVisionYaw(), targetVision.getVisionPitch(), targetVision.getVisionRoll(), targetVision.getImageX(), targetVision.getImageY());
+			usingTarget = false;
+		} else {
+			moveVision = targetVision;
+			usingTarget = true;
+		}
+		updateVisionView(moveVision);
 		
-		final double yawTurnAmount = max(-1, min(1, vision.getVisionYaw() / -30));
-		final double zeroGroundAngle = MathUtil.minChange(vision.getGroundAngle(), 90, 360); // we want this to get close to 0
+		final double moveX = moveVision.getVisionX() / moveVision.getGroundDistance();
+		final double moveY = moveVision.getVisionZ() / moveVision.getGroundDistance();
+		
+		final double yawTurnAmount = max(-1, min(1, targetVision.getVisionYaw() / -30)); // moveVision has same yaw so it doesn't matter
+		final double zeroGroundAngle = MathUtil.minChange(targetVision.getGroundAngle(), 90, 360); // we want this to get close to 0 // we want to face the target
 		final double faceTurnAmount = max(-1, min(1, zeroGroundAngle / -90));
 		SmartDashboard.putNumber("yawTurnAmount", yawTurnAmount);
 		SmartDashboard.putNumber("faceTurnAmount", faceTurnAmount);
@@ -131,16 +141,22 @@ public class LineUpAction extends SimpleAction implements LinkedAction {
 //						+ .5 * vision.getImageX()
 //		));
 		final double turnAmount;
-		final double groundDistance = vision.getGroundDistance();
-		if(groundDistance > 40){
+		if(!usingTarget){
 			turnAmount = faceTurnAmount;
-		} else if(groundDistance > 20){
-			final double percentage = (groundDistance - 20) / 20.0;
-			turnAmount = percentage * faceTurnAmount + (1 - percentage) * yawTurnAmount;
 		} else {
-			turnAmount = yawTurnAmount;
+			assert moveVision == targetVision : "always true";
+			
+			final double groundDistance = targetVision.getGroundDistance();
+			if (groundDistance > 40) {
+				turnAmount = faceTurnAmount;
+			} else if (groundDistance > 20) {
+				final double percentage = (groundDistance - 20) / 20.0;
+				turnAmount = percentage * faceTurnAmount + (1 - percentage) * yawTurnAmount;
+			} else {
+				turnAmount = yawTurnAmount;
+			}
 		}
-		
+		// TODO change a few of these to moveVision and stuff
 		
 		
 		driveSupplier.get().setControl(moveX, moveY, turnAmount, MAX_SPEED, perspective);
@@ -153,16 +169,16 @@ public class LineUpAction extends SimpleAction implements LinkedAction {
 	private void useVisionView(VisionView visionView){
 		Objects.requireNonNull(visionView);
 		final double orientation = orientationSupplier.get().getOrientation();
-		final double direction = visionView.directionToTarget - orientation; // forward is 90 degrees
+		final double direction = visionView.getDirectionToTarget() - orientation; // forward is 90 degrees
 		final double directionRadians = toRadians(direction);
-		final double visionYaw = MathUtil.minChange(visionView.targetOrientation - orientation, 0, 360); // perfect is 0 degrees
-		final double distance = visionView.distanceToTarget;
+		final double visionYaw = MathUtil.minChange(visionView.getTargetOrientation() - orientation, 0, 360); // perfect is 0 degrees
+		final double distance = visionView.getDistanceToTarget();
 		
 		final double moveX = cos(directionRadians);
 		final double moveY = sin(directionRadians);
 		
 		driveSupplier.get().setControl(moveX, moveY, .5 * max(-1, min(1, visionYaw / -30)), MAX_SPEED, perspective);
-		if(visionView.tracker.calculateDistance() >= distance){
+		if(visionView.getTracker().calculateDistance() >= distance){
 			setDone(true);
 		}
 	}
@@ -172,23 +188,4 @@ public class LineUpAction extends SimpleAction implements LinkedAction {
 		return nextAction;
 	}
 	
-	private static class VisionView {
-		/** The direction to the target in relation to the orientation. In degrees*/
-		private final double directionToTarget;
-		/** The distance to the target in inches. */
-		private final double distanceToTarget;
-
-		/** Orientation of the vision in relation to the orientation. In degrees*/
-		private final double targetOrientation;
-		
-		private final SwerveDistanceTracker tracker;
-		
-		private VisionView(double directionToTarget, double distanceToTarget, double targetOrientation, SwerveDrive swerveDrive) {
-			this.directionToTarget = directionToTarget;
-			this.distanceToTarget = distanceToTarget;
-			this.targetOrientation = targetOrientation;
-			Objects.requireNonNull(swerveDrive);
-			this.tracker = new SwerveDistanceTracker(swerveDrive);
-		}
-	}
 }
