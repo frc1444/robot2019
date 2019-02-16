@@ -31,17 +31,11 @@ public class DummyClimber extends SimpleAction implements Climber {
 	
 	@Override
 	public void setClimbSpeed(double speed) {
-		if(!isActive()){
-			System.err.println("climber not active but setting climb speed");
-		}
 		reportMap.report(CLIMB_SPEED, Constants.DECIMAL_FORMAT.format(speed));
 	}
 	
 	@Override
 	public void setDriveSpeed(double speed) {
-		if(!isActive()){
-			System.err.println("climber not active but setting climb drive speed");
-		}
 		reportMap.report(DRIVE_SPEED, Constants.DECIMAL_FORMAT.format(speed));
 	}
 }

@@ -7,11 +7,13 @@ public interface Lift {
 	
 	/**
 	 *
-	 * @return true if the position set with {@link #setDesiredPosition(double)} or {@link #setPositionCargoIntake()} is reached
+	 * @return true if the position set with {@link #setDesiredPosition(double)} or {@link #setDesiredPosition(Position)} is reached, false otherwise
 	 */
 	boolean isDesiredPositionReached();
-	void setPositionCargoIntake();
+	/** Sets the manual speed of the lift.*/
 	void setManualSpeed(double speed, boolean canPickupCargo);
+	/** Same as {@link #setManualSpeed(double, boolean) setManualSpeed(speed, true), except this won't try to slow the lift down if it gets near the bottom}*/
+	void setManualSpeedOverride(double speed);
 	void lockCurrentPosition();
 	LiftMode getLiftMode();
 	
@@ -21,6 +23,7 @@ public interface Lift {
 	
 	
 	enum Position {
+		CARGO_PICKUP,
 		LEVEL1,
 		LEVEL2,
 		LEVEL3,

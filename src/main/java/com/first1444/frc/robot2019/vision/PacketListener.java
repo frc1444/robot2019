@@ -27,15 +27,17 @@ public class PacketListener extends Thread implements VisionSupplier{
 	
 	@Override
 	public void run() {
-		try(ZContext context = new ZContext()){
+		try(ZContext context = new ZContext()) {
 			ZMQ.Socket socket = context.createSocket(ZMQ.SUB);
 			socket.connect("tcp://10.14.44.5:" + port);
 			socket.setLinger(0);
 			socket.subscribe("".getBytes());
 			
-			while(!Thread.currentThread().isInterrupted()){
-				String reply = socket.recvStr(0);
-				updatePackets(reply);
+			while (!Thread.currentThread().isInterrupted()) {
+				final String reply = socket.recvStr(0);
+				if(reply != null) {
+					updatePackets(reply);
+				}
 			}
 		}
 	}

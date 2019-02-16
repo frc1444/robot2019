@@ -67,7 +67,8 @@ public class DefaultRobotInput extends SimpleControllerInput implements RobotInp
 				References.create(() -> operatorJoy.getMainJoystick().getYAxis()), // analog full
 				new HighestPositionInputPart(
 						References.create(operatorJoy::getTrigger),
-						References.create(this::getCargoLiftManualAllowed)
+						References.create(this::getCargoLiftManualAllowed),
+						References.create(this::getLiftManualOverrideAllowed)
 				)
 		);
 		addChildren(false, false, liftManualSpeed);
@@ -125,6 +126,11 @@ public class DefaultRobotInput extends SimpleControllerInput implements RobotInp
 	@Override
 	public InputPart getCargoLiftManualAllowed() {
 		return operatorJoy.getGridUpperRight();
+	}
+	
+	@Override
+	public InputPart getLiftManualOverrideAllowed() {
+		return climbJoy.getLeftLower();
 	}
 	
 	@Override

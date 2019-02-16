@@ -13,6 +13,7 @@ import me.retrodaredevil.action.LinkedAction;
 import me.retrodaredevil.action.SimpleAction;
 
 import java.util.Collection;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.function.Supplier;
 
@@ -59,7 +60,15 @@ public class LineUpAction extends SimpleAction implements LinkedAction {
 	@Override
 	protected void onUpdate() {
 		super.onUpdate();
-		final VisionInstant visionInstant = visionSupplier.getInstant(cameraID);
+		final VisionInstant visionInstant;
+		try{
+			visionInstant = visionSupplier.getInstant(cameraID);
+		} catch(NoSuchElementException ex){
+			ex.printStackTrace();
+			System.out.println("No vision with cameraID of: " + cameraID);
+			setDone(true);
+			return;
+		}
 //		System.out.println("visionInstant: " + visionInstant);
 		final boolean failed;
 		if(visionInstant != null && visionInstant.getTimeMillis() + 750 >= System.currentTimeMillis()){ // not null and packet within .75 seconds
@@ -73,11 +82,6 @@ public class LineUpAction extends SimpleAction implements LinkedAction {
 				}
 				failed = false;
 				final VisionPacket vision = selector.getPreferredTarget(packets);
-//				if(MathUtil.minDistance(toDegrees(atan2(v.getRobotZ(), v.getRobotX())), 90, 360) > 20){
-//					vision = new ImmutableVisionPacket(v.getRobotX(), v.getRobotY(), v.getRobotZ() - 20, v.getVisionYaw(), v.getVisionPitch(), v.getVisionRoll(), v.getImageX(), v.getImageY());
-//				} else {
-//					vision = v;
-//				}
 				usePacket(vision);
 			} else {
 				System.out.println("No visible packets!");

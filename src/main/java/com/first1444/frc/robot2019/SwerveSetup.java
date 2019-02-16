@@ -17,6 +17,8 @@ public interface SwerveSetup {
 	double getWheelBase();
 	double getTrackWidth();
 	
+	int getQuadCountsPerRevolution();
+	
 	MutableValueMap<ModuleConfig> setupFL(MutableValueMap<ModuleConfig> config);
 	MutableValueMap<ModuleConfig> setupFR(MutableValueMap<ModuleConfig> config);
 	MutableValueMap<ModuleConfig> setupRL(MutableValueMap<ModuleConfig> config);

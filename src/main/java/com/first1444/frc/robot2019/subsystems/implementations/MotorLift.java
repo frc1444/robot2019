@@ -1,10 +1,7 @@
 package com.first1444.frc.robot2019.subsystems.implementations;
 
 import com.ctre.phoenix.ErrorCode;
-import com.ctre.phoenix.motorcontrol.ControlMode;
-import com.ctre.phoenix.motorcontrol.FeedbackDevice;
-import com.ctre.phoenix.motorcontrol.LimitSwitchSource;
-import com.ctre.phoenix.motorcontrol.NeutralMode;
+import com.ctre.phoenix.motorcontrol.*;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.ctre.phoenix.motorcontrol.can.TalonSRXConfiguration;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
@@ -13,15 +10,12 @@ import com.first1444.frc.robot2019.subsystems.Lift;
 import com.first1444.frc.util.CTREUtil;
 import me.retrodaredevil.action.SimpleAction;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Objects;
+import java.util.*;
 
 public class MotorLift extends SimpleAction implements Lift {
 	private static final int ENCODER_COUNTS = 30000; // TODO Change
 	private static final TalonSRXConfiguration MASTER_CONFIG;
-	private static final Map<Position, Double> POSITION_MAP = new HashMap<>();
+	private static final Map<Position, Double> POSITION_MAP;
 	
 	static {
 		MASTER_CONFIG = new TalonSRXConfiguration();
@@ -35,10 +29,13 @@ public class MotorLift extends SimpleAction implements Lift {
 		
 		MASTER_CONFIG.clearPositionOnLimitR = true; // TODO test what this does
 		
-		POSITION_MAP.put(Position.LEVEL1, .1);
-		POSITION_MAP.put(Position.CARGO_CARGO_SHIP, .2);
-		POSITION_MAP.put(Position.LEVEL2, .4);
-		POSITION_MAP.put(Position.LEVEL3, .7);
+		POSITION_MAP = Map.of(
+				Position.CARGO_PICKUP, 0.0,
+				Position.LEVEL1, .1,
+				Position.CARGO_CARGO_SHIP, .2,
+				Position.LEVEL2, .4,
+				Position.LEVEL3, .7
+		);
 	}
 	
 	private final TalonSRX master;
@@ -60,6 +57,8 @@ public class MotorLift extends SimpleAction implements Lift {
 				() -> master.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, Constants.PID_INDEX, Constants.INIT_TIMEOUT)
 		);
 		master.setNeutralMode(NeutralMode.Brake);
+		master.setSensorPhase(true); // this needs to be called before setInverted
+		master.setInverted(InvertType.InvertMotorOutput);
 	}
 	private static int getEncoderCountsFromPosition(double position){
 		if(position < 0 || position > 1){
@@ -84,19 +83,25 @@ public class MotorLift extends SimpleAction implements Lift {
 	
 	/**
 	 *
-	 * @return true if the position set with {@link #setDesiredPosition(double)} or {@link #setPositionCargoIntake()} is reached
+	 * @return true if the position set with {@link #setDesiredPosition(double)} or {@link #setDesiredPosition(Position)} is reached
 	 */
+	@Override
 	public boolean isDesiredPositionReached(){
-		return false;
+		return false; // TODO make work
 	}
-	public void setPositionCargoIntake(){
-		setDesiredPosition(0); // TODO make this work
-	}
+	@Override
 	public void setManualSpeed(double speed, boolean canPickupCargo){
 		if(speed < -1 || speed > 1){
 			throw new IllegalArgumentException();
 		}
 		
+	}
+	
+	@Override
+	public void setManualSpeedOverride(double speed) {
+		if(speed < -1 || speed > 1){
+			throw new IllegalArgumentException();
+		}
 	}
 	
 	@Override

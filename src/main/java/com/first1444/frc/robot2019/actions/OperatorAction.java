@@ -32,7 +32,7 @@ public class OperatorAction extends SimpleAction {
 			} else if(input.getLevel3Preset().isDown()){
 				lift.setDesiredPosition(Lift.Position.LEVEL3);
 			} else if(input.getCargoPickupPreset().isDown()){
-				lift.setPositionCargoIntake();
+				lift.setDesiredPosition(Lift.Position.CARGO_PICKUP);
 			} else if(input.getLevelCargoShipCargoPreset().isDown()){
 				lift.setDesiredPosition(Lift.Position.CARGO_CARGO_SHIP);
 			} else {

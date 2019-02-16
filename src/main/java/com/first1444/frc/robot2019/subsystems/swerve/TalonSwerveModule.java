@@ -26,6 +26,7 @@ public class TalonSwerveModule extends SimpleAction implements SwerveModule {
 	private static final boolean VELOCITY_CONTROL = true;
 	
 	private final String name;
+	private final int quadCountsPerRevolution;
 	
 	private final BaseMotorController drive;
 	private final TalonSRX steer;
@@ -40,11 +41,12 @@ public class TalonSwerveModule extends SimpleAction implements SwerveModule {
 	/** The most recent value for the encoder counts on the steer module. This is changed in another thread and should only be read*/
 	private volatile int steerEncoderCountsCache = 0;
 
-	public TalonSwerveModule(String name, int driveID, int steerID,
+	public TalonSwerveModule(String name, int driveID, int steerID, int quadCountsPerRevolution,
 							 MutableValueMap<PidKey> drivePid, MutableValueMap<PidKey> steerPid,
 							 MutableValueMap<ModuleConfig> moduleConfig, ShuffleboardTab debugTab) {
 		super(true);
 		this.name = name;
+		this.quadCountsPerRevolution = quadCountsPerRevolution;
 		
 		drive = new WPI_TalonSRX(driveID);
 		steer = new WPI_TalonSRX(steerID);
@@ -187,7 +189,7 @@ public class TalonSwerveModule extends SimpleAction implements SwerveModule {
 	
 	/** @return The number of encoder counds per revolution steer*/
 	private int getCountsPerRevolution(){
-		return Constants.SWERVE_STEER_QUAD_ENCODER_COUNTS_PER_REVOLUTION;
+		return quadCountsPerRevolution;
 	}
 	
 	/**

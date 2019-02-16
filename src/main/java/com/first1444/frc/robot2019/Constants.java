@@ -8,6 +8,9 @@ import java.text.DecimalFormat;
 
 public final class Constants {
 	
+	public static final int CLIMB_DRIVE_ID = 9;
+	public static final int CLIMB_LIFT_PIVOT_ID = 10;
+	
 	private Constants(){ throw new UnsupportedOperationException(); }
 	
 	public static final boolean DEBUG = true;
@@ -19,10 +22,9 @@ public final class Constants {
 	public static final int LOOP_TIMEOUT = 3;
 	public static final int LOOP_TIMEOUT_THREAD = LOOP_TIMEOUT;
 	
-	/** The number of encoder counts per revolution on a steer wheel on the swerve drive when using the absolute encoders*/
-	public static final int SWERVE_STEER_ABSOLUTE_ENCODER_COUNTS_PER_REVOLUTION = 1024;
-	/** The number of encoder counts per revolution on a steer wheel on the swerve drive when using the quad encoders*/
-	public static final int SWERVE_STEER_QUAD_ENCODER_COUNTS_PER_REVOLUTION = 1657;
+//	/** The number of encoder counts per revolution on a steer wheel on the swerve drive when using the absolute encoders*/
+//	public static final int SWERVE_STEER_ABSOLUTE_ENCODER_COUNTS_PER_REVOLUTION = 1024;
+	
 	/** The number of encoder counts per revolution on a drive wheel on the swerve drive*/
 	public static final int SWERVE_DRIVE_ENCODER_COUNTS_PER_REVOLUTION = 534;
 	
@@ -61,6 +63,11 @@ public final class Constants {
 		}
 		
 		@Override
+		public int getQuadCountsPerRevolution() {
+			return 1657;
+		}
+		
+		@Override
 		public MutableValueMap<ModuleConfig> setupFL(MutableValueMap<ModuleConfig> config) {
 			return config.setDouble(ModuleConfig.ABS_ENCODER_OFFSET, 147)
 					.setDouble(ModuleConfig.MAX_ENCODER_VALUE, 899)
@@ -92,6 +99,7 @@ public final class Constants {
 	public enum Swerve2019 implements SwerveSetup{
 		INSTANCE;
 		
+		// Yup, we're using some of the same constants as last year, that doesn't mean everything will be the same, though!
 		@Override public int getFLDriveCAN() { return 4; }
 		@Override public int getFRDriveCAN() { return 3; }
 		@Override public int getRLDriveCAN() { return 2; }
@@ -113,31 +121,36 @@ public final class Constants {
 		}
 		
 		@Override
+		public int getQuadCountsPerRevolution() {
+			return 628;
+		}
+		
+		@Override
 		public MutableValueMap<ModuleConfig> setupFL(MutableValueMap<ModuleConfig> config) {
-			return config.setDouble(ModuleConfig.ABS_ENCODER_OFFSET, 147)
-					.setDouble(ModuleConfig.MAX_ENCODER_VALUE, 899)
+			return config.setDouble(ModuleConfig.ABS_ENCODER_OFFSET, 93) // or 88
+					.setDouble(ModuleConfig.MAX_ENCODER_VALUE, 883)
 					.setDouble(ModuleConfig.MIN_ENCODER_VALUE, 10);
 		}
 		
 		@Override
 		public MutableValueMap<ModuleConfig> setupFR(MutableValueMap<ModuleConfig> config) {
-			return config.setDouble(ModuleConfig.ABS_ENCODER_OFFSET, 705)
+			return config.setDouble(ModuleConfig.ABS_ENCODER_OFFSET, 445)
 					.setDouble(ModuleConfig.MAX_ENCODER_VALUE, 891)
-					.setDouble(ModuleConfig.MIN_ENCODER_VALUE, 12);
+					.setDouble(ModuleConfig.MIN_ENCODER_VALUE, 10);
 		}
 		
 		@Override
 		public MutableValueMap<ModuleConfig> setupRL(MutableValueMap<ModuleConfig> config) {
-			return config.setDouble(ModuleConfig.ABS_ENCODER_OFFSET, 775)
-					.setDouble(ModuleConfig.MAX_ENCODER_VALUE, 872)
-					.setDouble(ModuleConfig.MIN_ENCODER_VALUE, 13);
+			return config.setDouble(ModuleConfig.ABS_ENCODER_OFFSET, 151)
+					.setDouble(ModuleConfig.MAX_ENCODER_VALUE, 896)
+					.setDouble(ModuleConfig.MIN_ENCODER_VALUE, 10);
 		}
 		
 		@Override
 		public MutableValueMap<ModuleConfig> setupRR(MutableValueMap<ModuleConfig> config) {
-			return config.setDouble(ModuleConfig.ABS_ENCODER_OFFSET, 604)
-					.setDouble(ModuleConfig.MAX_ENCODER_VALUE, 895)
-					.setDouble(ModuleConfig.MIN_ENCODER_VALUE, 9);
+			return config.setDouble(ModuleConfig.ABS_ENCODER_OFFSET, 555)
+					.setDouble(ModuleConfig.MAX_ENCODER_VALUE, 858)
+					.setDouble(ModuleConfig.MIN_ENCODER_VALUE, 10);
 		}
 	}
 	

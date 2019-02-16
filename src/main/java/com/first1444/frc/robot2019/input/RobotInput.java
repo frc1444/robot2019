@@ -22,6 +22,8 @@ public interface RobotInput extends ControllerInput {
 	InputPart getLiftManualSpeed();
 	/** Should be used with {@link #getLiftManualSpeed()}. When pressed you can manually go below the limit to pickup cargo.*/
 	InputPart getCargoLiftManualAllowed();
+	/** Should be used with {@link #getLiftManualSpeed()}. When pressed the speed of the lift should not be limited at the top or bottom*/
+	InputPart getLiftManualOverrideAllowed();
 	
 	/** @return An InputPart with a range of [-1..1] where a negative value is intaking and positive is spitting*/
 	InputPart getCargoIntakeSpeed();

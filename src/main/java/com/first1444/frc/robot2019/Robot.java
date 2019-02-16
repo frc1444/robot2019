@@ -7,6 +7,8 @@
 
 package com.first1444.frc.robot2019;
 
+import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
+import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
 import com.first1444.frc.input.DualShockRumble;
 import com.first1444.frc.input.WPIInputCreator;
 import com.first1444.frc.robot2019.actions.OperatorAction;
@@ -23,12 +25,10 @@ import com.first1444.frc.robot2019.input.DefaultRobotInput;
 import com.first1444.frc.robot2019.input.InputUtil;
 import com.first1444.frc.robot2019.input.RobotInput;
 import com.first1444.frc.robot2019.sensors.BNO055;
+import com.first1444.frc.robot2019.sensors.DummyGyro;
 import com.first1444.frc.robot2019.sensors.Orientation;
 import com.first1444.frc.robot2019.subsystems.*;
-import com.first1444.frc.robot2019.subsystems.implementations.DummyCargoIntake;
-import com.first1444.frc.robot2019.subsystems.implementations.DummyClimber;
-import com.first1444.frc.robot2019.subsystems.implementations.DummyHatchIntake;
-import com.first1444.frc.robot2019.subsystems.implementations.DummyLift;
+import com.first1444.frc.robot2019.subsystems.implementations.*;
 import com.first1444.frc.robot2019.subsystems.swerve.*;
 import com.first1444.frc.robot2019.vision.BestVisionPacketSelector;
 import com.first1444.frc.robot2019.vision.PacketListener;
@@ -43,6 +43,7 @@ import com.first1444.frc.util.valuemap.sendable.MutableValueMapSendable;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.interfaces.Gyro;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import me.retrodaredevil.action.*;
@@ -115,12 +116,13 @@ public class Robot extends TimedRobot {
 		controllerManager.addController(robotInput);
 		controllerManager.update(); // update this so when calling get methods don't throw exceptions
 
-		BNO055 IMU = new BNO055();
-		IMU.SetMode(BNO055.IMUMode.NDOF);
+//		final BNO055 IMU = new BNO055();
+//		IMU.SetMode(BNO055.IMUMode.NDOF);
+		final Gyro gyro = new DummyGyro(0);
 		
 		dimensions = Constants.Dimensions.INSTANCE;
 
-		orientationSystem = new OrientationSystem(shuffleboardMap, IMU, robotInput);
+		orientationSystem = new OrientationSystem(shuffleboardMap, gyro, robotInput);
 		
 		OrientationSendable.addOrientation(shuffleboardMap.getUserTab(), this::getOrientation);
 		
@@ -150,20 +152,21 @@ public class Robot extends TimedRobot {
 
 		final ShuffleboardTab talonDebug = shuffleboardMap.getDebugTab();
 		final ReportMap reportMap = new ShuffleboardReportMap(shuffleboardMap.getDebugTab().getLayout("Report Map", BuiltInLayouts.kList));
-		final SwerveSetup swerve = Constants.Swerve2018.INSTANCE;
+		final SwerveSetup swerve = Constants.Swerve2019.INSTANCE;
+		final int quadCounts = swerve.getQuadCountsPerRevolution();
 		final var drive = new FourWheelSwerveDrive(
 				this::getOrientation,
 				new ImmutableActionFourSwerveCollection(
-						new TalonSwerveModule("front left", swerve.getFLDriveCAN(), swerve.getFLSteerCAN(), drivePid, steerPid,
+						new TalonSwerveModule("front left", swerve.getFLDriveCAN(), swerve.getFLSteerCAN(), quadCounts, drivePid, steerPid,
 								swerve.setupFL(createModuleConfig("front left module")), talonDebug),
 						
-						new TalonSwerveModule("front right", swerve.getFRDriveCAN(), swerve.getFRSteerCAN(), drivePid, steerPid,
+						new TalonSwerveModule("front right", swerve.getFRDriveCAN(), swerve.getFRSteerCAN(), quadCounts, drivePid, steerPid,
 								swerve.setupFR(createModuleConfig("front right module")), talonDebug),
 						
-						new TalonSwerveModule("rear left", swerve.getRLDriveCAN(), swerve.getRLSteerCAN(), drivePid, steerPid,
+						new TalonSwerveModule("rear left", swerve.getRLDriveCAN(), swerve.getRLSteerCAN(), quadCounts, drivePid, steerPid,
 								swerve.setupRL(createModuleConfig("rear left module")), talonDebug),
 						
-						new TalonSwerveModule("rear right", swerve.getRRDriveCAN(), swerve.getRRSteerCAN(), drivePid, steerPid,
+						new TalonSwerveModule("rear right", swerve.getRRDriveCAN(), swerve.getRRSteerCAN(), quadCounts, drivePid, steerPid,
 								swerve.setupRR(createModuleConfig("rear right module")), talonDebug)
 
 						
@@ -173,8 +176,10 @@ public class Robot extends TimedRobot {
 		);
 		final var lift = new DummyLift(reportMap);
 		final var cargoIntake = new DummyCargoIntake(reportMap);
-		final var climber = new DummyClimber(reportMap);
+//		final var climber = new DummyClimber(reportMap);
+		final var climber = new MotorClimber(new WPI_TalonSRX(Constants.CLIMB_LIFT_PIVOT_ID), new WPI_VictorSPX(Constants.CLIMB_DRIVE_ID));
 		final var hatchIntake = new DummyHatchIntake(reportMap);
+		final var taskSystem = new DefaultTaskSystem(robotInput);
 		this.drive = drive;
 		this.cargoIntake = cargoIntake;
 		this.climber = climber;
@@ -188,19 +193,20 @@ public class Robot extends TimedRobot {
 				drive, lift, cargoIntake, climber, hatchIntake
 		).clearAllOnEnd(false).canRecycle(true).build();
 		
-		constantSubsystemUpdater = new Actions.ActionMultiplexerBuilder(
+		constantSubsystemUpdater = new Actions.ActionMultiplexerBuilder( // NOTE, as of 2019.2.15 the current version of action-lib doesn't update these in order
 				orientationSystem,
+				taskSystem,
 				new SwerveCalibrateAction(this::getDrive, robotInput),
-				new LEDHandler(this),
-				new CameraSystem(shuffleboardMap, robotInput)
+//				new LEDHandler(this),
+				new CameraSystem(shuffleboardMap, () -> taskSystem)
 		).clearAllOnEnd(false).canRecycle(false).build();
 		actionChooser = Actions.createActionChooser(WhenDone.CLEAR_ACTIVE);
 
-		swerveDriveAction = new SwerveDriveAction(this::getDrive, this::getOrientation, robotInput, getVisionSupplier(), getDimensions());
+		swerveDriveAction = new SwerveDriveAction(this::getDrive, this::getOrientation, () -> taskSystem, robotInput, getVisionSupplier(), getDimensions());
 		teleopAction = new Actions.ActionMultiplexerBuilder(
 				swerveDriveAction,
 				new OperatorAction(this, robotInput)
-		).clearAllOnEnd(false).canBeDone(true).canRecycle(true).build();
+		).clearAllOnEnd(false).canBeDone(false).canRecycle(true).build();
 //		testAction = new TestAction(robotInput);
 		autonomousChooserState = new AutonomousChooserState(
 				shuffleboardMap,  // this will add stuff to the dashboard
@@ -210,6 +216,14 @@ public class Robot extends TimedRobot {
 
 		System.out.println("Finished constructor");
 	}
+	
+	@Override
+	public void close() {
+		super.close();
+		packetListener.interrupt();
+		System.out.println("close() method called! Robot program must be ending!");
+	}
+	
 	private MutableValueMap<ModuleConfig> createModuleConfig(String name){
 		final MutableValueMapSendable<ModuleConfig> config = new MutableValueMapSendable<>(ModuleConfig.class);
 		if(Constants.DEBUG) {
