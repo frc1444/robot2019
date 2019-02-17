@@ -2,10 +2,7 @@ package com.first1444.frc.robot2019.actions;
 
 import com.first1444.frc.robot2019.Robot;
 import com.first1444.frc.robot2019.input.RobotInput;
-import com.first1444.frc.robot2019.subsystems.CargoIntake;
-import com.first1444.frc.robot2019.subsystems.Climber;
-import com.first1444.frc.robot2019.subsystems.HatchIntake;
-import com.first1444.frc.robot2019.subsystems.Lift;
+import com.first1444.frc.robot2019.subsystems.*;
 import me.retrodaredevil.action.SimpleAction;
 import me.retrodaredevil.controller.input.InputPart;
 
@@ -23,6 +20,8 @@ public class OperatorAction extends SimpleAction {
 		super.onUpdate();
 		final boolean isDefense = input.getDefenseButton().isDown();
 		
+		final TaskSystem taskSystem = robot.getTaskSystem();
+		
 		{ // lift
 			final Lift lift = robot.getLift();
 			if(isDefense || input.getLevel1Preset().isDown()){
@@ -33,8 +32,10 @@ public class OperatorAction extends SimpleAction {
 				lift.setDesiredPosition(Lift.Position.LEVEL3);
 			} else if(input.getCargoPickupPreset().isDown()){
 				lift.setDesiredPosition(Lift.Position.CARGO_PICKUP);
+				taskSystem.setCurrentTask(TaskSystem.Task.CARGO);
 			} else if(input.getLevelCargoShipCargoPreset().isDown()){
 				lift.setDesiredPosition(Lift.Position.CARGO_CARGO_SHIP);
+				taskSystem.setCurrentTask(TaskSystem.Task.CARGO);
 			} else {
 				final InputPart speedInputPart = input.getLiftManualSpeed();
 				if(speedInputPart.isDeadzone()){
@@ -49,7 +50,11 @@ public class OperatorAction extends SimpleAction {
 		}
 		{ // cargo intake
 			final CargoIntake cargoIntake = robot.getCargoIntake();
-			cargoIntake.setSpeed(input.getCargoIntakeSpeed().getZonedPosition());
+			final double speed = input.getCargoIntakeSpeed().getZonedPosition();
+			cargoIntake.setSpeed(speed);
+			if(speed < 0){ // if we're intaking, set to cargo task
+				taskSystem.setCurrentTask(TaskSystem.Task.CARGO);
+			}
 		}
 		{ // hatch intake
 			final HatchIntake hatchIntake = robot.getHatchIntake();
@@ -58,8 +63,10 @@ public class OperatorAction extends SimpleAction {
 				hatchIntake.stowedPosition();
 			} else if(input.getHatchPivotReadyPreset().isDown()){
 				hatchIntake.readyPosition();
+				taskSystem.setCurrentTask(TaskSystem.Task.HATCH);
 			} else if(input.getHatchPivotGroundPreset().isDown()){
 				hatchIntake.groundPosition();
+				taskSystem.setCurrentTask(TaskSystem.Task.HATCH);
 			} else {
 				final InputPart pivotSpeed = input.getHatchManualPivotSpeed();
 				if (pivotSpeed.isDeadzone()) {
@@ -68,13 +75,16 @@ public class OperatorAction extends SimpleAction {
 					}
 				} else {
 					hatchIntake.setManualPivotSpeed(pivotSpeed.getPosition());
+					taskSystem.setCurrentTask(TaskSystem.Task.HATCH);
 				}
 			}
 			
 			if(input.getHatchDrop().isDown()){
 				hatchIntake.drop();
+				taskSystem.setCurrentTask(TaskSystem.Task.HATCH);
 			} else if(input.getHatchGrab().isDown()){
 				hatchIntake.hold();
+				taskSystem.setCurrentTask(TaskSystem.Task.HATCH);
 			}
 			
 		}

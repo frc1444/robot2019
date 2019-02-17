@@ -13,7 +13,7 @@ import me.retrodaredevil.action.SimpleAction;
 import java.util.*;
 
 public class MotorLift extends SimpleAction implements Lift {
-	private static final int ENCODER_COUNTS = 30000; // TODO Change
+	private static final int ENCODER_COUNTS = 3000; // TODO Change
 	private static final TalonSRXConfiguration MASTER_CONFIG;
 	private static final Map<Position, Double> POSITION_MAP;
 	
@@ -45,7 +45,7 @@ public class MotorLift extends SimpleAction implements Lift {
 	
 	public MotorLift() {
 		super(true);
-		master = new WPI_TalonSRX(Constants.LIFT_MASTER_ID);
+		master = new WPI_TalonSRX(Constants.BOOM_MASTER_ID);
 		CTREUtil.reportError(
 				(errorCode, index) -> {
 					if(errorCode != ErrorCode.OK) {
@@ -105,7 +105,7 @@ public class MotorLift extends SimpleAction implements Lift {
 	}
 	
 	@Override
-	public void lockCurrentPosition() {
+	public void lockCurrentPosition() { // TODO lock position
 	
 	}
 	

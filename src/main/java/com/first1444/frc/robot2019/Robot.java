@@ -74,6 +74,7 @@ public class Robot extends TimedRobot {
 	private final Climber climber;
 	private final HatchIntake hatchIntake;
 	private final Lift lift;
+	private final TaskSystem taskSystem;
 	
 	private final PacketListener packetListener;
 	private final EventSender soundSender;
@@ -185,6 +186,7 @@ public class Robot extends TimedRobot {
 		this.climber = climber;
 		this.hatchIntake = hatchIntake;
 		this.lift = lift;
+		this.taskSystem = taskSystem;
 		
 		packetListener = new PacketListener(5801); // start in robotInit()
 		soundSender = new TCPEventSender(5809);
@@ -198,11 +200,11 @@ public class Robot extends TimedRobot {
 				taskSystem,
 				new SwerveCalibrateAction(this::getDrive, robotInput),
 //				new LEDHandler(this),
-				new CameraSystem(shuffleboardMap, () -> taskSystem)
+				new CameraSystem(shuffleboardMap, this::getTaskSystem)
 		).clearAllOnEnd(false).canRecycle(false).build();
 		actionChooser = Actions.createActionChooser(WhenDone.CLEAR_ACTIVE);
 
-		swerveDriveAction = new SwerveDriveAction(this::getDrive, this::getOrientation, () -> taskSystem, robotInput, getVisionSupplier(), getDimensions());
+		swerveDriveAction = new SwerveDriveAction(this::getDrive, this::getOrientation, this::getTaskSystem, robotInput, getVisionSupplier(), getDimensions());
 		teleopAction = new Actions.ActionMultiplexerBuilder(
 				swerveDriveAction,
 				new OperatorAction(this, robotInput)
@@ -350,16 +352,9 @@ public class Robot extends TimedRobot {
 		return soundSender;
 	}
 	
-	public Lift getLift(){
-		return lift;
-	}
-	public CargoIntake getCargoIntake(){
-		return cargoIntake;
-	}
-	public HatchIntake getHatchIntake(){
-		return hatchIntake;
-	}
-	public Climber getClimber(){
-		return climber;
-	}
+	public Lift getLift(){ return lift; }
+	public CargoIntake getCargoIntake(){ return cargoIntake; }
+	public HatchIntake getHatchIntake(){ return hatchIntake; }
+	public Climber getClimber(){ return climber; }
+	public TaskSystem getTaskSystem(){ return taskSystem; }
 }

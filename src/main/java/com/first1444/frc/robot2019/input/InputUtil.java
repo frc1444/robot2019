@@ -32,11 +32,6 @@ public final class InputUtil {
 		);
 	}
 	public static LogitechAttack3JoystickControllerInput createAttackJoystick(ControllerPartCreator controller){
-		return new BaseLogitechAttack3JoystickControllerInput(new DefaultLogitechAttack3JoystickInputCreator(){
-			@Override
-			public InputPart createSlider(ControllerPartCreator controller) { // TODO remove this because it will be fixed in the next version
-				return controller.createFullAnalog(2);
-			}
-		}, controller);
+		return new BaseLogitechAttack3JoystickControllerInput(new DefaultLogitechAttack3JoystickInputCreator(), controller);
 	}
 }

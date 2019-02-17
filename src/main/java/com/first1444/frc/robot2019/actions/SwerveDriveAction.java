@@ -59,10 +59,14 @@ public class SwerveDriveAction extends SimpleAction {
 		super.onUpdate();
 		if(input.getVisionAlign().isDown()){
 			if(input.getVisionAlign().isPressed()){
+				final TaskSystem.Task task = taskSystemSupplier.get().getCurrentTask();
 				actionChooser.setNextAction(new LineUpAction(
 						visionSupplier,
-						dimensions.getHatchCameraID(), dimensions.getHatchManipulatorPerspective(), new BestVisionPacketSelector(),
-						driveSupplier, orientationSupplier,  null, null, null));
+						task == TaskSystem.Task.CARGO ? dimensions.getCargoCameraID() : dimensions.getHatchCameraID(),
+						task == TaskSystem.Task.CARGO ? dimensions.getCargoManipulatorPerspective() : dimensions.getHatchManipulatorPerspective(),
+						new BestVisionPacketSelector(),
+						driveSupplier, orientationSupplier,  null, null, null
+				));
 			}
 			actionChooser.update();
 			if(actionChooser.isDone()){

@@ -14,10 +14,10 @@ public class HatchGrabAction extends TimedAction {
 		super(true, 500);
 		this.hatchIntakeSupplier = hatchIntakeSupplier;
 	}
-	public Action createGrab(Supplier<HatchIntake> hatchIntakeSupplier){
+	public static Action createGrab(Supplier<HatchIntake> hatchIntakeSupplier){
 		return new HatchGrabAction(hatchIntakeSupplier, HatchIntake::hold);
 	}
-	public Action createDrop(Supplier<HatchIntake> hatchIntakeSupplier){
+	public static Action createDrop(Supplier<HatchIntake> hatchIntakeSupplier){
 		return new HatchGrabAction(hatchIntakeSupplier, HatchIntake::drop);
 	}
 	

@@ -7,11 +7,12 @@ import com.first1444.frc.util.valuemap.ValueMap;
 import java.text.DecimalFormat;
 
 public final class Constants {
+	private Constants(){ throw new UnsupportedOperationException(); }
 	
 	public static final int CLIMB_DRIVE_ID = 9;
 	public static final int CLIMB_LIFT_PIVOT_ID = 10;
+	public static final int BOOM_MASTER_ID = 11;
 	
-	private Constants(){ throw new UnsupportedOperationException(); }
 	
 	public static final boolean DEBUG = true;
 	public static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat(" #0.00;-#0.00");
@@ -28,7 +29,6 @@ public final class Constants {
 	/** The number of encoder counts per revolution on a drive wheel on the swerve drive*/
 	public static final int SWERVE_DRIVE_ENCODER_COUNTS_PER_REVOLUTION = 534;
 	
-	public static final int LIFT_MASTER_ID = 16; // TODO make accurate
 	// endregion
 	
 	/** Conversion of CTRE units of 100 units/ms*/
