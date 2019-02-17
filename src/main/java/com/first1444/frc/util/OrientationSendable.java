@@ -16,7 +16,7 @@ public class OrientationSendable extends SendableBase {
 		this.orientationSupplier = orientationSupplier;
 	}
 	public static void addOrientation(ShuffleboardContainer container, Supplier<Orientation> orientationSupplier){
-		final ShuffleboardLayout layout = container.getLayout("Orientation", BuiltInLayouts.kList);
+		final ShuffleboardLayout layout = container.getLayout("Orientation", BuiltInLayouts.kList).withSize(2, 3);
 		layout.add("Gyro", new OrientationSendable(orientationSupplier));
 		layout.add("Value", new SendableBase() {
 			@Override

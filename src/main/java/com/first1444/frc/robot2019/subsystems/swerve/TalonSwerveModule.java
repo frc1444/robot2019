@@ -48,8 +48,8 @@ public class TalonSwerveModule extends SimpleAction implements SwerveModule {
 		this.name = name;
 		this.quadCountsPerRevolution = quadCountsPerRevolution;
 		
-		drive = new WPI_TalonSRX(driveID);
-		steer = new WPI_TalonSRX(steerID);
+		drive = new TalonSRX(driveID);
+		steer = new TalonSRX(steerID);
 		this.moduleConfig = moduleConfig;
 
 		drive.configFactoryDefault(Constants.INIT_TIMEOUT);

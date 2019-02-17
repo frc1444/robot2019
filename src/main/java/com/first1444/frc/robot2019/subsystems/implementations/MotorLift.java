@@ -4,13 +4,14 @@ import com.ctre.phoenix.ErrorCode;
 import com.ctre.phoenix.motorcontrol.*;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.ctre.phoenix.motorcontrol.can.TalonSRXConfiguration;
-import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import com.first1444.frc.robot2019.Constants;
 import com.first1444.frc.robot2019.subsystems.Lift;
 import com.first1444.frc.util.CTREUtil;
 import me.retrodaredevil.action.SimpleAction;
 
-import java.util.*;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Objects;
 
 public class MotorLift extends SimpleAction implements Lift {
 	private static final int ENCODER_COUNTS = 3000; // TODO Change
@@ -45,7 +46,7 @@ public class MotorLift extends SimpleAction implements Lift {
 	
 	public MotorLift() {
 		super(true);
-		master = new WPI_TalonSRX(Constants.BOOM_MASTER_ID);
+		master = new TalonSRX(Constants.BOOM_MASTER_ID);
 		CTREUtil.reportError(
 				(errorCode, index) -> {
 					if(errorCode != ErrorCode.OK) {

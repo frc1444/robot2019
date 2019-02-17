@@ -31,7 +31,7 @@ public class AutonomousChooserState {
 		this.autonomousModeCreator = autonomousModeCreator;
 		this.robotInput = robotInput;
 		final ShuffleboardLayout layout = shuffleboardMap.getUserTab()
-				.getLayout("Autonomous", BuiltInLayouts.kList);
+				.getLayout("Autonomous", BuiltInLayouts.kList).withSize(2, 4);
 		autonomousChooser = new DynamicSendableChooser<>();
 		startingPositionChooser = new DynamicSendableChooser<>();
 		gamePieceChooser = new DynamicSendableChooser<>();

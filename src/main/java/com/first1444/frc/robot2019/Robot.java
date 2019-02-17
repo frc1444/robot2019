@@ -7,8 +7,8 @@
 
 package com.first1444.frc.robot2019;
 
-import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
-import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
+import com.ctre.phoenix.motorcontrol.can.TalonSRX;
+import com.ctre.phoenix.motorcontrol.can.VictorSPX;
 import com.first1444.frc.input.DualShockRumble;
 import com.first1444.frc.input.WPIInputCreator;
 import com.first1444.frc.robot2019.actions.OperatorAction;
@@ -24,7 +24,6 @@ import com.first1444.frc.robot2019.event.TCPEventSender;
 import com.first1444.frc.robot2019.input.DefaultRobotInput;
 import com.first1444.frc.robot2019.input.InputUtil;
 import com.first1444.frc.robot2019.input.RobotInput;
-import com.first1444.frc.robot2019.sensors.BNO055;
 import com.first1444.frc.robot2019.sensors.DummyGyro;
 import com.first1444.frc.robot2019.sensors.Orientation;
 import com.first1444.frc.robot2019.subsystems.*;
@@ -133,7 +132,7 @@ public class Robot extends TimedRobot {
 		autonomousPerspectiveChooser.addOption("Driver Station (blind field centric)", Perspective.DRIVER_STATION);
 		autonomousPerspectiveChooser.addOption("Jumbotron on Right", Perspective.JUMBOTRON_ON_RIGHT);
 		autonomousPerspectiveChooser.addOption("Jumbotron on Left", Perspective.JUMBOTRON_ON_LEFT);
-		shuffleboardMap.getUserTab().add("Autonomous Perspective", autonomousPerspectiveChooser);
+		shuffleboardMap.getUserTab().add("Autonomous Perspective", autonomousPerspectiveChooser).withSize(2, 1);
 
 		final MutableValueMapSendable<PidKey> drivePidSendable = new MutableValueMapSendable<>(PidKey.class);
 		final MutableValueMapSendable<PidKey> steerPidSendable = new MutableValueMapSendable<>(PidKey.class);
@@ -178,7 +177,7 @@ public class Robot extends TimedRobot {
 		final var lift = new DummyLift(reportMap);
 		final var cargoIntake = new DummyCargoIntake(reportMap);
 //		final var climber = new DummyClimber(reportMap);
-		final var climber = new MotorClimber(new WPI_TalonSRX(Constants.CLIMB_LIFT_PIVOT_ID), new WPI_VictorSPX(Constants.CLIMB_DRIVE_ID));
+		final var climber = new MotorClimber(new TalonSRX(Constants.CLIMB_LIFT_PIVOT_ID), new VictorSPX(Constants.CLIMB_DRIVE_ID));
 		final var hatchIntake = new DummyHatchIntake(reportMap);
 		final var taskSystem = new DefaultTaskSystem(robotInput);
 		this.drive = drive;

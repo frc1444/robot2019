@@ -58,6 +58,13 @@ public class RobotAutonActionCreator implements AutonActionCreator {
 		return createLineUpWithRunner(true, SLOT_MAP.get(slotLevel), failAction, successAction);
 	}
 	private Action createLineUpWithRunner(boolean hatch, Lift.Position liftPosition, Action failAction, Action successAction){
+		/*
+		If you're thinking this looks complicated, you are right. This code tries to use the RaiseLift action by
+		updating it and ending it depending on if certain things happen. It could eventually be more simply replaced
+		by just a call to the Lift's setDesiredPosition once after lining up and possibly while lining up if we're within
+		less than 50 inches. Right now, it essentially does that, but it also makes sure the lift is in the correct position
+		before continuing to the success action.
+		 */
 		final boolean[] hasLiftBeenMoved = {false};
 		final Action raiseLift = Actions.createSupplementaryAction(
 				new RaiseLift(robot::getLift, liftPosition),

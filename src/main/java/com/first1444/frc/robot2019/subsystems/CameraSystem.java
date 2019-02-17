@@ -27,7 +27,7 @@ public class CameraSystem extends SimpleAction {
 		
 		videoSink = CameraServer.getInstance().addSwitchedCamera("Toggle Camera");
 		videoSink.setSource(hatch);
-		shuffleboardMap.getUserTab().add(SendableCameraWrapper.wrap(videoSink.getSource()));
+		shuffleboardMap.getUserTab().add(SendableCameraWrapper.wrap(videoSink.getSource())).withSize(3, 4);
 	}
 	private void setupCamera(UsbCamera camera){
 		camera.setVideoMode(VideoMode.PixelFormat.kMJPEG, 320, 240, 9);
