@@ -33,8 +33,7 @@ public class MotorLift extends SimpleAction implements Lift {
 		MASTER_CONFIG.clearPositionOnLimitR = true; // TODO test what this does
 		
 		POSITION_MAP = Map.of(
-				Position.CARGO_PICKUP, 0.0,
-				Position.LEVEL1, .1,
+				Position.LEVEL1, 0.0,
 				Position.CARGO_CARGO_SHIP, .2,
 				Position.LEVEL2, .4,
 				Position.LEVEL3, .7

@@ -28,7 +28,6 @@ public interface Lift {
 	
 	
 	enum Position {
-		CARGO_PICKUP,
 		LEVEL1,
 		LEVEL2,
 		LEVEL3,

@@ -31,7 +31,8 @@ public class OperatorAction extends SimpleAction {
 			} else if(input.getLevel3Preset().isDown()){
 				lift.setDesiredPosition(Lift.Position.LEVEL3);
 			} else if(input.getCargoPickupPreset().isDown()){
-				lift.setDesiredPosition(Lift.Position.CARGO_PICKUP);
+				lift.setDesiredPosition(Lift.Position.LEVEL1);
+				// TODO bring out cargo pivot here
 				taskSystem.setCurrentTask(TaskSystem.Task.CARGO);
 			} else if(input.getLevelCargoShipCargoPreset().isDown()){
 				lift.setDesiredPosition(Lift.Position.CARGO_CARGO_SHIP);
@@ -67,16 +68,6 @@ public class OperatorAction extends SimpleAction {
 			} else if(input.getHatchPivotGroundPreset().isDown()){
 				hatchIntake.groundPosition();
 				taskSystem.setCurrentTask(TaskSystem.Task.HATCH);
-			} else {
-				final InputPart pivotSpeed = input.getHatchManualPivotSpeed();
-				if (pivotSpeed.isDeadzone()) {
-					if(hatchIntake.getPivotMode() == HatchIntake.PivotMode.SPEED){
-						hatchIntake.lockCurrentPosition();
-					}
-				} else {
-					hatchIntake.setManualPivotSpeed(pivotSpeed.getPosition());
-					taskSystem.setCurrentTask(TaskSystem.Task.HATCH);
-				}
 			}
 			
 			if(input.getHatchDrop().isDown()){
