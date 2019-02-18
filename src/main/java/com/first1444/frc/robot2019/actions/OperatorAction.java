@@ -44,7 +44,7 @@ public class OperatorAction extends SimpleAction {
 						lift.lockCurrentPosition();
 					}
 				} else {
-					lift.setManualSpeed(speedInputPart.getPosition(), input.getCargoLiftManualAllowed().isDown());
+					lift.setManualSpeed(speedInputPart.getPosition(), false);
 				}
 			}
 

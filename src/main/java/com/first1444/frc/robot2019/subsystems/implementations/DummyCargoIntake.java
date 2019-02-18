@@ -7,6 +7,7 @@ import me.retrodaredevil.action.SimpleAction;
 
 public class DummyCargoIntake extends SimpleAction implements CargoIntake {
 	private static final String INTAKE_SPEED = "Cargo Intake Speed";
+	private static final String PIVOT = "Cargo Intake Pivot";
 	private final ReportMap reportMap;
 	
 	public DummyCargoIntake(ReportMap reportMap) {
@@ -18,16 +19,28 @@ public class DummyCargoIntake extends SimpleAction implements CargoIntake {
 	protected void onStart() {
 		super.onStart();
 		reportMap.report(INTAKE_SPEED, "enabled");
+		reportMap.report(PIVOT, "enabled");
 	}
 	
 	@Override
 	protected void onEnd(boolean peacefullyEnded) {
 		super.onEnd(peacefullyEnded);
 		reportMap.report(INTAKE_SPEED, "disabled");
+		reportMap.report(PIVOT, "disabled");
 	}
 	
 	@Override
 	public void setSpeed(double speed) {
 		reportMap.report(INTAKE_SPEED, Constants.DECIMAL_FORMAT.format(speed));
+	}
+	
+	@Override
+	public void stow() {
+		reportMap.report(PIVOT, "stow");
+	}
+	
+	@Override
+	public void pickup() {
+		reportMap.report(PIVOT, "pickup");
 	}
 }

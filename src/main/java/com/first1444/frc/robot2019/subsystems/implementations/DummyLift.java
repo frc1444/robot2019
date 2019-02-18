@@ -44,14 +44,8 @@ public class DummyLift extends SimpleAction implements Lift {
 	}
 	
 	@Override
-	public void setManualSpeed(double speed, boolean canPickupCargo) {
-		reportMap.report(LIFT, "speed " + Constants.DECIMAL_FORMAT.format(speed));
-		liftMode = LiftMode.SPEED;
-	}
-	
-	@Override
-	public void setManualSpeedOverride(double speed) {
-		reportMap.report(LIFT, "speed " + Constants.DECIMAL_FORMAT.format(speed) + " (override limits)");
+	public void setManualSpeed(double speed, boolean overrideSpeedSafety) {
+		reportMap.report(LIFT, "speed " + Constants.DECIMAL_FORMAT.format(speed) + " override: " + overrideSpeedSafety);
 		liftMode = LiftMode.SPEED;
 	}
 	

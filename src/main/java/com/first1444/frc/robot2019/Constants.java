@@ -130,28 +130,28 @@ public final class Constants {
 		
 		@Override
 		public MutableValueMap<ModuleConfig> setupFL(MutableValueMap<ModuleConfig> config) {
-			return config.setDouble(ModuleConfig.ABS_ENCODER_OFFSET, 93) // or 88
+			return config.setDouble(ModuleConfig.ABS_ENCODER_OFFSET, 174) // or 88
 					.setDouble(ModuleConfig.MAX_ENCODER_VALUE, 883)
 					.setDouble(ModuleConfig.MIN_ENCODER_VALUE, 10);
 		}
 		
 		@Override
 		public MutableValueMap<ModuleConfig> setupFR(MutableValueMap<ModuleConfig> config) {
-			return config.setDouble(ModuleConfig.ABS_ENCODER_OFFSET, 445)
+			return config.setDouble(ModuleConfig.ABS_ENCODER_OFFSET, 719)
 					.setDouble(ModuleConfig.MAX_ENCODER_VALUE, 891)
 					.setDouble(ModuleConfig.MIN_ENCODER_VALUE, 10);
 		}
 		
 		@Override
 		public MutableValueMap<ModuleConfig> setupRL(MutableValueMap<ModuleConfig> config) {
-			return config.setDouble(ModuleConfig.ABS_ENCODER_OFFSET, 151)
+			return config.setDouble(ModuleConfig.ABS_ENCODER_OFFSET, 170)
 					.setDouble(ModuleConfig.MAX_ENCODER_VALUE, 896)
 					.setDouble(ModuleConfig.MIN_ENCODER_VALUE, 10);
 		}
 		
 		@Override
 		public MutableValueMap<ModuleConfig> setupRR(MutableValueMap<ModuleConfig> config) {
-			return config.setDouble(ModuleConfig.ABS_ENCODER_OFFSET, 555)
+			return config.setDouble(ModuleConfig.ABS_ENCODER_OFFSET, 503)
 					.setDouble(ModuleConfig.MAX_ENCODER_VALUE, 858)
 					.setDouble(ModuleConfig.MIN_ENCODER_VALUE, 10);
 		}

@@ -11,9 +11,7 @@ public interface Lift {
 	 */
 	boolean isDesiredPositionReached();
 	/** Sets the manual speed of the lift.*/
-	void setManualSpeed(double speed, boolean canPickupCargo);
-	/** Same as {@link #setManualSpeed(double, boolean) setManualSpeed(speed, true), except this won't try to slow the lift down if it gets near the bottom}*/
-	void setManualSpeedOverride(double speed);
+	void setManualSpeed(double speed, boolean overrideSpeedSafety);
 	void lockCurrentPosition();
 	
 	/**
