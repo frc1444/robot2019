@@ -6,7 +6,8 @@ When you first clone this project from the internet, make sure that you run
 Some times you must run ```gradlew downloadAll``` to get everything.
 ### TODO
 * Rumble driver controller when operator places hatch/cargo
-* Add vision in teleop
+* Fix camera
+* Put gyro on robot
 ### Conventions
 * Use tabs in .java files
 * Use 4 spaces in gradle configuration

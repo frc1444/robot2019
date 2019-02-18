@@ -1,7 +1,10 @@
 package com.first1444.frc.robot2019.subsystems.implementations;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
+import com.ctre.phoenix.motorcontrol.LimitSwitchNormal;
+import com.ctre.phoenix.motorcontrol.LimitSwitchSource;
 import com.ctre.phoenix.motorcontrol.can.BaseMotorController;
+import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.first1444.frc.robot2019.Constants;
 import com.first1444.frc.robot2019.subsystems.Climber;
 import me.retrodaredevil.action.SimpleAction;
@@ -14,7 +17,7 @@ public class MotorClimber extends SimpleAction implements Climber {
 	private double climbSpeed;
 	private double driveSpeed;
 	
-	public MotorClimber(BaseMotorController climbMotor, BaseMotorController driveMotor) {
+	public MotorClimber(TalonSRX climbMotor, BaseMotorController driveMotor) {
 		super(true);
 		this.climbMotor = climbMotor;
 		this.driveMotor = driveMotor;
@@ -22,13 +25,9 @@ public class MotorClimber extends SimpleAction implements Climber {
 		climbMotor.configFactoryDefault(Constants.INIT_TIMEOUT);
 		driveMotor.configFactoryDefault(Constants.INIT_TIMEOUT);
 		
-		climbMotor.setSelectedSensorPosition(0, Constants.PID_INDEX, Constants.INIT_TIMEOUT);
+		climbMotor.configReverseLimitSwitchSource(LimitSwitchSource.FeedbackConnector, LimitSwitchNormal.NormallyOpen, Constants.INIT_TIMEOUT);
+		climbMotor.configForwardLimitSwitchSource(LimitSwitchSource.FeedbackConnector, LimitSwitchNormal.NormallyOpen, Constants.INIT_TIMEOUT);
 		
-		climbMotor.configForwardSoftLimitEnable(true);
-		climbMotor.configForwardSoftLimitThreshold(100, Constants.INIT_TIMEOUT); // TODO temp value
-		
-		climbMotor.configReverseSoftLimitEnable(true);
-		climbMotor.configReverseSoftLimitThreshold(5, Constants.INIT_TIMEOUT);
 	}
 	
 	/** @param speed The speed of the climber. A positive value raises the robot by pushing the climber down, a negative value retracts. */
@@ -53,10 +52,13 @@ public class MotorClimber extends SimpleAction implements Climber {
 		climbMotor.set(ControlMode.PercentOutput, climbSpeed);
 		driveMotor.set(ControlMode.PercentOutput, driveSpeed);
 	}
-	private void checkPosition(){
-		final int position = climbMotor.getSelectedSensorPosition(Constants.PID_INDEX);
-		if(position < 0){
-			climbMotor.setSelectedSensorPosition(0, Constants.PID_INDEX, Constants.LOOP_TIMEOUT);
-		}
+	
+	@Override
+	protected void onEnd(boolean peacefullyEnded) {
+		super.onEnd(peacefullyEnded);
+		climbMotor.set(ControlMode.Disabled, 0);
+		driveMotor.set(ControlMode.Disabled, 0);
+		climbSpeed = 0;
+		driveSpeed = 0;
 	}
 }

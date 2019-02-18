@@ -24,6 +24,7 @@ import com.first1444.frc.robot2019.event.TCPEventSender;
 import com.first1444.frc.robot2019.input.DefaultRobotInput;
 import com.first1444.frc.robot2019.input.InputUtil;
 import com.first1444.frc.robot2019.input.RobotInput;
+import com.first1444.frc.robot2019.sensors.BNO055;
 import com.first1444.frc.robot2019.sensors.DummyGyro;
 import com.first1444.frc.robot2019.sensors.Orientation;
 import com.first1444.frc.robot2019.subsystems.*;
@@ -116,9 +117,9 @@ public class Robot extends TimedRobot {
 		controllerManager.addController(robotInput);
 		controllerManager.update(); // update this so when calling get methods don't throw exceptions
 
-//		final BNO055 IMU = new BNO055();
-//		IMU.SetMode(BNO055.IMUMode.NDOF);
-		final Gyro gyro = new DummyGyro(0);
+		final BNO055 gyro = new BNO055();
+		gyro.SetMode(BNO055.IMUMode.NDOF);
+//		final Gyro gyro = new DummyGyro(0);
 		
 		dimensions = Constants.Dimensions.INSTANCE;
 
@@ -174,11 +175,13 @@ public class Robot extends TimedRobot {
 				),
 				swerve.getWheelBase(), swerve.getTrackWidth()
 		);
-		final var lift = new DummyLift(reportMap);
+//		final var lift = new DummyLift(reportMap);
+		final var lift = new MotorLift();
 		final var cargoIntake = new DummyCargoIntake(reportMap);
-//		final var climber = new DummyClimber(reportMap);
-		final var climber = new MotorClimber(new TalonSRX(Constants.CLIMB_LIFT_PIVOT_ID), new VictorSPX(Constants.CLIMB_DRIVE_ID));
+		final var climber = new DummyClimber(reportMap);
+//		final var climber = new MotorClimber(new TalonSRX(Constants.CLIMB_LIFT_PIVOT_ID), new VictorSPX(Constants.CLIMB_DRIVE_ID));
 		final var hatchIntake = new DummyHatchIntake(reportMap);
+//		final var hatchIntake = new MotorHatchIntake(new TalonSRX(Constants.HATCH_GRAB_ID), new TalonSRX(127));
 		final var taskSystem = new DefaultTaskSystem(robotInput);
 		this.drive = drive;
 		this.cargoIntake = cargoIntake;

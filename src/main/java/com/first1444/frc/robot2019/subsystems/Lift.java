@@ -15,6 +15,11 @@ public interface Lift {
 	/** Same as {@link #setManualSpeed(double, boolean) setManualSpeed(speed, true), except this won't try to slow the lift down if it gets near the bottom}*/
 	void setManualSpeedOverride(double speed);
 	void lockCurrentPosition();
+	
+	/**
+	 * null can represent being disabled, or neutral.
+	 * @return The {@link LiftMode} or null.
+	 */
 	LiftMode getLiftMode();
 	
 	enum LiftMode {

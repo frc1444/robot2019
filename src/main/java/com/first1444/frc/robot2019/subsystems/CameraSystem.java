@@ -14,7 +14,7 @@ public class CameraSystem extends SimpleAction {
 	private final Supplier<TaskSystem> taskSystemSupplier;
 	private final UsbCamera hatch;
 	private final UsbCamera cargo;
-	private final VideoSink videoSink;
+	private final MjpegServer videoSink;
 	private TaskSystem.Task lastTask = null;
 	public CameraSystem(ShuffleboardMap shuffleboardMap, Supplier<TaskSystem> taskSystemSupplier) {
 		super(false);
@@ -27,10 +27,11 @@ public class CameraSystem extends SimpleAction {
 		
 		videoSink = CameraServer.getInstance().addSwitchedCamera("Toggle Camera");
 		videoSink.setSource(hatch);
-		shuffleboardMap.getUserTab().add(SendableCameraWrapper.wrap(videoSink.getSource())).withSize(3, 4);
+//		shuffleboardMap.getUserTab().add("My Toggle Camera", SendableCameraWrapper.wrap(videoSink.getSource())).withSize(3, 4);
+		shuffleboardMap.getUserTab().add("hatch", SendableCameraWrapper.wrap(hatch)).withSize(3, 4);
 	}
 	private void setupCamera(UsbCamera camera){
-		camera.setVideoMode(VideoMode.PixelFormat.kMJPEG, 320, 240, 9);
+//		camera.setVideoMode(VideoMode.PixelFormat.kMJPEG, 320, 240, 9);
 		camera.setConnectVerbose(0); // so it doesn't spam the console with annoying messages if it's disconnected
 	}
 	
@@ -44,8 +45,10 @@ public class CameraSystem extends SimpleAction {
 			lastTask = newTask;
 			if(newTask == TaskSystem.Task.CARGO){
 				videoSink.setSource(cargo);
+				System.out.println("Source is now cargo");
 			} else if(newTask == TaskSystem.Task.HATCH){
 				videoSink.setSource(hatch);
+				System.out.println("Source is now hatch");
 			} else {
 				throw new UnsupportedOperationException("Unsupported task: " + newTask);
 			}

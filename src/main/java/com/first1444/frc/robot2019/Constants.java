@@ -7,11 +7,17 @@ import com.first1444.frc.util.valuemap.ValueMap;
 import java.text.DecimalFormat;
 
 public final class Constants {
+	
 	private Constants(){ throw new UnsupportedOperationException(); }
 	
+	// region CAN IDs
 	public static final int CLIMB_DRIVE_ID = 9;
 	public static final int CLIMB_LIFT_PIVOT_ID = 10;
 	public static final int BOOM_MASTER_ID = 11;
+	public static final int HATCH_GRAB_ID = 12;
+	// endregion
+	
+	public static final int BOOM_LIMIT_DIO = 0;
 	
 	
 	public static final boolean DEBUG = true;
@@ -22,9 +28,6 @@ public final class Constants {
 	public static final int INIT_TIMEOUT = 10;
 	public static final int LOOP_TIMEOUT = 3;
 	public static final int LOOP_TIMEOUT_THREAD = LOOP_TIMEOUT;
-	
-//	/** The number of encoder counts per revolution on a steer wheel on the swerve drive when using the absolute encoders*/
-//	public static final int SWERVE_STEER_ABSOLUTE_ENCODER_COUNTS_PER_REVOLUTION = 1024;
 	
 	/** The number of encoder counts per revolution on a drive wheel on the swerve drive*/
 	public static final int SWERVE_DRIVE_ENCODER_COUNTS_PER_REVOLUTION = 534;

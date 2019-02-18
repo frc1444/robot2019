@@ -7,11 +7,13 @@ import com.ctre.phoenix.motorcontrol.can.TalonSRXConfiguration;
 import com.first1444.frc.robot2019.Constants;
 import com.first1444.frc.robot2019.subsystems.Lift;
 import com.first1444.frc.util.CTREUtil;
+import edu.wpi.first.wpilibj.DigitalInput;
 import me.retrodaredevil.action.SimpleAction;
 
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.function.BooleanSupplier;
 
 public class MotorLift extends SimpleAction implements Lift {
 	private static final int ENCODER_COUNTS = 3000; // TODO Change
@@ -40,6 +42,7 @@ public class MotorLift extends SimpleAction implements Lift {
 	}
 	
 	private final TalonSRX master;
+	private final BooleanSupplier limitDown;
 	
 	private LiftMode mode = null;
 	private double control = 0;
@@ -47,6 +50,8 @@ public class MotorLift extends SimpleAction implements Lift {
 	public MotorLift() {
 		super(true);
 		master = new TalonSRX(Constants.BOOM_MASTER_ID);
+		final DigitalInput digitalInput = new DigitalInput(Constants.BOOM_LIMIT_DIO);
+		limitDown = () -> !digitalInput.get();
 		CTREUtil.reportError(
 				(errorCode, index) -> {
 					if(errorCode != ErrorCode.OK) {
@@ -117,6 +122,7 @@ public class MotorLift extends SimpleAction implements Lift {
 	@Override
 	protected void onUpdate() {
 		super.onUpdate();
+		System.out.println("limit: " + limitDown.getAsBoolean());
 		if(mode != null) {
 			switch (mode) {
 				case SPEED:
