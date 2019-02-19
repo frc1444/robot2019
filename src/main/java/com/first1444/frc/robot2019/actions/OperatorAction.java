@@ -21,21 +21,26 @@ public class OperatorAction extends SimpleAction {
 		final boolean isDefense = input.getDefenseButton().isDown();
 		
 		final TaskSystem taskSystem = robot.getTaskSystem();
+		final CargoIntake cargoIntake = robot.getCargoIntake();
 		
 		{ // lift
 			final Lift lift = robot.getLift();
 			if(isDefense || input.getLevel1Preset().isDown()){
 				lift.setDesiredPosition(Lift.Position.LEVEL1);
+				cargoIntake.stow();
 			} else if(input.getLevel2Preset().isDown()){
 				lift.setDesiredPosition(Lift.Position.LEVEL2);
+				cargoIntake.stow();
 			} else if(input.getLevel3Preset().isDown()){
 				lift.setDesiredPosition(Lift.Position.LEVEL3);
+				cargoIntake.stow();
 			} else if(input.getCargoPickupPreset().isDown()){
 				lift.setDesiredPosition(Lift.Position.LEVEL1);
-				// TODO bring out cargo pivot here
+				cargoIntake.pickup();
 				taskSystem.setCurrentTask(TaskSystem.Task.CARGO);
 			} else if(input.getLevelCargoShipCargoPreset().isDown()){
 				lift.setDesiredPosition(Lift.Position.CARGO_CARGO_SHIP);
+				cargoIntake.stow();
 				taskSystem.setCurrentTask(TaskSystem.Task.CARGO);
 			} else {
 				final InputPart speedInputPart = input.getLiftManualSpeed();
@@ -44,13 +49,16 @@ public class OperatorAction extends SimpleAction {
 						lift.lockCurrentPosition();
 					}
 				} else {
-					lift.setManualSpeed(speedInputPart.getPosition(), false);
+					final double speed = speedInputPart.getPosition();
+					if(speed > 0){
+						cargoIntake.stow();
+					}
+					lift.setManualSpeed(speed, input.getLiftManualOverrideAllowed().isDown());
 				}
 			}
 
 		}
 		{ // cargo intake
-			final CargoIntake cargoIntake = robot.getCargoIntake();
 			final double speed = input.getCargoIntakeSpeed().getZonedPosition();
 			cargoIntake.setSpeed(speed);
 			if(speed < 0){ // if we're intaking, set to cargo task
