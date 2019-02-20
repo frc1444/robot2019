@@ -1,20 +1,26 @@
 package com.first1444.frc.robot2019.subsystems.implementations;
 
-import com.ctre.phoenix.motorcontrol.ControlMode;
-import com.ctre.phoenix.motorcontrol.LimitSwitchNormal;
-import com.ctre.phoenix.motorcontrol.LimitSwitchSource;
+import com.ctre.phoenix.motorcontrol.*;
 import com.ctre.phoenix.motorcontrol.can.BaseMotorController;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.ctre.phoenix.motorcontrol.can.VictorSPX;
 import com.first1444.frc.robot2019.Constants;
 import com.first1444.frc.robot2019.subsystems.CargoIntake;
+import edu.wpi.first.wpilibj.Counter;
+import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import me.retrodaredevil.action.SimpleAction;
 
 public class MotorCargoIntake extends SimpleAction implements CargoIntake {
-	private static final int PICKUP_ENCODER_COUNTS = 50; // TODO Change
+	/** A negative number in range [-1..0)*/
+	private static final double STOW_SPEED = -1.0;
+	/** A position number in range (0..1]*/
+	private static final double PICKUP_SPEED = 1.0;
+	private enum Preset {STOW, PICKUP, NEUTRAL}
+	
 	private final BaseMotorController intake;
 	private final TalonSRX pivot;
-	private enum Preset {STOW, PICKUP, NEUTRAL}
+	private long lastForwardLimit = 0;
 	
 	private double intakeSpeed;
 	private Preset preset = Preset.STOW;
@@ -27,14 +33,15 @@ public class MotorCargoIntake extends SimpleAction implements CargoIntake {
 		intake.configFactoryDefault(Constants.INIT_TIMEOUT);
 		pivot.configFactoryDefault(Constants.INIT_TIMEOUT);
 		
+		intake.setInverted(InvertType.InvertMotorOutput);
+		intake.setNeutralMode(NeutralMode.Brake);
 		
-		pivot.configReverseLimitSwitchSource(LimitSwitchSource.FeedbackConnector, LimitSwitchNormal.NormallyClosed, Constants.INIT_TIMEOUT);
-		pivot.configClearPositionOnLimitR(true, Constants.INIT_TIMEOUT);
 		
-		pivot.configForwardSoftLimitEnable(true, Constants.INIT_TIMEOUT);
+		pivot.setNeutralMode(NeutralMode.Brake);
+		pivot.setInverted(InvertType.InvertMotorOutput);
 		
-		pivot.enableCurrentLimit(true);
-		pivot.configContinuousCurrentLimit(1, Constants.INIT_TIMEOUT); // TODO change max amps
+		pivot.configReverseLimitSwitchSource(LimitSwitchSource.FeedbackConnector, LimitSwitchNormal.NormallyClosed, Constants.INIT_TIMEOUT); // normally closed - important
+		pivot.configForwardLimitSwitchSource(LimitSwitchSource.FeedbackConnector, LimitSwitchNormal.NormallyClosed, Constants.INIT_TIMEOUT); // normally closed - important
 	}
 	
 	@Override
@@ -42,12 +49,23 @@ public class MotorCargoIntake extends SimpleAction implements CargoIntake {
 		super.onUpdate();
 		intake.set(ControlMode.PercentOutput, intakeSpeed);
 		
+		final boolean forwardLimitSwitch = !pivot.getSensorCollection().isFwdLimitSwitchClosed(); // normally closed
+		final long now = System.currentTimeMillis();
+		if(forwardLimitSwitch){
+			lastForwardLimit = now;
+		}
+		final boolean forwardLimit = forwardLimitSwitch || lastForwardLimit + 2000 > now; // limit switch pressed within 2 second
 		switch (preset){
 			case STOW:
-				pivot.set(ControlMode.PercentOutput, -.2); // rely on the limit switch
+				pivot.set(ControlMode.PercentOutput, STOW_SPEED); // rely on the limit switch
 				break;
 			case PICKUP:
-				pivot.set(ControlMode.Position, PICKUP_ENCODER_COUNTS); // use CTRE PID stuff
+				if(forwardLimit){
+					pivot.set(ControlMode.Disabled, 0);
+					preset = Preset.NEUTRAL;
+				} else {
+					pivot.set(ControlMode.PercentOutput, PICKUP_SPEED);
+				}
 				break;
 			case NEUTRAL:
 				pivot.set(ControlMode.Disabled, 0);

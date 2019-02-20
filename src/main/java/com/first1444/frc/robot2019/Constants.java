@@ -2,7 +2,6 @@ package com.first1444.frc.robot2019;
 
 import com.first1444.frc.robot2019.subsystems.swerve.ModuleConfig;
 import com.first1444.frc.util.valuemap.MutableValueMap;
-import com.first1444.frc.util.valuemap.ValueMap;
 
 import java.text.DecimalFormat;
 
@@ -11,10 +10,16 @@ public final class Constants {
 	private Constants(){ throw new UnsupportedOperationException(); }
 	
 	// region CAN IDs
+	/** ID for the Climb Drive wheels Victor SPX*/
 	public static final int CLIMB_DRIVE_ID = 9;
 	public static final int CLIMB_LIFT_PIVOT_ID = 10;
 	public static final int BOOM_MASTER_ID = 11;
 	public static final int HATCH_GRAB_ID = 12;
+	public static final int HATCH_STOW_ID = 13;
+	/** ID for the Victor SPX for the cargo intake*/
+	public static final int CARGO_INTAKE_ID = 14;
+	public static final int CARGO_PIVOT_ID = 15;
+	public static final int HATCH_PIVOT_ID = 16;
 	// endregion
 	
 	public static final int BOOM_LIMIT_DIO = 0;
@@ -130,7 +135,7 @@ public final class Constants {
 		
 		@Override
 		public MutableValueMap<ModuleConfig> setupFL(MutableValueMap<ModuleConfig> config) {
-			return config.setDouble(ModuleConfig.ABS_ENCODER_OFFSET, 174) // or 88
+			return config.setDouble(ModuleConfig.ABS_ENCODER_OFFSET, 611) // or 88
 					.setDouble(ModuleConfig.MAX_ENCODER_VALUE, 883)
 					.setDouble(ModuleConfig.MIN_ENCODER_VALUE, 10);
 		}

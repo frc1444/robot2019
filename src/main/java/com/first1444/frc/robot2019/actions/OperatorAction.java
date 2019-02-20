@@ -3,6 +3,7 @@ package com.first1444.frc.robot2019.actions;
 import com.first1444.frc.robot2019.Robot;
 import com.first1444.frc.robot2019.input.RobotInput;
 import com.first1444.frc.robot2019.subsystems.*;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import me.retrodaredevil.action.SimpleAction;
 import me.retrodaredevil.controller.input.InputPart;
 
@@ -23,6 +24,7 @@ public class OperatorAction extends SimpleAction {
 		final TaskSystem taskSystem = robot.getTaskSystem();
 		final CargoIntake cargoIntake = robot.getCargoIntake();
 		
+		final boolean cargoPickupPreset = input.getCargoPickupPreset().isDown();
 		{ // lift
 			final Lift lift = robot.getLift();
 			if(isDefense || input.getLevel1Preset().isDown()){
@@ -34,9 +36,8 @@ public class OperatorAction extends SimpleAction {
 			} else if(input.getLevel3Preset().isDown()){
 				lift.setDesiredPosition(Lift.Position.LEVEL3);
 				cargoIntake.stow();
-			} else if(input.getCargoPickupPreset().isDown()){
+			} else if(cargoPickupPreset){
 				lift.setDesiredPosition(Lift.Position.LEVEL1);
-				cargoIntake.pickup();
 				taskSystem.setCurrentTask(TaskSystem.Task.CARGO);
 			} else if(input.getLevelCargoShipCargoPreset().isDown()){
 				lift.setDesiredPosition(Lift.Position.CARGO_CARGO_SHIP);
@@ -63,6 +64,9 @@ public class OperatorAction extends SimpleAction {
 			cargoIntake.setSpeed(speed);
 			if(speed < 0){ // if we're intaking, set to cargo task
 				taskSystem.setCurrentTask(TaskSystem.Task.CARGO);
+			}
+			if(cargoPickupPreset){
+				cargoIntake.pickup();
 			}
 		}
 		{ // hatch intake

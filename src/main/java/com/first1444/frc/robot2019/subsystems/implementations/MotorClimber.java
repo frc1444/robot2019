@@ -10,8 +10,9 @@ import com.first1444.frc.robot2019.subsystems.Climber;
 import me.retrodaredevil.action.SimpleAction;
 
 public class MotorClimber extends SimpleAction implements Climber {
+	private final double MAX_STALL_SPEED = .7;
 	
-	private final BaseMotorController climbMotor;
+	private final TalonSRX climbMotor;
 	private final BaseMotorController driveMotor;
 	
 	private double climbSpeed;
@@ -26,8 +27,10 @@ public class MotorClimber extends SimpleAction implements Climber {
 		driveMotor.configFactoryDefault(Constants.INIT_TIMEOUT);
 		
 		climbMotor.configReverseLimitSwitchSource(LimitSwitchSource.FeedbackConnector, LimitSwitchNormal.NormallyOpen, Constants.INIT_TIMEOUT);
-		climbMotor.configForwardLimitSwitchSource(LimitSwitchSource.FeedbackConnector, LimitSwitchNormal.NormallyOpen, Constants.INIT_TIMEOUT);
-		
+		climbMotor.configForwardLimitSwitchSource(LimitSwitchSource.FeedbackConnector, LimitSwitchNormal.NormallyClosed, Constants.INIT_TIMEOUT); // this is important so normally closed
+		climbMotor.overrideLimitSwitchesEnable(false);
+		climbMotor.configPeakCurrentDuration(0, Constants.INIT_TIMEOUT);
+		climbMotor.configPeakCurrentLimit(35, Constants.INIT_TIMEOUT);
 	}
 	
 	/** @param speed The speed of the climber. A positive value raises the robot by pushing the climber down, a negative value retracts. */
@@ -49,8 +52,20 @@ public class MotorClimber extends SimpleAction implements Climber {
 	@Override
 	protected void onUpdate() {
 		super.onUpdate();
-		climbMotor.set(ControlMode.PercentOutput, climbSpeed);
+		final boolean forwardLimit = !climbMotor.getSensorCollection().isFwdLimitSwitchClosed();
+		final boolean reverseLimit = climbMotor.getSensorCollection().isRevLimitSwitchClosed();
+		final double climbLiftSpeed = climbSpeed;
+		if(climbLiftSpeed < 0 && reverseLimit){
+			climbMotor.set(ControlMode.Disabled, 0);
+		} else if(climbLiftSpeed > 0 && forwardLimit){
+			climbMotor.set(ControlMode.PercentOutput, climbLiftSpeed * MAX_STALL_SPEED);
+		} else {
+			climbMotor.set(ControlMode.PercentOutput, climbLiftSpeed);
+		}
 		driveMotor.set(ControlMode.PercentOutput, driveSpeed);
+		
+		climbSpeed = 0;
+		driveSpeed = 0;
 	}
 	
 	@Override
