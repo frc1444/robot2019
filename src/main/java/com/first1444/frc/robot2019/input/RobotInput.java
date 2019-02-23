@@ -17,6 +17,7 @@ public interface RobotInput extends ControllerInput {
 	InputPart getMovementSpeed();
 	
 	InputPart getVisionAlign();
+	InputPart getFirstPersonHoldButton();
 	
 	/** The manual speed of the lift. Should be activated when this {@link InputPart}'s is not in a deadzone*/
 	InputPart getLiftManualSpeed();

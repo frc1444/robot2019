@@ -7,7 +7,11 @@ Some times you must run ```gradlew downloadAll``` to get everything.
 ### TODO
 * Rumble driver controller when operator places hatch/cargo
 * Fix camera
+### TODO at competition
 * Put gyro on robot
+* Change lift encoder counts and presets. Bring part of the rocket to test it with
+### Changes made after bag 'n tag
+* Deactivated hatch stow forward limit switch
 ### Conventions
 * Use tabs in .java files
 * Use 4 spaces in gradle configuration

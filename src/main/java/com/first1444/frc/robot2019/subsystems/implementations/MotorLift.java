@@ -19,7 +19,7 @@ import java.util.Objects;
 import java.util.function.BooleanSupplier;
 
 public class MotorLift extends SimpleAction implements Lift {
-	private static final int ENCODER_COUNTS = 24000; // max is 24786
+	private static final int ENCODER_COUNTS = 24000; // max is 24786 // TODO increase this a tiny bit
 	private static final double LOW_POSITION_SCALE_START = .35;
 	private static final double HIGH_POSITION_SCALE_START = .8;
 	private static final TalonSRXConfiguration MASTER_CONFIG;
@@ -28,16 +28,13 @@ public class MotorLift extends SimpleAction implements Lift {
 	static {
 		MASTER_CONFIG = new TalonSRXConfiguration();
 		
-		// reverse limit switch
-		MASTER_CONFIG.reverseLimitSwitchSource = LimitSwitchSource.FeedbackConnector;
-		
 		// forward limit switch
 		MASTER_CONFIG.forwardSoftLimitEnable = true;
 		MASTER_CONFIG.forwardSoftLimitThreshold = ENCODER_COUNTS;
 		
 		MASTER_CONFIG.clearPositionOnLimitR = true; // this works as long as we're using normally open
 		
-		POSITION_MAP = Map.of(
+		POSITION_MAP = Map.of( // TODO after ENCODER_COUNTS is increased, change these
 				Position.LEVEL1, 0.0,
 				Position.CARGO_CARGO_SHIP, .45,
 				Position.LEVEL2, .60,

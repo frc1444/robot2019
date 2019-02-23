@@ -7,6 +7,7 @@ import edu.wpi.cscore.VideoMode;
 import edu.wpi.cscore.VideoSource;
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.wpilibj.shuffleboard.SendableCameraWrapper;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import me.retrodaredevil.action.SimpleAction;
 
 import java.util.Objects;
@@ -22,15 +23,15 @@ public class CameraSystem extends SimpleAction {
 		super(false);
 		this.taskSystemSupplier = taskSystemSupplier;
 		
-		hatch = CameraServer.getInstance().startAutomaticCapture(0);
-		cargo = CameraServer.getInstance().startAutomaticCapture(1);
+		hatch = CameraServer.getInstance().startAutomaticCapture();
+		cargo = CameraServer.getInstance().startAutomaticCapture();
 		setupCamera(hatch);
 		setupCamera(cargo);
 		
 		videoSink = CameraServer.getInstance().addSwitchedCamera("Toggle Camera");
+		videoSink.setSource(cargo);
 		videoSink.setSource(hatch);
 		shuffleboardMap.getUserTab().add("My Toggle Camera", SendableCameraWrapper.wrap(videoSink.getSource())).withSize(3, 4);
-//		shuffleboardMap.getUserTab().add("hatch", SendableCameraWrapper.wrap(hatch)).withSize(3, 4);
 	}
 	private void setupCamera(UsbCamera camera){
 		camera.setVideoMode(VideoMode.PixelFormat.kMJPEG, 320, 240, 9);
@@ -44,6 +45,7 @@ public class CameraSystem extends SimpleAction {
 		final TaskSystem taskSystem = taskSystemSupplier.get();
 		Objects.requireNonNull(taskSystem);
 		final TaskSystem.Task newTask = taskSystem.getCurrentTask();
+		SmartDashboard.putString("current task from camera system", newTask.toString());
 		if(newTask != lastTask){
 			lastTask = newTask;
 			if(newTask == TaskSystem.Task.CARGO){

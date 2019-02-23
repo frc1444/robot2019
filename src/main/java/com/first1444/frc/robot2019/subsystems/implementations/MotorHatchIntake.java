@@ -56,6 +56,7 @@ public class MotorHatchIntake extends SimpleAction implements HatchIntake {
 		stowMotor.config_kP(Constants.SLOT_INDEX, .3, Constants.INIT_TIMEOUT); // TODO CTRE PID
 		stowMotor.setInverted(InvertType.InvertMotorOutput); // motor is inverted but encoder is not
 		stowMotor.configReverseLimitSwitchSource(LimitSwitchSource.FeedbackConnector, LimitSwitchNormal.NormallyClosed, Constants.INIT_TIMEOUT);
+		stowMotor.configForwardLimitSwitchSource(LimitSwitchSource.Deactivated, LimitSwitchNormal.Disabled, Constants.INIT_TIMEOUT); // sometimes this gets tripped, so just disabled it
 		
 		// Pivot // I plugged this in correctly so we shouldn't have to set inverted
 		pivotMotor.configForwardLimitSwitchSource(LimitSwitchSource.FeedbackConnector, LimitSwitchNormal.NormallyClosed, Constants.INIT_TIMEOUT);

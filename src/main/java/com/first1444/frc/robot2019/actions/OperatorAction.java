@@ -3,7 +3,6 @@ package com.first1444.frc.robot2019.actions;
 import com.first1444.frc.robot2019.Robot;
 import com.first1444.frc.robot2019.input.RobotInput;
 import com.first1444.frc.robot2019.subsystems.*;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import me.retrodaredevil.action.SimpleAction;
 import me.retrodaredevil.controller.input.InputPart;
 
@@ -46,7 +45,8 @@ public class OperatorAction extends SimpleAction {
 			} else {
 				final InputPart speedInputPart = input.getLiftManualSpeed();
 				if(speedInputPart.isDeadzone()){
-					if(lift.getLiftMode() == Lift.LiftMode.SPEED) {
+					final Lift.LiftMode liftMode = lift.getLiftMode();
+					if(liftMode == Lift.LiftMode.SPEED || liftMode == null) {
 						lift.lockCurrentPosition();
 					}
 				} else {

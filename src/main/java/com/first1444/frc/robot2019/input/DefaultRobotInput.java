@@ -119,6 +119,11 @@ public class DefaultRobotInput extends SimpleControllerInput implements RobotInp
 	}
 	
 	@Override
+	public InputPart getFirstPersonHoldButton() {
+		return controller.getLeftBumper();
+	}
+	
+	@Override
 	public InputPart getLiftManualSpeed() {
 		return liftManualSpeed;
 	}
@@ -160,12 +165,12 @@ public class DefaultRobotInput extends SimpleControllerInput implements RobotInp
 	
 	@Override
 	public InputPart getHatchDrop() {
-		return operatorJoy.getThumbLeftUpper();
+		return operatorJoy.getThumbRightUpper();
 	}
 	
 	@Override
 	public InputPart getHatchGrab() {
-		return operatorJoy.getThumbRightUpper();
+		return operatorJoy.getThumbLeftUpper();
 	}
 	
 	// region Lift Presets
