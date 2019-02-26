@@ -17,6 +17,8 @@ import com.first1444.frc.robot2019.actions.SwerveDriveAction;
 import com.first1444.frc.robot2019.autonomous.AutonomousChooserState;
 import com.first1444.frc.robot2019.autonomous.AutonomousModeCreator;
 import com.first1444.frc.robot2019.autonomous.RobotAutonActionCreator;
+import com.first1444.frc.robot2019.autonomous.actions.HatchGrabAction;
+import com.first1444.frc.robot2019.autonomous.actions.TimedCargoIntake;
 import com.first1444.frc.robot2019.autonomous.actions.vision.LineUpAction;
 import com.first1444.frc.robot2019.event.EventSender;
 import com.first1444.frc.robot2019.event.SoundEvents;
@@ -24,6 +26,9 @@ import com.first1444.frc.robot2019.event.TCPEventSender;
 import com.first1444.frc.robot2019.input.DefaultRobotInput;
 import com.first1444.frc.robot2019.input.InputUtil;
 import com.first1444.frc.robot2019.input.RobotInput;
+import com.first1444.frc.robot2019.matchrun.DefaultMatchScheduler;
+import com.first1444.frc.robot2019.matchrun.MatchScheduler;
+import com.first1444.frc.robot2019.matchrun.MatchTime;
 import com.first1444.frc.robot2019.sensors.BNO055;
 import com.first1444.frc.robot2019.sensors.DummyGyro;
 import com.first1444.frc.robot2019.sensors.Orientation;
@@ -75,6 +80,7 @@ public class Robot extends TimedRobot {
 	private final HatchIntake hatchIntake;
 	private final Lift lift;
 	private final TaskSystem taskSystem;
+	private final MatchScheduler matchScheduler;
 	
 	private final PacketListener packetListener;
 	private final EventSender soundSender;
@@ -185,12 +191,14 @@ public class Robot extends TimedRobot {
 		final var hatchIntake = new DummyHatchIntake(reportMap);
 //		final var hatchIntake = new MotorHatchIntake(new TalonSRX(Constants.HATCH_GRAB_ID), new TalonSRX(Constants.HATCH_STOW_ID), new TalonSRX(Constants.HATCH_PIVOT_ID));
 		final var taskSystem = new DefaultTaskSystem(robotInput);
+		final var matchScheduler = new DefaultMatchScheduler();
 		this.drive = drive;
 		this.cargoIntake = cargoIntake;
 		this.climber = climber;
 		this.hatchIntake = hatchIntake;
 		this.lift = lift;
 		this.taskSystem = taskSystem;
+		this.matchScheduler = matchScheduler;
 		
 		packetListener = new PacketListener(5801); // start in robotInit()
 		soundSender = new TCPEventSender(5809);
@@ -202,6 +210,7 @@ public class Robot extends TimedRobot {
 		constantSubsystemUpdater = new Actions.ActionMultiplexerBuilder( // NOTE, as of 2019.2.15 the current version of action-lib doesn't update these in order
 				orientationSystem,
 				taskSystem,
+				matchScheduler,
 				new SwerveCalibrateAction(this::getDrive, robotInput),
 //				new LEDHandler(this),
 				new CameraSystem(shuffleboardMap, this::getTaskSystem)
@@ -287,6 +296,13 @@ public class Robot extends TimedRobot {
 		).canRecycle(false).canBeDone(true).build());
 		swerveDriveAction.setPerspective(Perspective.DRIVER_STATION);
 		soundSender.sendEvent(SoundEvents.TELEOP_ENABLE);
+		matchScheduler.schedule(Actions.createRunOnce(() -> {
+			cargoIntake.stow();
+		}), MatchTime.of(3, MatchTime.Mode.TELEOP, MatchTime.Type.FROM_END));
+		matchScheduler.schedule(new TimedCargoIntake(400, this::getCargoIntake, 1), MatchTime.of(.5, MatchTime.Mode.TELEOP, MatchTime.Type.FROM_END));
+		matchScheduler.schedule(Actions.createRunOnce(() -> {
+			hatchIntake.drop();
+		}), MatchTime.of(.5, MatchTime.Mode.TELEOP, MatchTime.Type.FROM_END));
 		lastMode = RobotMode.TELEOP;
 	}
 	@Override public void teleopPeriodic() { }

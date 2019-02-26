@@ -174,8 +174,8 @@ public class LineUpAction extends SimpleAction implements LinkedAction, Distance
 		
 		
 		driveSupplier.get().setControl(moveX, moveY, turnAmount, MAX_SPEED, perspective);
+		SmartDashboard.putNumber("moveY", moveY);
 		if(moveY < 15 && usingTarget){
-			System.out.println("Move y is " + moveY);
 			nextAction = successAction;
 			setDone(true);
 		}

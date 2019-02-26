@@ -10,9 +10,11 @@ import java.util.function.Supplier;
 
 public class HatchGrabAction extends TimedAction {
 	private final Supplier<HatchIntake> hatchIntakeSupplier;
+	private final Consumer<HatchIntake> hatchIntakeAction;
 	private HatchGrabAction(Supplier<HatchIntake> hatchIntakeSupplier, Consumer<HatchIntake> hatchIntakeAction) {
 		super(true, 500);
 		this.hatchIntakeSupplier = hatchIntakeSupplier;
+		this.hatchIntakeAction = hatchIntakeAction;
 	}
 	public static Action createGrab(Supplier<HatchIntake> hatchIntakeSupplier){
 		return new HatchGrabAction(hatchIntakeSupplier, HatchIntake::hold);
@@ -26,6 +28,6 @@ public class HatchGrabAction extends TimedAction {
 		super.onStart();
 		final HatchIntake hatchIntake = hatchIntakeSupplier.get();
 		Objects.requireNonNull(hatchIntake);
-		hatchIntake.hold();
+		hatchIntakeAction.accept(hatchIntake);
 	}
 }

@@ -3,6 +3,7 @@ package com.first1444.frc.robot2019.vision;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
 
@@ -22,7 +23,7 @@ public class PacketListener extends Thread implements VisionSupplier{
 		if(visionMap == null){
 			return null;
 		}
-		return Objects.requireNonNull(visionMap.computeIfAbsent(cameraID, key -> { throw new NoSuchElementException(); }), "This is bad! My own code put a null element in a map!");
+		return Objects.requireNonNull(visionMap.get(cameraID), "This is bad! My own code put a null element in a map!");
 	}
 	
 	@Override
