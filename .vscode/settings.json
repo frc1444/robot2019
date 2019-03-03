@@ -8,7 +8,12 @@
     "**/.DS_Store": true,
     "bin/": true,
     ".classpath": true,
-    ".project": true
+    ".project": true,
+    "**/.classpath": true,
+    "**/.project": true,
+    "**/.settings": true,
+    "**/.factorypath": true
   },
-  "wpilib.online": true
+  "wpilib.online": true,
+  "wpilib.stopSimulationOnEntry": true
 }

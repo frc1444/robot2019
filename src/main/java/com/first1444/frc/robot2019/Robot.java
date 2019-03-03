@@ -45,6 +45,7 @@ import com.first1444.frc.util.reportmap.ReportMap;
 import com.first1444.frc.util.reportmap.ShuffleboardReportMap;
 import com.first1444.frc.util.valuemap.MutableValueMap;
 import com.first1444.frc.util.valuemap.sendable.MutableValueMapSendable;
+import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
@@ -162,26 +163,37 @@ public class Robot extends TimedRobot {
 //		final SwerveSetup swerve = Constants.Swerve2019.INSTANCE;
 		final SwerveSetup swerve = Constants.Swerve2018.INSTANCE;
 		final int quadCounts = swerve.getQuadCountsPerRevolution();
-		final var drive = new FourWheelSwerveDrive(
-				this::getOrientation,
-				new ImmutableActionFourSwerveCollection(
-						new TalonSwerveModule("front left", swerve.getFLDriveCAN(), swerve.getFLSteerCAN(), quadCounts, drivePid, steerPid,
-								swerve.setupFL(createModuleConfig("front left module")), talonDebug),
-						
-						new TalonSwerveModule("front right", swerve.getFRDriveCAN(), swerve.getFRSteerCAN(), quadCounts, drivePid, steerPid,
-								swerve.setupFR(createModuleConfig("front right module")), talonDebug),
-						
-						new TalonSwerveModule("rear left", swerve.getRLDriveCAN(), swerve.getRLSteerCAN(), quadCounts, drivePid, steerPid,
-								swerve.setupRL(createModuleConfig("rear left module")), talonDebug),
-						
-						new TalonSwerveModule("rear right", swerve.getRRDriveCAN(), swerve.getRRSteerCAN(), quadCounts, drivePid, steerPid,
-								swerve.setupRR(createModuleConfig("rear right module")), talonDebug)
+		final FourWheelSwerveDrive drive;
+		if(isSimulation()){
+			drive = new FourWheelSwerveDrive(
+					this::getOrientation,
+					new ImmutableActionFourSwerveCollection(
+						new DummySwerveModule(), new DummySwerveModule(), new DummySwerveModule(), new DummySwerveModule()
+					),
+					swerve.getWheelBase(), swerve.getTrackWidth()
+			);
+		} else {
+			drive = new FourWheelSwerveDrive(
+					this::getOrientation,
+					new ImmutableActionFourSwerveCollection(
+							new TalonSwerveModule("front left", swerve.getFLDriveCAN(), swerve.getFLSteerCAN(), quadCounts, drivePid, steerPid,
+									swerve.setupFL(createModuleConfig("front left module")), talonDebug),
+							
+							new TalonSwerveModule("front right", swerve.getFRDriveCAN(), swerve.getFRSteerCAN(), quadCounts, drivePid, steerPid,
+									swerve.setupFR(createModuleConfig("front right module")), talonDebug),
+							
+							new TalonSwerveModule("rear left", swerve.getRLDriveCAN(), swerve.getRLSteerCAN(), quadCounts, drivePid, steerPid,
+									swerve.setupRL(createModuleConfig("rear left module")), talonDebug),
+							
+							new TalonSwerveModule("rear right", swerve.getRRDriveCAN(), swerve.getRRSteerCAN(), quadCounts, drivePid, steerPid,
+									swerve.setupRR(createModuleConfig("rear right module")), talonDebug)
 
-						
+
 //						new DummySwerveModule(), new DummySwerveModule(), new DummySwerveModule(), new DummySwerveModule()
-				),
-				swerve.getWheelBase(), swerve.getTrackWidth()
-		);
+					),
+					swerve.getWheelBase(), swerve.getTrackWidth()
+			);
+		}
 		final var lift = new DummyLift(reportMap);
 //		final var lift = new MotorLift();
 		final var cargoIntake = new DummyCargoIntake(reportMap);
@@ -211,9 +223,7 @@ public class Robot extends TimedRobot {
 				orientationSystem,
 				taskSystem,
 				matchScheduler,
-				new SwerveCalibrateAction(this::getDrive, robotInput),
-//				new LEDHandler(this),
-				new CameraSystem(shuffleboardMap, this::getTaskSystem)
+				new SwerveCalibrateAction(this::getDrive, robotInput)
 		).clearAllOnEnd(false).canRecycle(false).build();
 		actionChooser = Actions.createActionChooser(WhenDone.CLEAR_ACTIVE);
 
@@ -251,6 +261,7 @@ public class Robot extends TimedRobot {
 	@Override
 	public void robotInit() {
 		packetListener.start();
+		shuffleboardMap.getUserTab().add("Camera", CameraServer.getInstance().startAutomaticCapture());
 
 		System.out.println("Finished robot init!");
 	}

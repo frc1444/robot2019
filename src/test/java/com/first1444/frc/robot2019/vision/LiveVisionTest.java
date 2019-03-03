@@ -5,12 +5,15 @@ public class LiveVisionTest {
 		final PacketListener packetListener = new PacketListener(5801);
 		packetListener.start();
 		
-		VisionInstant lastInstant = null;
+		final VisionInstant[] lastInstants = new VisionInstant[2];
 		while(true){
-			final VisionInstant instant = packetListener.getInstant(0);
-			if(lastInstant != instant){
-				lastInstant = instant;
-				System.out.println(instant.toString().replaceAll(",", ",\n"));
+			for(int i = 0; i < 2; i++) {
+				final int id = i + 1;
+				final VisionInstant instant = packetListener.getInstant(id);
+				if (lastInstants[i] != instant) {
+					lastInstants[i] = instant;
+					System.out.println(instant.toString().replaceAll(",", ",\n"));
+				}
 			}
 			try {
 				Thread.sleep(200);

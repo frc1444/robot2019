@@ -68,13 +68,13 @@ public class SwerveDriveAction extends SimpleAction {
 		}
 		if(input.getVisionAlign().isDown()){
 			if(input.getVisionAlign().isPressed()){
-				actionChooser.setNextAction(new LineUpAction(
+				actionChooser.setNextAction(Actions.createLinkedActionRunner(new LineUpAction(
 						visionSupplier,
 						task == TaskSystem.Task.CARGO ? dimensions.getCargoCameraID() : dimensions.getHatchCameraID(),
 						task == TaskSystem.Task.CARGO ? dimensions.getCargoManipulatorPerspective() : dimensions.getHatchManipulatorPerspective(),
 						new BestVisionPacketSelector(),
 						driveSupplier, orientationSupplier,  null, null, null
-				));
+				), WhenDone.CLEAR_ACTIVE_AND_BE_DONE, true));
 			}
 			actionChooser.update();
 			if(actionChooser.isDone()){

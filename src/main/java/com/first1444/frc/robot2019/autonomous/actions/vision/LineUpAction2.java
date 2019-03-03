@@ -2,7 +2,6 @@ package com.first1444.frc.robot2019.autonomous.actions.vision;
 
 import com.first1444.frc.robot2019.Perspective;
 import com.first1444.frc.robot2019.autonomous.actions.DistanceAwayAction;
-import com.first1444.frc.robot2019.autonomous.actions.GoStraight;
 import com.first1444.frc.robot2019.event.EventSender;
 import com.first1444.frc.robot2019.event.SoundEvents;
 import com.first1444.frc.robot2019.sensors.Orientation;
@@ -11,7 +10,6 @@ import com.first1444.frc.robot2019.vision.*;
 import com.first1444.frc.util.MathUtil;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import me.retrodaredevil.action.Action;
-import me.retrodaredevil.action.Actions;
 import me.retrodaredevil.action.LinkedAction;
 import me.retrodaredevil.action.SimpleAction;
 
@@ -22,7 +20,8 @@ import java.util.function.Supplier;
 
 import static java.lang.Math.*;
 
-public class LineUpAction extends SimpleAction implements LinkedAction, DistanceAwayAction {
+@Deprecated
+public class LineUpAction2 extends SimpleAction implements LinkedAction, DistanceAwayAction {
 	public static final double MAX_SPEED = .3;
 	private static final long FAIL_NOTIFY_TIME = 100;
 	private static final long MAX_FAIL_TIME = 1000;
@@ -48,9 +47,9 @@ public class LineUpAction extends SimpleAction implements LinkedAction, Distance
 	
 	private double distanceAway = Double.MAX_VALUE;
 	
-	public LineUpAction(VisionSupplier visionSupplier, int cameraID, Perspective perspective, PreferredTargetSelector selector,
-						Supplier<SwerveDrive> driveSupplier, Supplier<Orientation> orientationSupplier,
-						Action failAction, Action successAction, EventSender eventSender) {
+	public LineUpAction2(VisionSupplier visionSupplier, int cameraID, Perspective perspective, PreferredTargetSelector selector,
+						 Supplier<SwerveDrive> driveSupplier, Supplier<Orientation> orientationSupplier,
+						 Action failAction, Action successAction, EventSender eventSender) {
 		super(false);
 		this.visionSupplier = Objects.requireNonNull(visionSupplier);
 		this.cameraID = cameraID;
@@ -77,7 +76,6 @@ public class LineUpAction extends SimpleAction implements LinkedAction, Distance
 			setDone(true);
 			return;
 		}
-//		System.out.println("visionInstant: " + visionInstant);
 		final boolean failed;
 		if(visionInstant != null && visionInstant.getTimeMillis() + 750 >= System.currentTimeMillis()){ // not null and packet within .75 seconds
 			final Collection<? extends VisionPacket> packets = visionInstant.getVisiblePackets();
@@ -153,24 +151,16 @@ public class LineUpAction extends SimpleAction implements LinkedAction, Distance
 //		));
 		final double turnAmount;
 		final double groundDistance = moveVision.getGroundDistance();
-//		if (groundDistance > 40) {
-//			turnAmount = faceTurnAmount;
-//		} else if (groundDistance > 20) {
-//			final double percentage = (groundDistance - 20) / 20.0;
-//			turnAmount = percentage * faceTurnAmount + (1 - percentage) * yawTurnAmount;
-//		} else {
-//			turnAmount = yawTurnAmount;
-//		}
 		turnAmount = yawTurnAmount;
 		
 		
 		driveSupplier.get().setControl(moveX, moveY, turnAmount, MAX_SPEED, perspective);
 		SmartDashboard.putNumber("ground distance", moveVision.getGroundDistance());
-		if(moveVision.getGroundDistance() < 5){
+		if(moveVision.getGroundDistance() < 2){
 			final double x = targetVision.getVisionX();
 			final double y = targetVision.getVisionZ();
-			nextAction = Actions.createLinkedAction(new GoStraight(hypot(x, y), .3, x / targetVision.getGroundDistance(), y / targetVision.getGroundDistance(), null, driveSupplier, orientationSupplier), successAction);
-//			nextAction = successAction;
+//			nextAction = Actions.createLinkedAction(new GoStraight(hypot(x, y), .3, x / targetVision.getGroundDistance(), y / targetVision.getGroundDistance(), null, driveSupplier, orientationSupplier), successAction);
+			nextAction = successAction;
 			System.out.println("going straight now");
 			setDone(true);
 		}

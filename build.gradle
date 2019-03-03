@@ -2,8 +2,10 @@ plugins {
     id "java"
     id "eclipse"
     id "idea"
-    id "edu.wpi.first.GradleRIO" version "2019.3.2"
+    id "edu.wpi.first.GradleRIO" version "2019.4.1"
 }
+sourceCompatibility = JavaVersion.VERSION_11
+targetCompatibility = JavaVersion.VERSION_11
 
 def ROBOT_MAIN_CLASS = "com.first1444.frc.robot2019.Main"
 
@@ -35,6 +37,7 @@ deploy {
         }
     }
 }
+def includeDesktopSupport = true;
 
 // Maven central needed for JUnit
 repositories {
@@ -71,6 +74,7 @@ dependencies {
     compile group: 'com.google.code.gson', name: 'gson', version: '2.3.1'
     // https://mvnrepository.com/artifact/org.zeromq/jeromq
     compile group: 'org.zeromq', name: 'jeromq', version: '0.4.3'
+    simulation "edu.wpi.first.halsim:halsim_ds_socket:${wpi.wpilibVersion}:${wpi.platforms.desktop}@zip"
 }
 
 // Setting up my Jar File. In this case, adding all libraries into the main jar ('fat jar')
