@@ -17,6 +17,7 @@ import me.retrodaredevil.action.Action;
 import me.retrodaredevil.action.Actions;
 
 import java.util.Collection;
+import java.util.Map;
 
 public class AutonomousChooserState {
 	private final AutonomousModeCreator autonomousModeCreator;
@@ -40,7 +41,7 @@ public class AutonomousChooserState {
 		levelChooser = new DynamicSendableChooser<>();
 		lineUpChooser = new DynamicSendableChooser<>();
 		final var valueMapSendable = new MutableValueMapSendable<>(AutonConfig.class);
-		layout.add("Config", valueMapSendable);
+		layout.add("Config", valueMapSendable).withProperties(Map.of("Show search box", false)).withSize(2, 5);
 		autonConfig = valueMapSendable.getMutableValueMap();
 
 		addAutoOptions();
@@ -52,6 +53,7 @@ public class AutonomousChooserState {
 		layout.add("Starting Position Chooser", startingPositionChooser);
 		layout.add("Game Piece Chooser", gamePieceChooser);
 		layout.add("Level Chooser", levelChooser);
+		layout.add("Line Up Chooser", lineUpChooser);
 		autonomousChooser.addListener(newSelectionKey -> {
 			updateStartingPositionChooser();
 			updateGamePieceChooser();

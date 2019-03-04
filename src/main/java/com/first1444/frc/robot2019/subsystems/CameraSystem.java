@@ -3,6 +3,7 @@ package com.first1444.frc.robot2019.subsystems;
 import com.first1444.frc.robot2019.ShuffleboardMap;
 import edu.wpi.cscore.MjpegServer;
 import edu.wpi.cscore.UsbCamera;
+import edu.wpi.cscore.VideoMode;
 import edu.wpi.cscore.VideoSource;
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.wpilibj.RobotBase;
@@ -12,7 +13,6 @@ import me.retrodaredevil.action.SimpleAction;
 import java.util.Objects;
 import java.util.function.Supplier;
 
-@Deprecated
 public class CameraSystem extends SimpleAction {
 	private final Supplier<TaskSystem> taskSystemSupplier;
 	private final UsbCamera hatch;
@@ -24,22 +24,25 @@ public class CameraSystem extends SimpleAction {
 		this.taskSystemSupplier = taskSystemSupplier;
 		
 		if(RobotBase.isSimulation()){
-			hatch = null;
-			cargo = null;
+			// These values are for your own computer. If you want to simulate something in the future, change these for yourself.
+			hatch = CameraServer.getInstance().startAutomaticCapture(0);
+			cargo = CameraServer.getInstance().startAutomaticCapture(2);
 		} else {
-			hatch = CameraServer.getInstance().startAutomaticCapture();
-			cargo = CameraServer.getInstance().startAutomaticCapture();
-			setupCamera(hatch);
-			setupCamera(cargo);
+			// Values for the cameras on the roborio
+			hatch = CameraServer.getInstance().startAutomaticCapture(0);
+			cargo = CameraServer.getInstance().startAutomaticCapture(1);
 		}
+		setupCamera(hatch);
+		setupCamera(cargo);
 		
 		videoSink = CameraServer.getInstance().addSwitchedCamera("Toggle Camera");
-		shuffleboardMap.getUserTab().add("My Toggle Camera", videoSink.getSource()).withSize(5, 5);
-		videoSink.setSource(cargo);
-		videoSink.setSource(hatch);
+		final VideoSource source = videoSink.getSource();
+//		videoSink.setCompression(50);
+//		videoSink.setDefaultCompression(50);
+		shuffleboardMap.getUserTab().add("My Toggle Camera", source).withSize(5, 5);
 	}
 	private void setupCamera(UsbCamera camera){
-		camera.setVideoMode(camera.getVideoMode().pixelFormat, 320, 240, 9);
+		camera.setVideoMode(VideoMode.PixelFormat.kMJPEG, 320, 240, 9);
 		camera.setConnectVerbose(0); // so it doesn't spam the console with annoying messages if it's disconnected
 		camera.setConnectionStrategy(VideoSource.ConnectionStrategy.kKeepOpen);
 	}
@@ -55,10 +58,10 @@ public class CameraSystem extends SimpleAction {
 			lastTask = newTask;
 			if(newTask == TaskSystem.Task.CARGO){
 				videoSink.setSource(cargo);
-//				System.out.println("Source is now cargo. Is connected: " + cargo.isConnected());
+				System.out.println("Source is now cargo. Is connected: " + (cargo == null ? "null" : cargo.isConnected()));
 			} else if(newTask == TaskSystem.Task.HATCH){
 				videoSink.setSource(hatch);
-//				System.out.println("Source is now hatch. Is connected: " + hatch.isConnected());
+				System.out.println("Source is now hatch. Is connected: " + (hatch == null ? "null" : hatch.isConnected()));
 			} else {
 				throw new UnsupportedOperationException("Unsupported task: " + newTask);
 			}

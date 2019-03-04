@@ -2,7 +2,7 @@ package com.first1444.frc.robot2019.actions;
 
 import com.first1444.frc.robot2019.Perspective;
 import com.first1444.frc.robot2019.RobotDimensions;
-import com.first1444.frc.robot2019.autonomous.actions.vision.LineUpAction;
+import com.first1444.frc.robot2019.autonomous.actions.vision.LineUpCreator;
 import com.first1444.frc.robot2019.input.RobotInput;
 import com.first1444.frc.robot2019.sensors.Orientation;
 import com.first1444.frc.robot2019.subsystems.TaskSystem;
@@ -68,13 +68,13 @@ public class SwerveDriveAction extends SimpleAction {
 		}
 		if(input.getVisionAlign().isDown()){
 			if(input.getVisionAlign().isPressed()){
-				actionChooser.setNextAction(Actions.createLinkedActionRunner(new LineUpAction(
+				actionChooser.setNextAction(LineUpCreator.createLineUpAction(
 						visionSupplier,
 						task == TaskSystem.Task.CARGO ? dimensions.getCargoCameraID() : dimensions.getHatchCameraID(),
 						task == TaskSystem.Task.CARGO ? dimensions.getCargoManipulatorPerspective() : dimensions.getHatchManipulatorPerspective(),
 						new BestVisionPacketSelector(),
 						driveSupplier, orientationSupplier,  null, null, null
-				), WhenDone.CLEAR_ACTIVE_AND_BE_DONE, true));
+				));
 			}
 			actionChooser.update();
 			if(actionChooser.isDone()){

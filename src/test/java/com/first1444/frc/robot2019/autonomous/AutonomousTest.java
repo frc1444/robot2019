@@ -12,18 +12,20 @@ import org.junit.jupiter.api.Test;
 public class AutonomousTest {
 	public static void main(String[] args){
 		final AutonomousModeCreator modeCreator = new AutonomousModeCreator(new TestAutonActionCreator(System.out), Constants.Dimensions.INSTANCE);
-		runMode(modeCreator, AutonomousType.OFF_CENTER_CARGO_SHIP, StartingPosition.MIDDLE_RIGHT, GamePieceType.HATCH, SlotLevel.LEVEL1, LineUpType.USE_VISION, 90);
-		runMode(modeCreator, AutonomousType.DO_NOTHING, null, null, null, LineUpType.USE_VISION, 90);
-		runMode(modeCreator, AutonomousType.CROSS_LINE_FORWARD, null, null, null, LineUpType.USE_VISION, 90);
-		runMode(modeCreator, AutonomousType.CROSS_LINE_SIDE, StartingPosition.RIGHT, null, null, LineUpType.USE_VISION, 90);
-		
-		runMode(modeCreator, AutonomousType.SIDE_CARGO_SHIP, StartingPosition.RIGHT, GamePieceType.HATCH, SlotLevel.LEVEL1, LineUpType.USE_VISION, 180);
-		runMode(modeCreator, AutonomousType.SIDE_CARGO_SHIP, StartingPosition.LEFT, GamePieceType.HATCH, SlotLevel.LEVEL1, LineUpType.USE_VISION, 0);
-		
-		runMode(modeCreator, AutonomousType.SIDE_CARGO_SHIP, StartingPosition.RIGHT, GamePieceType.CARGO, SlotLevel.LEVEL1, LineUpType.USE_VISION, 0);
-		runMode(modeCreator, AutonomousType.SIDE_CARGO_SHIP, StartingPosition.LEFT, GamePieceType.CARGO, SlotLevel.LEVEL1, LineUpType.USE_VISION, 180);
-		
-		runMode(modeCreator, AutonomousType.SIDE_ROCKET, StartingPosition.RIGHT, GamePieceType.HATCH, SlotLevel.LEVEL1, LineUpType.USE_VISION, 90);
+		runMode(modeCreator, AutonomousType.OFF_CENTER_CARGO_SHIP, StartingPosition.MIDDLE_RIGHT, GamePieceType.HATCH, SlotLevel.LEVEL1, LineUpType.NO_VISION, 90);
+		runMode(modeCreator, AutonomousType.DO_NOTHING, null, null, null, LineUpType.NO_VISION, 90);
+		runMode(modeCreator, AutonomousType.CROSS_LINE_FORWARD, null, null, null, LineUpType.NO_VISION, 90);
+		runMode(modeCreator, AutonomousType.CROSS_LINE_SIDE, StartingPosition.RIGHT, null, null, LineUpType.NO_VISION, 90);
+		for(LineUpType lineUpType : LineUpType.values()) {
+			
+			runMode(modeCreator, AutonomousType.SIDE_CARGO_SHIP, StartingPosition.RIGHT, GamePieceType.HATCH, SlotLevel.LEVEL1, lineUpType, 180);
+			runMode(modeCreator, AutonomousType.SIDE_CARGO_SHIP, StartingPosition.LEFT, GamePieceType.HATCH, SlotLevel.LEVEL1, lineUpType, 0);
+			
+			runMode(modeCreator, AutonomousType.SIDE_CARGO_SHIP, StartingPosition.RIGHT, GamePieceType.CARGO, SlotLevel.LEVEL1, lineUpType, 0);
+			runMode(modeCreator, AutonomousType.SIDE_CARGO_SHIP, StartingPosition.LEFT, GamePieceType.CARGO, SlotLevel.LEVEL1, lineUpType, 180);
+			
+			runMode(modeCreator, AutonomousType.SIDE_ROCKET, StartingPosition.RIGHT, GamePieceType.HATCH, SlotLevel.LEVEL1, lineUpType, 90);
+		}
 	}
 	private static void runMode(AutonomousModeCreator modeCreator, AutonomousType autonomousType,
 								StartingPosition startingPosition, GamePieceType gamePieceType, SlotLevel slotLevel, LineUpType lineUpType, double startingOrientation){
@@ -32,6 +34,7 @@ public class AutonomousTest {
 		System.out.println(gamePieceType);
 		System.out.println(slotLevel);
 		System.out.println(lineUpType);
+		System.out.println(startingOrientation);
 		runUntilDone(modeCreator.createAction(autonomousType, startingPosition, gamePieceType, slotLevel, lineUpType, startingOrientation));
 		System.out.println();
 	}

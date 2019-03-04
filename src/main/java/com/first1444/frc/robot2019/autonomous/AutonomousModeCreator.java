@@ -87,6 +87,9 @@ public class AutonomousModeCreator {
 			if (startingPosition == null) {
 				throw new IllegalArgumentException("A left or right starting position must be selected for off center auto!");
 			}
+			if(gamePieceType == GamePieceType.CARGO){
+				System.out.println("Creating auto off center cargo ship with cargo. We shouldn't use this mode because the cargo ship will never have hatches on the front two bays");
+			}
 			final boolean isLeft;
 			if (startingPosition == StartingPosition.MIDDLE_LEFT) {
 				isLeft = true;
@@ -144,13 +147,14 @@ public class AutonomousModeCreator {
 //				actionQueue.add(actionCreator.createGoStraight())
 			actionQueue.add(actionCreator.createGoStraight(40, .3, 90, startingOrientation));
 			distance -= 40;
-			actionQueue.add(actionCreator.createGoStraight(170, .7, 90, startingOrientation));
-			distance -= 170;
+			actionQueue.add(actionCreator.createGoStraight(130, .7, 90, startingOrientation));
+			distance -= 130;
 			actionQueue.add(actionCreator.createGoStraight(distance, .3, 90, startingOrientation));
 			
 			final double faceAngle = (isLeft ? 0 : 180) + getManipulatorOffset(gamePieceType); // face the manipulator towards the cargo ship
 			if (MathUtil.minDistance(faceAngle, startingOrientation, 360) > 5) { // only rotate if we need to
 				actionQueue.add(actionCreator.createTurnToOrientation(faceAngle));
+				System.out.println("Creating a side cargo auto mode where we have to rotate! Why not just start the robot in the correct orientation?");
 			}
 			final Action cargoShipSuccess = new Actions.ActionQueueBuilder(
 					Actions.createRunOnce(() -> System.out.println("We successfully placed something on the cargo ship. TODO: Write code to make this do more stuff."))
@@ -171,14 +175,15 @@ public class AutonomousModeCreator {
 			} else {
 				actionQueue.add(actionCreator.createGoStraight(20, .2, isLeft ? 0 : 180, faceAngle)); // go towards cargo ship
 				if(gamePieceType == GamePieceType.HATCH){
-					// TODO I need to do stuff here but I'm going to bed now. Goodnight.
+					actionQueue.add(actionCreator.createDropHatch());
 				} else {
-				
+					actionQueue.add(actionCreator.createRaiseLift(Lift.Position.CARGO_CARGO_SHIP));
+					actionQueue.add(actionCreator.createReleaseCargo());
 				}
 			}
 		} else if (autonomousType == AutonomousType.SIDE_ROCKET) {
-			if (gamePieceType == null) {
-				throw new IllegalArgumentException("A game piece must be specified for side rocket autonomous!");
+			if(gamePieceType != GamePieceType.HATCH){
+				throw new IllegalArgumentException("Side rocket only supports the hatch! Got: " + gamePieceType);
 			}
 			if (slotLevel == null) {
 				throw new IllegalArgumentException("A Slot Level must be specified for side rocket autonomous!");
@@ -193,24 +198,23 @@ public class AutonomousModeCreator {
 			}
 			actionQueue.add(actionCreator.createGoStraight(69.56, .3, sideRocketIsLeft ? 180 : 0, startingOrientation));
 			actionQueue.add(actionCreator.createGoStraight(201.13 - 95.28 - 60, .5, 90, startingOrientation)); // the 60 is random
-//				actionQueue.add(actionCreator.createTurnToOrientation(90 - (sideRocketIsLeft ? -20 : 20)));
 			
 			final Action rocketSuccess = new Actions.ActionQueueBuilder(
 					Actions.createRunOnce(() -> System.out.println("We successfully placed something on the rocket. TODO: Write code to make this do more stuff."))
 			).immediatelyDoNextWhenDone(true).canBeDone(true).canRecycle(false).build();
 			
-			if (gamePieceType == GamePieceType.HATCH) {
+			if(lineUpType == LineUpType.USE_VISION) {
 				actionQueue.add(actionCreator.createRocketPlaceHatchUseVision(
 						slotLevel,
 						Actions.createRunOnce(() -> System.out.println("Failed to place hatch on rocket")),
 						rocketSuccess
 				));
 			} else {
-				actionQueue.add(actionCreator.createRocketPlaceCargoUseVision(
-						slotLevel,
-						Actions.createRunOnce(() -> System.out.println("Failed to place cargo on rocket")),
-						rocketSuccess
-				));
+				actionQueue.add(actionCreator.createGoStraight(60, .3, 90, startingOrientation));
+				final double driveAngle = 90 - (sideRocketIsLeft ? -20 : 20);
+				actionQueue.add(actionCreator.createTurnToOrientation(driveAngle));
+				actionQueue.add(actionCreator.createGoStraight(20, .2, driveAngle, driveAngle));
+				actionQueue.add(actionCreator.createDropHatch());
 			}
 		} else {
 			System.out.println("Doing nothing for autonomous type: " + autonomousType);

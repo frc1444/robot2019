@@ -6,14 +6,16 @@ When you first clone this project from the internet, make sure that you run
 Some times you must run ```gradlew downloadAll``` to get everything.
 ### TODO
 * Rumble driver controller when operator places hatch/cargo
-* Fix camera
-### TODO at competition
-* Put gyro on robot
-* Change lift encoder counts and presets. Bring part of the rocket to test it with
 * Add option in auto modes so you can choose whether or not to use vision
 * Make vision work
+### Done
+* Fixed switching camera
+### TODO at competition
+* Put gyro on robot
 ### Changes made after bag 'n tag
 * Deactivated hatch stow forward limit switch
+* Made switching cameras work
+* Currently testing vision
 ### Conventions
 * Use tabs in .java files
 * Use 4 spaces in gradle configuration

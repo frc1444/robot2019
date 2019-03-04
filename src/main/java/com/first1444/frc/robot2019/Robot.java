@@ -7,8 +7,6 @@
 
 package com.first1444.frc.robot2019;
 
-import com.ctre.phoenix.motorcontrol.can.TalonSRX;
-import com.ctre.phoenix.motorcontrol.can.VictorSPX;
 import com.first1444.frc.input.DualShockRumble;
 import com.first1444.frc.input.WPIInputCreator;
 import com.first1444.frc.robot2019.actions.OperatorAction;
@@ -17,9 +15,8 @@ import com.first1444.frc.robot2019.actions.SwerveDriveAction;
 import com.first1444.frc.robot2019.autonomous.AutonomousChooserState;
 import com.first1444.frc.robot2019.autonomous.AutonomousModeCreator;
 import com.first1444.frc.robot2019.autonomous.RobotAutonActionCreator;
-import com.first1444.frc.robot2019.autonomous.actions.HatchGrabAction;
 import com.first1444.frc.robot2019.autonomous.actions.TimedCargoIntake;
-import com.first1444.frc.robot2019.autonomous.actions.vision.LineUpAction;
+import com.first1444.frc.robot2019.autonomous.actions.vision.LineUpCreator;
 import com.first1444.frc.robot2019.event.EventSender;
 import com.first1444.frc.robot2019.event.SoundEvents;
 import com.first1444.frc.robot2019.event.TCPEventSender;
@@ -30,7 +27,6 @@ import com.first1444.frc.robot2019.matchrun.DefaultMatchScheduler;
 import com.first1444.frc.robot2019.matchrun.MatchScheduler;
 import com.first1444.frc.robot2019.matchrun.MatchTime;
 import com.first1444.frc.robot2019.sensors.BNO055;
-import com.first1444.frc.robot2019.sensors.DummyGyro;
 import com.first1444.frc.robot2019.sensors.Orientation;
 import com.first1444.frc.robot2019.subsystems.*;
 import com.first1444.frc.robot2019.subsystems.implementations.*;
@@ -49,7 +45,6 @@ import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj.interfaces.Gyro;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import me.retrodaredevil.action.*;
@@ -223,7 +218,8 @@ public class Robot extends TimedRobot {
 				orientationSystem,
 				taskSystem,
 				matchScheduler,
-				new SwerveCalibrateAction(this::getDrive, robotInput)
+				new SwerveCalibrateAction(this::getDrive, robotInput),
+				new CameraSystem(shuffleboardMap, this::getTaskSystem)
 		).clearAllOnEnd(false).canRecycle(false).build();
 		actionChooser = Actions.createActionChooser(WhenDone.CLEAR_ACTIVE);
 
@@ -261,7 +257,7 @@ public class Robot extends TimedRobot {
 	@Override
 	public void robotInit() {
 		packetListener.start();
-		shuffleboardMap.getUserTab().add("Camera", CameraServer.getInstance().startAutomaticCapture());
+//		shuffleboardMap.getUserTab().add("Camera", CameraServer.getInstance().startAutomaticCapture());
 
 		System.out.println("Finished robot init!");
 	}
@@ -280,7 +276,6 @@ public class Robot extends TimedRobot {
 			enabledSubsystemUpdater.update(); // update subsystems when robot is enabled
 		}
 		constantSubsystemUpdater.update(); // update subsystems that are always updated
-		
 	}
 	
 	/** Called when robot is disabled and in between switching between modes such as teleop and autonomous*/
@@ -350,13 +345,11 @@ public class Robot extends TimedRobot {
 		actionChooser.setNextAction(new Actions.ActionQueueBuilder(
 //				new TurnToOrientation(-90, this::getDrive, this::getOrientation),
 //				new GoStraight(10, .2, 0, 1, 90.0, this::getDrive, this::getOrientation),
-				Actions.createLinkedActionRunner(
-						new LineUpAction(
-								packetListener, dimensions.getHatchCameraID(), Perspective.ROBOT_FORWARD_CAM,
-								new BestVisionPacketSelector(), this::getDrive, this::getOrientation,
-								Actions.createRunOnce(() -> System.out.println("Failed!")), Actions.createRunOnce(() -> System.out.println("Success!")),
-								getSoundSender()),
-						WhenDone.CLEAR_ACTIVE_AND_BE_DONE, false
+				LineUpCreator.createLineUpAction(
+						packetListener, dimensions.getHatchCameraID(), Perspective.ROBOT_FORWARD_CAM,
+						new BestVisionPacketSelector(), this::getDrive, this::getOrientation,
+						Actions.createRunOnce(() -> System.out.println("Failed!")), Actions.createRunOnce(() -> System.out.println("Success!")),
+						getSoundSender()
 				),
 				Actions.createRunOnce(() -> robotInput.getDriverRumble().rumbleTime(500, .2))
 		).canRecycle(false).canBeDone(true).immediatelyDoNextWhenDone(true).build());

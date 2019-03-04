@@ -7,6 +7,7 @@ import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardContainer;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardLayout;
 import edu.wpi.first.wpilibj.smartdashboard.SendableBuilder;
 
+import java.util.Map;
 import java.util.function.Supplier;
 
 public class OrientationSendable extends SendableBase {
@@ -17,7 +18,7 @@ public class OrientationSendable extends SendableBase {
 	}
 	public static void addOrientation(ShuffleboardContainer container, Supplier<Orientation> orientationSupplier){
 		final ShuffleboardLayout layout = container.getLayout("Orientation", BuiltInLayouts.kList).withSize(2, 3);
-		layout.add("Gyro", new OrientationSendable(orientationSupplier));
+		layout.add("Gyro", new OrientationSendable(orientationSupplier)).withProperties(Map.of("Major tick spacing", 360));
 		layout.add("Value", new SendableBase() {
 			@Override
 			public void initSendable(SendableBuilder builder) {

@@ -2,11 +2,13 @@ package com.first1444.frc.robot2019.autonomous;
 
 import com.first1444.frc.robot2019.Robot;
 import com.first1444.frc.robot2019.autonomous.actions.*;
-import com.first1444.frc.robot2019.autonomous.actions.vision.LineUpAction;
+import com.first1444.frc.robot2019.autonomous.actions.vision.LineUpCreator;
 import com.first1444.frc.robot2019.deepspace.SlotLevel;
 import com.first1444.frc.robot2019.subsystems.Lift;
 import com.first1444.frc.robot2019.vision.BestVisionPacketSelector;
-import me.retrodaredevil.action.*;
+import me.retrodaredevil.action.Action;
+import me.retrodaredevil.action.Actions;
+import me.retrodaredevil.action.WhenDone;
 
 import java.util.Map;
 
@@ -70,7 +72,7 @@ public class RobotAutonActionCreator implements AutonActionCreator {
 				Actions.createRunOnce(() -> hasLiftBeenMoved[0] = true)
 		);
 		
-		final var lineUp = new LineUpAction(
+		final var lineUp = LineUpCreator.createLinkedLineUpAction(
 				robot.getVisionSupplier(),
 				hatch ? robot.getDimensions().getHatchCameraID() : robot.getDimensions().getCargoCameraID(),
 				hatch ? robot.getDimensions().getHatchManipulatorPerspective() : robot.getDimensions().getCargoManipulatorPerspective(),

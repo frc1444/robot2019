@@ -2,6 +2,7 @@ package com.first1444.frc.robot2019.autonomous.actions.vision;
 
 import com.first1444.frc.robot2019.Perspective;
 import com.first1444.frc.robot2019.autonomous.actions.DistanceAwayAction;
+import com.first1444.frc.robot2019.autonomous.actions.DistanceAwayLinkedAction;
 import com.first1444.frc.robot2019.autonomous.actions.GoStraight;
 import com.first1444.frc.robot2019.event.EventSender;
 import com.first1444.frc.robot2019.event.SoundEvents;
@@ -22,7 +23,7 @@ import java.util.function.Supplier;
 
 import static java.lang.Math.*;
 
-public class LineUpAction extends SimpleAction implements LinkedAction, DistanceAwayAction {
+class LineUpAction extends SimpleAction implements DistanceAwayLinkedAction {
 	public static final double MAX_SPEED = .3;
 	private static final long FAIL_NOTIFY_TIME = 100;
 	private static final long MAX_FAIL_TIME = 1000;
@@ -48,7 +49,7 @@ public class LineUpAction extends SimpleAction implements LinkedAction, Distance
 	
 	private double distanceAway = Double.MAX_VALUE;
 	
-	public LineUpAction(VisionSupplier visionSupplier, int cameraID, Perspective perspective, PreferredTargetSelector selector,
+	LineUpAction(VisionSupplier visionSupplier, int cameraID, Perspective perspective, PreferredTargetSelector selector,
 						Supplier<SwerveDrive> driveSupplier, Supplier<Orientation> orientationSupplier,
 						Action failAction, Action successAction, EventSender eventSender) {
 		super(false);

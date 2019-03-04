@@ -24,7 +24,7 @@ public class BestVisionPacketSelector implements PreferredTargetSelector {
 	}
 	private List<? extends VisionPacket> filterAngles(Collection<? extends VisionPacket> visionPackets){
 		final List<VisionPacket> packets = new ArrayList<>(visionPackets);
-		packets.removeIf(packet -> abs(packet.getVisionYaw()) > 50 || abs(packet.getVisionPitch()) > 45 || abs(packet.getVisionRoll()) > 45);
+		packets.removeIf(packet -> abs(packet.getVisionYaw()) > 50 || abs(packet.getVisionPitch()) > 90 || abs(packet.getVisionRoll()) > 45);
 		if(packets.isEmpty()){
 			return new ArrayList<>(visionPackets);
 		}
