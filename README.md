@@ -10,6 +10,8 @@ Some times you must run ```gradlew downloadAll``` to get everything.
 ### TODO at competition
 * Put gyro on robot
 * Change lift encoder counts and presets. Bring part of the rocket to test it with
+* Add option in auto modes so you can choose whether or not to use vision
+* Make vision work
 ### Changes made after bag 'n tag
 * Deactivated hatch stow forward limit switch
 ### Conventions

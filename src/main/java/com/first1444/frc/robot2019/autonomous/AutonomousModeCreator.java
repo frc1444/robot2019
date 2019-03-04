@@ -2,9 +2,11 @@ package com.first1444.frc.robot2019.autonomous;
 
 import com.first1444.frc.robot2019.RobotDimensions;
 import com.first1444.frc.robot2019.autonomous.options.AutonomousType;
+import com.first1444.frc.robot2019.autonomous.options.LineUpType;
 import com.first1444.frc.robot2019.deepspace.GamePieceType;
 import com.first1444.frc.robot2019.deepspace.SlotLevel;
 import com.first1444.frc.robot2019.autonomous.options.StartingPosition;
+import com.first1444.frc.robot2019.subsystems.Lift;
 import com.first1444.frc.util.MathUtil;
 import me.retrodaredevil.action.Action;
 import me.retrodaredevil.action.ActionQueue;
@@ -37,8 +39,10 @@ public class AutonomousModeCreator {
 			final StartingPosition startingPosition,
 			final GamePieceType gamePieceType,
 			final SlotLevel slotLevel,
+			final LineUpType lineUpType,
 			final double startingOrientation){
 		Objects.requireNonNull(autonomousType);
+		Objects.requireNonNull(lineUpType);
 		
 		final ActionQueue actionQueue = new Actions.ActionQueueBuilder()
 				.canRecycle(false)
@@ -47,18 +51,22 @@ public class AutonomousModeCreator {
 				.build();
 		
 		if (autonomousType == AutonomousType.DO_NOTHING) {
-			if(startingPosition != null || gamePieceType != null || slotLevel != null){
+			if(startingPosition != null || gamePieceType != null || slotLevel != null)
 				throw new IllegalArgumentException("All should be null! startingPosition: " + startingPosition + " gamePieceType: " + gamePieceType + " slotLevel" + slotLevel);
-			}
+			if(lineUpType != LineUpType.NO_VISION)
+				throw new IllegalArgumentException("lineUpType must be NO_VISION! It's: " + lineUpType);
 		} else if (autonomousType == AutonomousType.CROSS_LINE_FORWARD) {
-			if(startingPosition != null || gamePieceType != null || slotLevel != null){
+			if(startingPosition != null || gamePieceType != null || slotLevel != null)
 				throw new IllegalArgumentException("All should be null! startingPosition: " + startingPosition + " gamePieceType: " + gamePieceType + " slotLevel" + slotLevel);
-			}
+			if(lineUpType != LineUpType.NO_VISION)
+				throw new IllegalArgumentException("lineUpType must be NO_VISION! It's: " + lineUpType);
 			actionQueue.add(actionCreator.createGoStraight(55, .5, 90)); // cross line
 		} else if (autonomousType == AutonomousType.CROSS_LINE_SIDE) {
-			if(gamePieceType != null || slotLevel != null){
+			if(gamePieceType != null || slotLevel != null)
 				throw new IllegalArgumentException("All should be null! gamePieceType: " + gamePieceType + " slotLevel" + slotLevel);
-			}
+			if(lineUpType != LineUpType.NO_VISION)
+				throw new IllegalArgumentException("lineUpType must be NO_VISION! It's: " + lineUpType);
+			
 			final boolean isLeft;
 			if (startingPosition == StartingPosition.LEFT) {
 				isLeft = true;
@@ -87,16 +95,35 @@ public class AutonomousModeCreator {
 			} else {
 				throw new IllegalArgumentException("Off Center Cargo Ship doesn't support starting position: " + startingPosition);
 			}
-			// go 100 inches
-			actionQueue.add(actionCreator.createGoStraight(40, .3, 90, startingOrientation));
-			actionQueue.add(actionCreator.createGoStraight(30, .7, 90));
-			actionQueue.add(actionCreator.createGoStraight(30, .3, 90));
-			// went 100 inches
+			// It's about 130 inches to the cargo ship
 			
-			if (gamePieceType == GamePieceType.CARGO) {
-				actionQueue.add(actionCreator.createCargoShipPlaceCargo(null, null));
+			// go 100 inches
+			actionQueue.add(actionCreator.createGoStraight(40, .3, 90, startingOrientation)); // get off hab
+			actionQueue.add(actionCreator.createGoStraight(30, .7, 90, startingOrientation)); // drive a little
+			actionQueue.add(actionCreator.createGoStraight(30, .3, 90, startingOrientation)); // drive slower
+			// went 100 inches
+			final double faceAngle = 90 + getManipulatorOffset(gamePieceType); // face the manipulator towards the cargo ship
+			if (MathUtil.minDistance(faceAngle, startingOrientation, 360) > 5) { // only rotate if we need to
+				actionQueue.add(actionCreator.createTurnToOrientation(faceAngle));
+				System.out.println("Creating auto mode where we have to turn to face cargo ship. Why would you make the robot start in another orientation anyway?");
+			}
+			
+			if(lineUpType == LineUpType.USE_VISION) {
+				if (gamePieceType == GamePieceType.CARGO) {
+					actionQueue.add(actionCreator.createCargoShipPlaceCargoUseVision(null, null));
+				} else {
+					actionQueue.add(actionCreator.createCargoShipPlaceHatchUseVision(null, null));
+				}
 			} else {
-				actionQueue.add(actionCreator.createCargoShipPlaceHatch(null, null));
+				// drive a total of 30 more inches
+				actionQueue.add(actionCreator.createGoStraight(10, .3, 90, startingOrientation)); // go forward
+				actionQueue.add(actionCreator.createGoStraight(20, .15, 90, startingOrientation));
+				if(gamePieceType == GamePieceType.CARGO){
+					actionQueue.add(actionCreator.createRaiseLift(Lift.Position.CARGO_CARGO_SHIP));
+					actionQueue.add(actionCreator.createReleaseCargo());
+				} else {
+					actionQueue.add(actionCreator.createDropHatch());
+				}
 			}
 		} else if (autonomousType == AutonomousType.SIDE_CARGO_SHIP) {
 			if (gamePieceType == null) {
@@ -105,16 +132,15 @@ public class AutonomousModeCreator {
 			if (slotLevel != SlotLevel.LEVEL1) {
 				throw new IllegalArgumentException("Side Cargo ship auto only supports level 1. Got level: " + slotLevel);
 			}
-			final boolean sideCargoShipIsLeft;
+			final boolean isLeft;
 			if (startingPosition == StartingPosition.LEFT) {
-				sideCargoShipIsLeft = true;
+				isLeft = true;
 			} else if (startingPosition == StartingPosition.RIGHT) {
-				sideCargoShipIsLeft = false;
+				isLeft = false;
 			} else {
 				throw new IllegalArgumentException("Side Cargo Ship doesn't support starting position: " + startingPosition);
 			}
-			double distance = 212.8 + (48.28 / 2.0); //we need to go this distance
-			final double faceAngle = (sideCargoShipIsLeft ? 0 : 180) + getManipulatorOffset(gamePieceType); // face the manipulator towards the cargo ship
+			double distance = 212.8 - (48.28 / 2.0); //we need to go this distance
 //				actionQueue.add(actionCreator.createGoStraight())
 			actionQueue.add(actionCreator.createGoStraight(40, .3, 90, startingOrientation));
 			distance -= 40;
@@ -122,6 +148,7 @@ public class AutonomousModeCreator {
 			distance -= 170;
 			actionQueue.add(actionCreator.createGoStraight(distance, .3, 90, startingOrientation));
 			
+			final double faceAngle = (isLeft ? 0 : 180) + getManipulatorOffset(gamePieceType); // face the manipulator towards the cargo ship
 			if (MathUtil.minDistance(faceAngle, startingOrientation, 360) > 5) { // only rotate if we need to
 				actionQueue.add(actionCreator.createTurnToOrientation(faceAngle));
 			}
@@ -129,16 +156,25 @@ public class AutonomousModeCreator {
 					Actions.createRunOnce(() -> System.out.println("We successfully placed something on the cargo ship. TODO: Write code to make this do more stuff."))
 			).immediatelyDoNextWhenDone(true).canBeDone(true).canRecycle(false).build();
 			
-			if (gamePieceType == GamePieceType.HATCH) {
-				actionQueue.add(actionCreator.createCargoShipPlaceHatch(
-						Actions.createRunOnce(() -> System.out.println("Failed to place Hatch!")),
-						cargoShipSuccess
-				));
+			if(lineUpType == LineUpType.USE_VISION) {
+				if (gamePieceType == GamePieceType.HATCH) {
+					actionQueue.add(actionCreator.createCargoShipPlaceHatchUseVision(
+							Actions.createRunOnce(() -> System.out.println("Failed to place Hatch!")),
+							cargoShipSuccess
+					));
+				} else {
+					actionQueue.add(actionCreator.createCargoShipPlaceCargoUseVision(
+							Actions.createRunOnce(() -> System.out.println("Failed to place Cargo!")),
+							cargoShipSuccess
+					));
+				}
 			} else {
-				actionQueue.add(actionCreator.createCargoShipPlaceCargo(
-						Actions.createRunOnce(() -> System.out.println("Failed to place Cargo!")),
-						cargoShipSuccess
-				));
+				actionQueue.add(actionCreator.createGoStraight(20, .2, isLeft ? 0 : 180, faceAngle)); // go towards cargo ship
+				if(gamePieceType == GamePieceType.HATCH){
+					// TODO I need to do stuff here but I'm going to bed now. Goodnight.
+				} else {
+				
+				}
 			}
 		} else if (autonomousType == AutonomousType.SIDE_ROCKET) {
 			if (gamePieceType == null) {
@@ -164,13 +200,13 @@ public class AutonomousModeCreator {
 			).immediatelyDoNextWhenDone(true).canBeDone(true).canRecycle(false).build();
 			
 			if (gamePieceType == GamePieceType.HATCH) {
-				actionQueue.add(actionCreator.createRocketPlaceHatch(
+				actionQueue.add(actionCreator.createRocketPlaceHatchUseVision(
 						slotLevel,
 						Actions.createRunOnce(() -> System.out.println("Failed to place hatch on rocket")),
 						rocketSuccess
 				));
 			} else {
-				actionQueue.add(actionCreator.createRocketPlaceCargo(
+				actionQueue.add(actionCreator.createRocketPlaceCargoUseVision(
 						slotLevel,
 						Actions.createRunOnce(() -> System.out.println("Failed to place cargo on rocket")),
 						rocketSuccess

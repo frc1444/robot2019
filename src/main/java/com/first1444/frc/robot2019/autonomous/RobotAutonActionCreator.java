@@ -4,7 +4,6 @@ import com.first1444.frc.robot2019.Robot;
 import com.first1444.frc.robot2019.autonomous.actions.*;
 import com.first1444.frc.robot2019.autonomous.actions.vision.LineUpAction;
 import com.first1444.frc.robot2019.deepspace.SlotLevel;
-import com.first1444.frc.robot2019.subsystems.HatchIntake;
 import com.first1444.frc.robot2019.subsystems.Lift;
 import com.first1444.frc.robot2019.vision.BestVisionPacketSelector;
 import me.retrodaredevil.action.*;
@@ -39,22 +38,22 @@ public class RobotAutonActionCreator implements AutonActionCreator {
 	}
 
 	@Override
-	public Action createCargoShipPlaceHatch(Action failAction, Action successAction) {
-		return createRocketPlaceHatch(SlotLevel.LEVEL1, failAction, successAction);
+	public Action createCargoShipPlaceHatchUseVision(Action failAction, Action successAction) {
+		return createRocketPlaceHatchUseVision(SlotLevel.LEVEL1, failAction, successAction);
 	}
 
 	@Override
-	public Action createCargoShipPlaceCargo(Action failAction, Action successAction) {
+	public Action createCargoShipPlaceCargoUseVision(Action failAction, Action successAction) {
 		return createLineUpWithRunner(true, Lift.Position.CARGO_CARGO_SHIP, failAction, successAction);
 	}
 	
 	@Override
-	public Action createRocketPlaceCargo(SlotLevel slotLevel, Action failAction, Action successAction) {
+	public Action createRocketPlaceCargoUseVision(SlotLevel slotLevel, Action failAction, Action successAction) {
 		return createLineUpWithRunner(false, SLOT_MAP.get(slotLevel), failAction, successAction);
 	}
 	
 	@Override
-	public Action createRocketPlaceHatch(SlotLevel slotLevel, Action failAction, Action successAction) {
+	public Action createRocketPlaceHatchUseVision(SlotLevel slotLevel, Action failAction, Action successAction) {
 		return createLineUpWithRunner(true, SLOT_MAP.get(slotLevel), failAction, successAction);
 	}
 	private Action createLineUpWithRunner(boolean hatch, Lift.Position liftPosition, Action failAction, Action successAction){
@@ -97,11 +96,7 @@ public class RobotAutonActionCreator implements AutonActionCreator {
 							}
 							return null;
 						}),
-						(
-								hatch
-								? HatchGrabAction.createDrop(robot::getHatchIntake)
-								: new TimedCargoIntake(500, robot::getCargoIntake, 1)
-						),
+						hatch ? createDropHatch() : createReleaseCargo(),
 						successAction
 				).build(),
 				robot.getSoundSender()
@@ -114,5 +109,25 @@ public class RobotAutonActionCreator implements AutonActionCreator {
 				),
 				WhenDone.CLEAR_ACTIVE_AND_BE_DONE, true
 		);
+	}
+	
+	@Override
+	public Action createDropHatch() {
+		return HatchGrabAction.createDrop(robot::getHatchIntake);
+	}
+	
+	@Override
+	public Action createGrabHatch() {
+		return HatchGrabAction.createGrab(robot::getHatchIntake);
+	}
+	
+	@Override
+	public Action createReleaseCargo() {
+		return new TimedCargoIntake(500, robot::getCargoIntake, 1);
+	}
+	
+	@Override
+	public Action createRaiseLift(Lift.Position position) {
+		return new RaiseLift(robot::getLift, position);
 	}
 }

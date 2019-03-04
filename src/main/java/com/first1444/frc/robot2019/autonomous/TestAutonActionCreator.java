@@ -2,6 +2,7 @@ package com.first1444.frc.robot2019.autonomous;
 
 import com.first1444.frc.robot2019.Constants;
 import com.first1444.frc.robot2019.deepspace.SlotLevel;
+import com.first1444.frc.robot2019.subsystems.Lift;
 import me.retrodaredevil.action.Action;
 import me.retrodaredevil.action.Actions;
 import me.retrodaredevil.action.WhenDone;
@@ -39,7 +40,7 @@ public class TestAutonActionCreator implements AutonActionCreator {
 	}
 	
 	@Override
-	public Action createCargoShipPlaceHatch(Action failAction, Action successAction) {
+	public Action createCargoShipPlaceHatchUseVision(Action failAction, Action successAction) {
 		return Actions.createLinkedActionRunner(
 				Actions.createLinkedAction(createStringAction("Placing hatch at cargo ship"), successAction),
 				WhenDone.CLEAR_ACTIVE_AND_BE_DONE, true
@@ -47,7 +48,7 @@ public class TestAutonActionCreator implements AutonActionCreator {
 	}
 	
 	@Override
-	public Action createCargoShipPlaceCargo(Action failAction, Action successAction) {
+	public Action createCargoShipPlaceCargoUseVision(Action failAction, Action successAction) {
 		return Actions.createLinkedActionRunner(
 				Actions.createLinkedAction(createStringAction("Placing cargo at cargo ship"), successAction),
 				WhenDone.CLEAR_ACTIVE_AND_BE_DONE, true
@@ -55,7 +56,7 @@ public class TestAutonActionCreator implements AutonActionCreator {
 	}
 	
 	@Override
-	public Action createRocketPlaceCargo(SlotLevel slotLevel, Action failAction, Action successAction) {
+	public Action createRocketPlaceCargoUseVision(SlotLevel slotLevel, Action failAction, Action successAction) {
 		return Actions.createLinkedActionRunner(
 				Actions.createLinkedAction(createStringAction("Placing cargo on rocket at " + slotLevel), successAction),
 				WhenDone.CLEAR_ACTIVE_AND_BE_DONE, true
@@ -63,10 +64,30 @@ public class TestAutonActionCreator implements AutonActionCreator {
 	}
 	
 	@Override
-	public Action createRocketPlaceHatch(SlotLevel slotLevel, Action failAction, Action successAction) {
+	public Action createRocketPlaceHatchUseVision(SlotLevel slotLevel, Action failAction, Action successAction) {
 		return Actions.createLinkedActionRunner(
 				Actions.createLinkedAction(createStringAction("Placing hatch on rocket at " + slotLevel), successAction),
 				WhenDone.CLEAR_ACTIVE_AND_BE_DONE, true
 		);
+	}
+	
+	@Override
+	public Action createDropHatch() {
+		return createStringAction("Dropping hatch!");
+	}
+	
+	@Override
+	public Action createGrabHatch() {
+		return createStringAction("Grabbing hatch!");
+	}
+	
+	@Override
+	public Action createReleaseCargo() {
+		return createStringAction("Released cargo!");
+	}
+	
+	@Override
+	public Action createRaiseLift(Lift.Position position) {
+		return createStringAction("Raising lift to " + position);
 	}
 }

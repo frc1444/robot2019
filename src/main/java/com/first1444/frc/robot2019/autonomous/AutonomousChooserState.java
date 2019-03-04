@@ -3,6 +3,7 @@ package com.first1444.frc.robot2019.autonomous;
 import com.first1444.frc.robot2019.ShuffleboardMap;
 import com.first1444.frc.robot2019.autonomous.actions.WaitAction;
 import com.first1444.frc.robot2019.autonomous.options.AutonomousType;
+import com.first1444.frc.robot2019.autonomous.options.LineUpType;
 import com.first1444.frc.robot2019.deepspace.GamePieceType;
 import com.first1444.frc.robot2019.deepspace.SlotLevel;
 import com.first1444.frc.robot2019.autonomous.options.StartingPosition;
@@ -25,6 +26,7 @@ public class AutonomousChooserState {
 	private final DynamicSendableChooser<StartingPosition> startingPositionChooser;
 	private final DynamicSendableChooser<GamePieceType> gamePieceChooser;
 	private final DynamicSendableChooser<SlotLevel> levelChooser;
+	private final DynamicSendableChooser<LineUpType> lineUpChooser;
 	private final ValueMap<AutonConfig> autonConfig;
 
 	public AutonomousChooserState(ShuffleboardMap shuffleboardMap, AutonomousModeCreator autonomousModeCreator, RobotInput robotInput){
@@ -36,6 +38,7 @@ public class AutonomousChooserState {
 		startingPositionChooser = new DynamicSendableChooser<>();
 		gamePieceChooser = new DynamicSendableChooser<>();
 		levelChooser = new DynamicSendableChooser<>();
+		lineUpChooser = new DynamicSendableChooser<>();
 		final var valueMapSendable = new MutableValueMapSendable<>(AutonConfig.class);
 		layout.add("Config", valueMapSendable);
 		autonConfig = valueMapSendable.getMutableValueMap();
@@ -63,6 +66,7 @@ public class AutonomousChooserState {
 		final StartingPosition startingPosition = startingPositionChooser.getSelected();
 		final GamePieceType gamePiece = gamePieceChooser.getSelected();
 		final SlotLevel slotLevel = levelChooser.getSelected();
+		final LineUpType lineUpType = lineUpChooser.getSelected();
 		try {
 			return new Actions.ActionQueueBuilder(
 					new WaitAction(
@@ -70,7 +74,7 @@ public class AutonomousChooserState {
 							() -> robotInput.getAutonomousWaitButton().isDown(),
 							() -> robotInput.getAutonomousStartButton().isDown()
 					),
-					autonomousModeCreator.createAction(type, startingPosition, gamePiece, slotLevel, startingOrientation)
+					autonomousModeCreator.createAction(type, startingPosition, gamePiece, slotLevel, lineUpType, startingOrientation)
 			).canRecycle(false).canBeDone(true).immediatelyDoNextWhenDone(true).build();
 		} catch (IllegalArgumentException ex){
 			ex.printStackTrace();
@@ -120,6 +124,20 @@ public class AutonomousChooserState {
 			for(SlotLevel level : slotLevels){
 				levelChooser.setDefaultOption(level.toString(), level);
 			}
+		}
+	}
+	private void updateLineUpChooser(){
+		lineUpChooser.reset();
+		final AutonomousType type = autonomousChooser.getSelected();
+		final Collection<LineUpType> lineUpTypes = type.getLineUpTypes();
+		if(lineUpTypes.isEmpty()){
+			throw new AssertionError("lineUpTypes should never be empty!");
+		}
+		for(LineUpType lineUpType : lineUpTypes){
+			lineUpChooser.setDefaultOption(lineUpType.toString(), lineUpType);
+		}
+		if(lineUpTypes.contains(LineUpType.NO_VISION)){
+			lineUpChooser.setDefaultOption(LineUpType.NO_VISION.toString(), LineUpType.NO_VISION);
 		}
 	}
 	
