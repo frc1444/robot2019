@@ -12,6 +12,11 @@ import me.retrodaredevil.action.WhenDone;
  * Doing so is not recommended and most if not all of the time, it will do nothing.
  */
 public interface AutonActionCreator {
+	
+	Action createLogMessageAction(String message);
+	Action createLogWarningAction(String message);
+	Action createLogErrorAction(String message);
+	
 	Action createTurnToOrientation(double desiredOrientation);
 	@Deprecated
 	Action createGoStraight(double distanceInches, double speed, double angleDegrees);

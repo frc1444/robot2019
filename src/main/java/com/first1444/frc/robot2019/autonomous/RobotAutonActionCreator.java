@@ -6,6 +6,7 @@ import com.first1444.frc.robot2019.autonomous.actions.vision.LineUpCreator;
 import com.first1444.frc.robot2019.deepspace.SlotLevel;
 import com.first1444.frc.robot2019.subsystems.Lift;
 import com.first1444.frc.robot2019.vision.BestVisionPacketSelector;
+import edu.wpi.first.wpilibj.DriverStation;
 import me.retrodaredevil.action.Action;
 import me.retrodaredevil.action.Actions;
 import me.retrodaredevil.action.WhenDone;
@@ -23,7 +24,22 @@ public class RobotAutonActionCreator implements AutonActionCreator {
 	public RobotAutonActionCreator(Robot robot) {
 		this.robot = robot;
 	}
-
+	
+	@Override
+	public Action createLogMessageAction(String message) {
+		return Actions.createRunOnce(() -> System.out.println(message));
+	}
+	
+	@Override
+	public Action createLogWarningAction(String message) {
+		return Actions.createRunOnce(() -> DriverStation.reportWarning(message, false));
+	}
+	
+	@Override
+	public Action createLogErrorAction(String message) {
+		return Actions.createRunOnce(() -> DriverStation.reportError(message, false));
+	}
+	
 	@Override
 	public Action createTurnToOrientation(double desiredOrientation) {
 		return new TurnToOrientation(desiredOrientation, robot::getDrive, robot::getOrientation);

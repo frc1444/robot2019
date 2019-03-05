@@ -29,7 +29,7 @@ public class ValueMapLayout<T extends Enum<T> & ValueKey> {
 
 		final ShuffleboardLayout layout = container.getLayout(title, BuiltInLayouts.kList);
 		final Set<T> valueKeys = valueMap.getValueKeys();
-		layout.withSize(1, (valueKeys.size() + 1) / 2);
+		layout.withSize(1, (valueKeys.size() + 1) / 2); // TODO If we use this in the future, we'll have to use withPosition as well
 		for(final T key : valueKeys){
 			final NetworkTableEntry entry = layout.add(key.getName(), key.getDefaultValue())
 					.withPosition(0, key.ordinal())

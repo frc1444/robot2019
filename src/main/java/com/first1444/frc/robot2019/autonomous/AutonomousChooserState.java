@@ -35,14 +35,16 @@ public class AutonomousChooserState {
 		this.autonomousModeCreator = autonomousModeCreator;
 		this.robotInput = robotInput;
 		final ShuffleboardLayout layout = shuffleboardMap.getUserTab()
-				.getLayout("Autonomous", BuiltInLayouts.kList).withSize(2, 4);
+				.getLayout("Autonomous", BuiltInLayouts.kList)
+				.withSize(2, 5)
+				.withPosition(0, 0);
 		autonomousChooser = new DynamicSendableChooser<>();
 		startingPositionChooser = new DynamicSendableChooser<>();
 		gamePieceChooser = new DynamicSendableChooser<>();
 		levelChooser = new DynamicSendableChooser<>();
 		lineUpChooser = new DynamicSendableChooser<>();
 		final var valueMapSendable = new MutableValueMapSendable<>(AutonConfig.class);
-		layout.add("Config", valueMapSendable).withProperties(Constants.ROBOT_PREFERENCES_PROPERTIES).withSize(2, 5);
+		layout.add("Config", valueMapSendable).withProperties(Constants.ROBOT_PREFERENCES_PROPERTIES);
 		autonConfig = valueMapSendable.getMutableValueMap();
 
 		addAutoOptions();
@@ -51,11 +53,11 @@ public class AutonomousChooserState {
 		updateLevelChooser();
 		updateLineUpChooser();
 
-		layout.add("Autonomous Chooser", autonomousChooser);
-		layout.add("Starting Position Chooser", startingPositionChooser);
-		layout.add("Game Piece Chooser", gamePieceChooser);
-		layout.add("Level Chooser", levelChooser);
-		layout.add("Line Up Chooser", lineUpChooser);
+		layout.add("Autonomous Chooser", autonomousChooser).withSize(2, 1).withPosition(0, 0);
+		layout.add("Starting Position Chooser", startingPositionChooser).withSize(2, 1).withPosition(0, 1);
+		layout.add("Game Piece Chooser", gamePieceChooser).withSize(2, 1).withPosition(0, 2);
+		layout.add("Level Chooser", levelChooser).withSize(2, 1).withPosition(0, 3);
+		layout.add("Line Up Chooser", lineUpChooser).withSize(2, 1).withPosition(0, 4);
 		autonomousChooser.addListener(newSelectionKey -> {
 			updateStartingPositionChooser();
 			updateGamePieceChooser();

@@ -14,6 +14,9 @@ import java.util.Objects;
 import java.util.function.Supplier;
 
 public class CameraSystem extends SimpleAction {
+	private static final VideoMode VIDEO_MODE = new VideoMode(VideoMode.PixelFormat.kMJPEG, 280, 210, 15);
+	/** The compression level. A number between 0 and 100. The lower the value, the more compressed it is.*/
+	private static final int COMPRESSION_LEVEL = 50;
 	private final Supplier<TaskSystem> taskSystemSupplier;
 	private final UsbCamera hatch;
 	private final UsbCamera cargo;
@@ -37,12 +40,14 @@ public class CameraSystem extends SimpleAction {
 		
 		videoSink = CameraServer.getInstance().addSwitchedCamera("Toggle Camera");
 		final VideoSource source = videoSink.getSource();
-//		videoSink.setCompression(50);
-//		videoSink.setDefaultCompression(50);
-		shuffleboardMap.getUserTab().add("My Toggle Camera", source).withSize(5, 5);
+		if(COMPRESSION_LEVEL >= 0) {
+			videoSink.setCompression(COMPRESSION_LEVEL);
+			videoSink.setDefaultCompression(COMPRESSION_LEVEL);
+		}
+		shuffleboardMap.getUserTab().add("My Toggle Camera", source).withSize(5, 5).withPosition(2, 0);
 	}
 	private void setupCamera(UsbCamera camera){
-		camera.setVideoMode(VideoMode.PixelFormat.kMJPEG, 320, 240, 9);
+		camera.setVideoMode(VIDEO_MODE);
 		camera.setConnectVerbose(0); // so it doesn't spam the console with annoying messages if it's disconnected
 		camera.setConnectionStrategy(VideoSource.ConnectionStrategy.kKeepOpen);
 	}

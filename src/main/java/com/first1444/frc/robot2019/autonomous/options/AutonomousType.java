@@ -26,7 +26,7 @@ public enum AutonomousType {
 			singleton(LineUpType.NO_VISION)),
 	
 	OFF_CENTER_CARGO_SHIP("Off Center Cargo Ship (Goes straight)", asList(StartingPosition.MIDDLE_LEFT, StartingPosition.MIDDLE_RIGHT),
-			asList(GamePieceType.HATCH, GamePieceType.CARGO),
+			singleton(GamePieceType.HATCH),
 			singleton(SlotLevel.LEVEL1),
 			asList(LineUpType.NO_VISION, LineUpType.USE_VISION)),
 
