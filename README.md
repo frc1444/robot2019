@@ -8,12 +8,14 @@ Some times you must run ```gradlew downloadAll``` to get everything.
 * Rumble driver controller when operator places hatch/cargo
 * Add option in auto modes so you can choose whether or not to use vision
 * Make vision work
+* Test the MatchScheduler class
 ### Done
 * Fixed switching camera
 ### TODO at competition
 * Put gyro on robot
 ### Changes made after bag 'n tag
 * Deactivated hatch stow forward limit switch
+* Made sure that after manual boom is released, it locks the position
 * Made switching cameras work
 * Currently testing vision
 ### Conventions

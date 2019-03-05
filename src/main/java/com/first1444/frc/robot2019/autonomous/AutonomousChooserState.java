@@ -1,5 +1,6 @@
 package com.first1444.frc.robot2019.autonomous;
 
+import com.first1444.frc.robot2019.Constants;
 import com.first1444.frc.robot2019.ShuffleboardMap;
 import com.first1444.frc.robot2019.autonomous.actions.WaitAction;
 import com.first1444.frc.robot2019.autonomous.options.AutonomousType;
@@ -41,13 +42,14 @@ public class AutonomousChooserState {
 		levelChooser = new DynamicSendableChooser<>();
 		lineUpChooser = new DynamicSendableChooser<>();
 		final var valueMapSendable = new MutableValueMapSendable<>(AutonConfig.class);
-		layout.add("Config", valueMapSendable).withProperties(Map.of("Show search box", false)).withSize(2, 5);
+		layout.add("Config", valueMapSendable).withProperties(Constants.ROBOT_PREFERENCES_PROPERTIES).withSize(2, 5);
 		autonConfig = valueMapSendable.getMutableValueMap();
 
 		addAutoOptions();
 		updateStartingPositionChooser();
 		updateGamePieceChooser();
 		updateLevelChooser();
+		updateLineUpChooser();
 
 		layout.add("Autonomous Chooser", autonomousChooser);
 		layout.add("Starting Position Chooser", startingPositionChooser);
@@ -58,6 +60,7 @@ public class AutonomousChooserState {
 			updateStartingPositionChooser();
 			updateGamePieceChooser();
 			updateLevelChooser();
+			updateLineUpChooser();
 		});
 	}
 	public Action createAutonomousAction(double startingOrientation){

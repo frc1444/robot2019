@@ -53,6 +53,8 @@ import me.retrodaredevil.controller.DefaultControllerManager;
 import me.retrodaredevil.controller.MutableControlConfig;
 import me.retrodaredevil.controller.output.ControllerRumble;
 
+import java.util.Map;
+
 /**
  * The VM is configured to automatically run this class, and to call the
  * functions corresponding to each mode, as described in the IterativeRobot
@@ -140,8 +142,8 @@ public class Robot extends TimedRobot {
 		final MutableValueMapSendable<PidKey> drivePidSendable = new MutableValueMapSendable<>(PidKey.class);
 		final MutableValueMapSendable<PidKey> steerPidSendable = new MutableValueMapSendable<>(PidKey.class);
 		if(Constants.DEBUG) {
-			shuffleboardMap.getDevTab().add("Drive PID", drivePidSendable);
-			shuffleboardMap.getDevTab().add("Steer PID", steerPidSendable);
+			shuffleboardMap.getDevTab().add("Drive PID", drivePidSendable).withProperties(Constants.ROBOT_PREFERENCES_PROPERTIES);
+			shuffleboardMap.getDevTab().add("Steer PID", steerPidSendable).withProperties(Constants.ROBOT_PREFERENCES_PROPERTIES);
 		}
 		final MutableValueMap<PidKey> drivePid = drivePidSendable.getMutableValueMap();
 		final MutableValueMap<PidKey> steerPid = steerPidSendable.getMutableValueMap();
@@ -248,7 +250,7 @@ public class Robot extends TimedRobot {
 	private MutableValueMap<ModuleConfig> createModuleConfig(String name){
 		final MutableValueMapSendable<ModuleConfig> config = new MutableValueMapSendable<>(ModuleConfig.class);
 		if(Constants.DEBUG) {
-			shuffleboardMap.getDevTab().add(name, config);
+			shuffleboardMap.getDevTab().add(name, config).withProperties(Constants.ROBOT_PREFERENCES_PROPERTIES);
 		}
 		return config.getMutableValueMap();
 	}
@@ -304,11 +306,17 @@ public class Robot extends TimedRobot {
 		soundSender.sendEvent(SoundEvents.TELEOP_ENABLE);
 		matchScheduler.schedule(Actions.createRunOnce(() -> {
 			cargoIntake.stow();
-		}), MatchTime.of(3, MatchTime.Mode.TELEOP, MatchTime.Type.FROM_END));
+		}), MatchTime.of(1.2, MatchTime.Mode.TELEOP, MatchTime.Type.FROM_END));
 		matchScheduler.schedule(new TimedCargoIntake(400, this::getCargoIntake, 1), MatchTime.of(.5, MatchTime.Mode.TELEOP, MatchTime.Type.FROM_END));
 		matchScheduler.schedule(Actions.createRunOnce(() -> {
 			hatchIntake.drop();
 		}), MatchTime.of(.5, MatchTime.Mode.TELEOP, MatchTime.Type.FROM_END));
+		matchScheduler.schedule(Actions.createRunOnce(() -> {
+			final var rumble = robotInput.getDriverRumble();
+			if(rumble.isConnected()){
+				rumble.rumbleTime(150, .6);
+			}
+		}), MatchTime.of(7, MatchTime.Mode.TELEOP, MatchTime.Type.FROM_END));
 		lastMode = RobotMode.TELEOP;
 	}
 	@Override public void teleopPeriodic() { }
@@ -324,7 +332,13 @@ public class Robot extends TimedRobot {
 						teleopAction
 				) .immediatelyDoNextWhenDone(true) .canBeDone(false) .canRecycle(false) .build()
 		);
-		swerveDriveAction.setPerspective(autonomousPerspectiveChooser.getSelected());
+		final Perspective autoPerspective = autonomousPerspectiveChooser.getSelected();
+		if(autoPerspective == dimensions.getHatchManipulatorPerspective()){
+			taskSystem.setCurrentTask(TaskSystem.Task.HATCH);
+		} else if(autoPerspective == dimensions.getCargoManipulatorPerspective()){
+			taskSystem.setCurrentTask(TaskSystem.Task.CARGO);
+		}
+		swerveDriveAction.setPerspective(autoPerspective);
 		soundSender.sendEvent(SoundEvents.AUTONOMOUS_ENABLE);
 		lastMode = RobotMode.AUTO;
 	}

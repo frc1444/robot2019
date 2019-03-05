@@ -4,10 +4,13 @@ import com.first1444.frc.robot2019.subsystems.swerve.ModuleConfig;
 import com.first1444.frc.util.valuemap.MutableValueMap;
 
 import java.text.DecimalFormat;
+import java.util.Map;
 
 public final class Constants {
 	
 	private Constants(){ throw new UnsupportedOperationException(); }
+	
+	public static final Map<String, Object> ROBOT_PREFERENCES_PROPERTIES = Map.of("Show search box", false);
 	
 	// region CAN IDs
 	/** ID for the Climb Drive wheels Victor SPX*/
