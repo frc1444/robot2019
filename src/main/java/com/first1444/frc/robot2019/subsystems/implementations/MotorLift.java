@@ -18,10 +18,13 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.BooleanSupplier;
 
+import static java.lang.Math.*;
+
 public class MotorLift extends SimpleAction implements Lift {
 	private static final int ENCODER_COUNTS = 24000; // max is 24786
 	private static final double LOW_POSITION_SCALE_START = .35;
 	private static final double HIGH_POSITION_SCALE_START = .9;
+	private static final double DESIRED_REACHED_POSITION_DEADZONE = .1;
 	private static final TalonSRXConfiguration MASTER_CONFIG;
 	private static final Map<Position, Double> POSITION_MAP;
 	
@@ -91,6 +94,9 @@ public class MotorLift extends SimpleAction implements Lift {
 		if(desiredPosition < 0 || desiredPosition > 1){
 			throw new IllegalArgumentException();
 		}
+		if (mode != LiftMode.POSITION || control != desiredPosition) {
+			desiredPositionReached = false;
+		}
 		mode = LiftMode.POSITION;
 		control = desiredPosition;
 		overrideSpeedSafety = false;
@@ -99,8 +105,12 @@ public class MotorLift extends SimpleAction implements Lift {
 	@Override
 	public void setDesiredPosition(Position desiredPosition) {
 		Objects.requireNonNull(desiredPosition);
+		final double newPosition = POSITION_MAP.get(desiredPosition);
+		if (mode != LiftMode.POSITION || control != newPosition) {
+			desiredPositionReached = false;
+		}
 		mode = LiftMode.POSITION;
-		control = POSITION_MAP.get(desiredPosition);
+		control = newPosition;
 		overrideSpeedSafety = false;
 	}
 	
@@ -120,6 +130,7 @@ public class MotorLift extends SimpleAction implements Lift {
 		mode = LiftMode.SPEED;
 		control = speed;
 		this.overrideSpeedSafety = overrideSpeedSafety;
+		desiredPositionReached = false;
 	}
 	
 	
@@ -128,6 +139,7 @@ public class MotorLift extends SimpleAction implements Lift {
 		mode = LiftMode.POSITION;
 		control = null;
 		overrideSpeedSafety = false;
+		desiredPositionReached = false;
 	}
 	
 	@Override
@@ -184,7 +196,7 @@ public class MotorLift extends SimpleAction implements Lift {
 				} else{
 					speed = desiredSpeed;
 				}
-				master.set(ControlMode.PercentOutput, speed); // TODO make into velocity
+				master.set(ControlMode.PercentOutput, speed);
 				resetControlCache(); // motor safety
 				desiredPositionReached = false;
 			} else if (mode == LiftMode.POSITION) {// no motor safety
@@ -194,6 +206,8 @@ public class MotorLift extends SimpleAction implements Lift {
 				} else {
 					final int position = getEncoderCountsFromPosition(control);
 					master.set(ControlMode.Position, position);
+					final double currentPosition = min(1, max(0, getPositionFromEncoderCounts(master.getSelectedSensorPosition(Constants.PID_INDEX))));
+					desiredPositionReached = abs(currentPosition - control) < DESIRED_REACHED_POSITION_DEADZONE;
 				}
 			} else {
 				throw new UnsupportedOperationException("Unsupported mode: " + mode);

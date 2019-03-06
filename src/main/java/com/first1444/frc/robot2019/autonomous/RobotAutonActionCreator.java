@@ -9,6 +9,7 @@ import com.first1444.frc.robot2019.vision.BestVisionPacketSelector;
 import edu.wpi.first.wpilibj.DriverStation;
 import me.retrodaredevil.action.Action;
 import me.retrodaredevil.action.Actions;
+import me.retrodaredevil.action.SimpleAction;
 import me.retrodaredevil.action.WhenDone;
 
 import java.util.Map;
@@ -75,68 +76,75 @@ public class RobotAutonActionCreator implements AutonActionCreator {
 		return createLineUpWithRunner(true, SLOT_MAP.get(slotLevel), failAction, successAction);
 	}
 	private Action createLineUpWithRunner(boolean hatch, Lift.Position liftPosition, Action failAction, Action successAction){
-		/*
-		If you're thinking this looks complicated, you are right. This code tries to use the RaiseLift action by
-		updating it and ending it depending on if certain things happen. It could eventually be more simply replaced
-		by just a call to the Lift's setDesiredPosition once after lining up and possibly while lining up if we're within
-		less than 50 inches. Right now, it essentially does that, but it also makes sure the lift is in the correct position
-		before continuing to the success action.
-		 */
-		final boolean[] hasLiftBeenMoved = {false};
-		final Action raiseLift = Actions.createSupplementaryAction(
-				new RaiseLift(robot::getLift, liftPosition),
-				Actions.createRunOnce(() -> hasLiftBeenMoved[0] = true)
-		);
+		final boolean[] success = {false};
+		final boolean[] fail = {false};
 		
 		final var lineUp = LineUpCreator.createLinkedLineUpAction(
 				robot.getVisionSupplier(),
 				hatch ? robot.getDimensions().getHatchCameraID() : robot.getDimensions().getCargoCameraID(),
 				hatch ? robot.getDimensions().getHatchManipulatorPerspective() : robot.getDimensions().getCargoManipulatorPerspective(),
 				new BestVisionPacketSelector(), robot::getDrive, robot::getOrientation,
-				new Actions.ActionQueueBuilder( // fail
-						Actions.createDynamicActionRunner(() -> {
-							final boolean liftMoved = hasLiftBeenMoved[0];
-							if(raiseLift.isActive()){
-								raiseLift.end();
-								if(!liftMoved) throw new AssertionError();
-							}
-							if(liftMoved){ // if the lift has been moved, bring it back to level 1
-								return new RaiseLift(robot::getLift, Lift.Position.LEVEL1);
-							}
-							return null;
-						}),
-						failAction
-				).build(),
-				new Actions.ActionQueueBuilder( // success
-						Actions.createDynamicActionRunner(() -> { // make sure the lift gets to the correct position
-							if(!hasLiftBeenMoved[0] || raiseLift.isActive()){ // if the lift hasn't been moved or if the lift still needs to finish
-								return raiseLift;
-							}
-							return null;
-						}),
-						hatch ? createDropHatch() : createReleaseCargo(),
-						successAction
-				).build(),
+				Actions.createRunOnce(() -> fail[0] = true),
+				Actions.createRunOnce(() -> success[0] = true),
 				robot.getSoundSender()
 		);
-		
-		return Actions.createLinkedActionRunner(
-				Actions.createSupplementaryLinkedAction(
-						lineUp,
-						Actions.createWaitToStartAction(Actions.createRunForever(raiseLift::update), () -> lineUp.getInchesAway() < 50) // this action doesn't have to end because it's supplementary
-				),
-				WhenDone.CLEAR_ACTIVE_AND_BE_DONE, true
-		);
+		final boolean[] finalActionSuccess = {false};
+		return new Actions.ActionQueueBuilder(
+				new SimpleAction(false){
+					final Action lineUpRunner = Actions.createLinkedActionRunner(lineUp, WhenDone.CLEAR_ACTIVE_AND_BE_DONE, true);
+					@Override
+					protected void onUpdate() {
+						super.onUpdate();
+						lineUpRunner.update();
+						final double distanceLeft;
+						if(lineUp.isActive()){
+							distanceLeft = lineUp.getInchesAway();
+						} else if(success[0]){
+							distanceLeft = 0;
+						} else if(fail[0]){
+							setDone(true);
+							return;
+						} else {
+							System.err.println("I didn't expect this to happen, but I prepared for it anyway");
+							distanceLeft = Double.MAX_VALUE;
+						}
+						robot.getCargoIntake().stow(); // always stow cargo intake
+						final Lift lift = robot.getLift();
+						if(distanceLeft < 40){
+							lift.setDesiredPosition(liftPosition);
+							if(hatch){
+								robot.getHatchIntake().readyPosition();
+							}
+						}
+						if(lineUpRunner.isDone() && lift.isDesiredPositionReached()){
+							finalActionSuccess[0] = true;
+							setDone(true);
+						}
+					}
+				},
+				Actions.createDynamicActionRunner(() -> {
+					if(finalActionSuccess[0]){
+						return successAction;
+					} else {
+						return failAction;
+					}
+				})
+		).immediatelyDoNextWhenDone(true).build();
+	}
+	
+	@Override
+	public Action createExtendHatch() {
+		return HatchPositionAction.createReady(robot::getHatchIntake);
 	}
 	
 	@Override
 	public Action createDropHatch() {
-		return HatchGrabAction.createDrop(robot::getHatchIntake);
+		return HatchIntakeAction.createDrop(robot::getHatchIntake);
 	}
 	
 	@Override
 	public Action createGrabHatch() {
-		return HatchGrabAction.createGrab(robot::getHatchIntake);
+		return HatchIntakeAction.createGrab(robot::getHatchIntake);
 	}
 	
 	@Override

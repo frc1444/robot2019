@@ -187,6 +187,24 @@ public final class Constants {
 		public int getCargoCameraID() {
 			return 1;
 		}
+		
+		@Override
+		public double getHatchManipulatorActiveExtendDistance() {
+			return 10;
+		}
+		
+		// TODO change these values
+		@Override
+		public double getHatchSideWidth() {
+			return 35;
+		}
+		@Override public double getCargoSideWidth() { return getHatchSideWidth(); }
+		
+		@Override
+		public double getHatchSideDepth() {
+			return 30;
+		}
+		@Override public double getCargoSideDepth() { return getHatchSideDepth(); }
 	}
 	
 }

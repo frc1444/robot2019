@@ -9,6 +9,6 @@ public interface HatchIntake {
 	void readyPosition();
 	void stowedPosition();
 	
-	boolean isDesiredPositionReached();
+	boolean isDesiredPositionReached(); // TODO create an action that actually uses this
 	
 }

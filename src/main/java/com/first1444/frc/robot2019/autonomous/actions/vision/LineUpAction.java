@@ -166,7 +166,7 @@ class LineUpAction extends SimpleAction implements DistanceAwayLinkedAction {
 		
 		
 		driveSupplier.get().setControl(moveX, moveY, turnAmount, MAX_SPEED, perspective);
-		SmartDashboard.putNumber("ground distance", moveVision.getGroundDistance());
+		SmartDashboard.putNumber("ground distance", groundDistance);
 		if(moveVision.getGroundDistance() < 5){
 			final double x = targetVision.getVisionX();
 			final double y = targetVision.getVisionZ();

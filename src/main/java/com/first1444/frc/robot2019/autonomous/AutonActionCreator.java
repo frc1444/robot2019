@@ -28,10 +28,19 @@ public interface AutonActionCreator {
 	Action createRocketPlaceHatchUseVision(SlotLevel slotLevel, Action failAction, Action successAction);
 	Action createRocketPlaceCargoUseVision(SlotLevel slotLevel, Action failAction, Action successAction);
 	
+	/**
+	 * @return An action that is will be done once the hatch intake is in the ready position
+	 */
+	Action createExtendHatch();
+	
 	Action createDropHatch();
 	Action createGrabHatch();
 	
 	Action createReleaseCargo();
 	
+	/**
+	 * @param position The desired position
+	 * @return Creates an action that's done when the lift has reached the desired position
+	 */
 	Action createRaiseLift(Lift.Position position);
 }

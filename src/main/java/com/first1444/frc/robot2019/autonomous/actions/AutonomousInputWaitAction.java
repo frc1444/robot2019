@@ -10,13 +10,13 @@ import java.util.function.BooleanSupplier;
  * keep waiting by having a {@link BooleanSupplier} that gives true. You can also end this action early if the other {@link BooleanSupplier}
  * returns true
  */
-public class WaitAction extends TimedAction {
+public class AutonomousInputWaitAction extends TimedAction {
 	private final BooleanSupplier shouldWait;
 	private final BooleanSupplier shouldStart;
 	/**
 	 * @param lastMillis The amount of time in millis for this to last
 	 */
-	public WaitAction(long lastMillis, BooleanSupplier shouldWait, BooleanSupplier shouldStart) {
+	public AutonomousInputWaitAction(long lastMillis, BooleanSupplier shouldWait, BooleanSupplier shouldStart) {
 		super(true, lastMillis);
 		this.shouldWait = Objects.requireNonNull(shouldWait);
 		this.shouldStart = Objects.requireNonNull(shouldStart);

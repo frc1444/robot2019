@@ -3,6 +3,7 @@ package com.first1444.frc.robot2019.autonomous;
 import com.first1444.frc.robot2019.RobotDimensions;
 import com.first1444.frc.robot2019.autonomous.options.AutonomousType;
 import com.first1444.frc.robot2019.autonomous.options.LineUpType;
+import com.first1444.frc.robot2019.deepspace.FieldDimensions;
 import com.first1444.frc.robot2019.deepspace.GamePieceType;
 import com.first1444.frc.robot2019.deepspace.SlotLevel;
 import com.first1444.frc.robot2019.autonomous.options.StartingPosition;
@@ -90,7 +91,7 @@ public class AutonomousModeCreator {
 			if (startingPosition == null) {
 				throw new IllegalArgumentException("A left or right starting position must be selected for off center auto!");
 			}
-			final boolean isLeft;
+			final boolean isLeft; // this value was initially going to be used to tell which vision target to use, but I haven't got around to refactoring
 			if (startingPosition == StartingPosition.MIDDLE_LEFT) {
 				isLeft = true;
 			} else if (startingPosition == StartingPosition.MIDDLE_RIGHT) {
@@ -112,13 +113,23 @@ public class AutonomousModeCreator {
 				actionQueue.add(actionCreator.createTurnToOrientation(faceAngle));
 				System.out.println("Creating auto mode where we have to turn to face cargo ship. Why would you make the robot start in another orientation anyway?");
 			}
+			// we are now turned to faceAngle
 			
 			if(lineUpType == LineUpType.USE_VISION) {
-				actionQueue.add(actionCreator.createCargoShipPlaceHatchUseVision(null, null));
+				actionQueue.add(actionCreator.createCargoShipPlaceHatchUseVision(
+						actionCreator.createLogMessageAction("Placed hatch on center cargo ship with vision!"),
+						actionCreator.createLogWarningAction("Failed to place hatch on center cargo ship with vision!")
+				));
 			} else {
 				// drive a total of 30 more inches
-				actionQueue.add(actionCreator.createGoStraight(10, .3, 90, startingOrientation)); // go forward
-				actionQueue.add(actionCreator.createGoStraight(20, .15, 90, startingOrientation));
+				actionQueue.add(new Actions.ActionMultiplexerBuilder(
+						actionCreator.createExtendHatch(), // ready position
+						actionCreator.createGoStraight(10, .3, faceAngle, faceAngle) // go forward
+				).build());
+				final double hatchExtend = dimensions.getHatchManipulatorActiveExtendDistance();
+				if(hatchExtend < 20) {
+					actionQueue.add(actionCreator.createGoStraight(20 - hatchExtend, .15, faceAngle, faceAngle));
+				}
 				actionQueue.add(actionCreator.createDropHatch());
 			}
 		} else if (autonomousType == AutonomousType.SIDE_CARGO_SHIP) {
@@ -136,21 +147,29 @@ public class AutonomousModeCreator {
 			} else {
 				throw new IllegalArgumentException("Side Cargo Ship doesn't support starting position: " + startingPosition);
 			}
-			double distance = 212.8 - (48.28 / 2.0); //we need to go this distance
-//				actionQueue.add(actionCreator.createGoStraight())
+			double distance = 212.8 - FieldDimensions.HAB_FLAT_DISTANCE; //we need to go this distance
 			actionQueue.add(actionCreator.createGoStraight(40, .3, 90, startingOrientation));
 			distance -= 40;
 			actionQueue.add(actionCreator.createGoStraight(130, .7, 90, startingOrientation));
 			distance -= 130;
 			actionQueue.add(actionCreator.createGoStraight(distance, .3, 90, startingOrientation));
 			
-			final double faceAngle = (isLeft ? 0 : 180) + getManipulatorOffset(gamePieceType); // face the manipulator towards the cargo ship
-			if (MathUtil.minDistance(faceAngle, startingOrientation, 360) > 5) { // only rotate if we need to
+			final double towardsCargoShipAngle = (isLeft ? 0 : 180);
+			final double faceAngle = towardsCargoShipAngle + getManipulatorOffset(gamePieceType); // face the manipulator towards the cargo ship
+			final double distanceDegreesToFaceAngle = MathUtil.minDistance(faceAngle, startingOrientation, 360);
+			if (distanceDegreesToFaceAngle > 5) { // only rotate if we need to
+				if(distanceDegreesToFaceAngle > 135){ // we have to turn 180
+					actionQueue.add(actionCreator.createGoStraight(getManipulatorSideWidth(gamePieceType) / 2.0, .3, 90, startingOrientation));
+				} else { // we have to turn 90
+					actionQueue.add(actionCreator.createGoStraight(getManipulatorSideDepth(gamePieceType) / 2.0, .3, 90, startingOrientation));
+				}
 				actionQueue.add(actionCreator.createTurnToOrientation(faceAngle));
 				System.out.println("Creating a side cargo auto mode where we have to rotate! Why not just start the robot in the correct orientation?");
+			} else {
+				actionQueue.add(actionCreator.createGoStraight(getManipulatorSideWidth(gamePieceType) / 2.0, .3, 90, startingOrientation));
 			}
 			final Action cargoShipSuccess = new Actions.ActionQueueBuilder(
-					Actions.createRunOnce(() -> System.out.println("We successfully placed something on the cargo ship. TODO: Write code to make this do more stuff."))
+					Actions.createRunOnce(actionCreator.createLogMessageAction("We successfully placed something on the cargo ship. TODO: Write code to make this do more stuff."))
 			).immediatelyDoNextWhenDone(true).canBeDone(true).canRecycle(false).build();
 			
 			if(lineUpType == LineUpType.USE_VISION) {
@@ -166,11 +185,19 @@ public class AutonomousModeCreator {
 					));
 				}
 			} else {
-				actionQueue.add(actionCreator.createGoStraight(20, .2, isLeft ? 0 : 180, faceAngle)); // go towards cargo ship
+				final Action driveAction = actionCreator.createGoStraight(20, .2, towardsCargoShipAngle, faceAngle);
 				if(gamePieceType == GamePieceType.HATCH){
+					actionQueue.add(new Actions.ActionMultiplexerBuilder(
+							actionCreator.createExtendHatch(),
+							driveAction // go towards cargo ship
+					).build());
 					actionQueue.add(actionCreator.createDropHatch());
 				} else {
-					actionQueue.add(actionCreator.createRaiseLift(Lift.Position.CARGO_CARGO_SHIP));
+					actionQueue.add(new Actions.ActionMultiplexerBuilder(
+							actionCreator.createLogMessageAction("The lift will be raised to CARGO_CARGO_SHIP while we drive the 20 inches"),
+							actionCreator.createRaiseLift(Lift.Position.CARGO_CARGO_SHIP),
+							driveAction // go towards cargo ship
+					).forceUpdateInOrder(true).build());
 					actionQueue.add(actionCreator.createReleaseCargo());
 				}
 			}
@@ -193,7 +220,7 @@ public class AutonomousModeCreator {
 			actionQueue.add(actionCreator.createGoStraight(201.13 - 95.28 - 60, .5, 90, startingOrientation)); // the 60 is random
 			
 			final Action rocketSuccess = new Actions.ActionQueueBuilder(
-					Actions.createRunOnce(() -> System.out.println("We successfully placed something on the rocket. TODO: Write code to make this do more stuff."))
+					Actions.createRunOnce(actionCreator.createLogMessageAction("We successfully placed something on the rocket. TODO: Write code to make this do more stuff."))
 			).immediatelyDoNextWhenDone(true).canBeDone(true).canRecycle(false).build();
 			
 			if(lineUpType == LineUpType.USE_VISION) {
@@ -220,5 +247,17 @@ public class AutonomousModeCreator {
 		return gamePieceType == GamePieceType.HATCH
 				? dimensions.getHatchManipulatorPerspective().getOffset(null)
 				: dimensions.getCargoManipulatorPerspective().getOffset(null);
+	}
+	private double getManipulatorSideWidth(GamePieceType gamePieceType){
+		Objects.requireNonNull(gamePieceType);
+		return gamePieceType == GamePieceType.HATCH
+				? dimensions.getHatchSideWidth()
+				: dimensions.getCargoSideWidth();
+	}
+	private double getManipulatorSideDepth(GamePieceType gamePieceType){
+		Objects.requireNonNull(gamePieceType);
+		return gamePieceType == GamePieceType.HATCH
+				? dimensions.getHatchSideDepth()
+				: dimensions.getCargoSideDepth();
 	}
 }

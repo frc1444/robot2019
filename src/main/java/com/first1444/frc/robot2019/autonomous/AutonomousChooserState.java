@@ -2,7 +2,7 @@ package com.first1444.frc.robot2019.autonomous;
 
 import com.first1444.frc.robot2019.Constants;
 import com.first1444.frc.robot2019.ShuffleboardMap;
-import com.first1444.frc.robot2019.autonomous.actions.WaitAction;
+import com.first1444.frc.robot2019.autonomous.actions.AutonomousInputWaitAction;
 import com.first1444.frc.robot2019.autonomous.options.AutonomousType;
 import com.first1444.frc.robot2019.autonomous.options.LineUpType;
 import com.first1444.frc.robot2019.deepspace.GamePieceType;
@@ -17,8 +17,8 @@ import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardLayout;
 import me.retrodaredevil.action.Action;
 import me.retrodaredevil.action.Actions;
 
+import java.io.PrintWriter;
 import java.util.Collection;
-import java.util.Map;
 
 public class AutonomousChooserState {
 	private final AutonomousModeCreator autonomousModeCreator;
@@ -75,14 +75,17 @@ public class AutonomousChooserState {
 		final SlotLevel slotLevel = levelChooser.getSelected();
 		final LineUpType lineUpType = lineUpChooser.getSelected();
 		try {
-			return new Actions.ActionQueueBuilder(
-					new WaitAction(
-							Math.round(autonConfig.getDouble(AutonConfig.WAIT_TIME) * 1000),
-							() -> robotInput.getAutonomousWaitButton().isDown(),
-							() -> robotInput.getAutonomousStartButton().isDown()
-					),
-					autonomousModeCreator.createAction(type, startingPosition, gamePiece, slotLevel, lineUpType, startingOrientation)
-			).canRecycle(false).canBeDone(true).immediatelyDoNextWhenDone(true).build();
+			return Actions.createLogAndEndTryCatchAction(
+					new Actions.ActionQueueBuilder(
+							new AutonomousInputWaitAction(
+									Math.round(autonConfig.getDouble(AutonConfig.WAIT_TIME) * 1000),
+									() -> robotInput.getAutonomousWaitButton().isDown(),
+									() -> robotInput.getAutonomousStartButton().isDown()
+							),
+							autonomousModeCreator.createAction(type, startingPosition, gamePiece, slotLevel, lineUpType, startingOrientation)
+					).canRecycle(false).canBeDone(true).immediatelyDoNextWhenDone(true).build(),
+					Throwable.class, new PrintWriter(System.err)
+			);
 		} catch (IllegalArgumentException ex){
 			ex.printStackTrace();
 			System.out.println("One of our choosers must not have been set correctly!");
