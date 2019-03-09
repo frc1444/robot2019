@@ -28,7 +28,9 @@ class LineUpAction extends SimpleAction implements DistanceAwayLinkedAction {
 	private static final long FAIL_NOTIFY_TIME = 100;
 	private static final long MAX_FAIL_TIME = 1000;
 	/** The number of inches in front of the vision to target when the angle is too big.*/
-	private static final double TARGET_IN_FRONT_INCHES = 30;
+	private static final double TARGET_IN_FRONT_INCHES = 20;
+	private static final double VISION_PACKET_X_MULT = 1.5;
+	private static final double VISION_VIEW_X_MULT = 1.2;
 	
 	private final VisionSupplier visionSupplier;
 	private final int cameraID;
@@ -134,16 +136,23 @@ class LineUpAction extends SimpleAction implements DistanceAwayLinkedAction {
 		final VisionPacket moveVision = new ImmutableVisionPacket(
 				targetVision.getRobotX(),
 				targetVision.getRobotY(),
-				targetVision.getRobotZ() - TARGET_IN_FRONT_INCHES,
+				targetVision.getRobotZ() + TARGET_IN_FRONT_INCHES,
+				targetVision.getVisionYaw(), targetVision.getVisionPitch(), targetVision.getVisionRoll(), targetVision.getImageX(), targetVision.getImageY()
+		);
+		final VisionPacket faceVision = new ImmutableVisionPacket(
+				targetVision.getRobotX(),
+				targetVision.getRobotY(),
+				targetVision.getRobotZ() - 15,
 				targetVision.getVisionYaw(), targetVision.getVisionPitch(), targetVision.getVisionRoll(), targetVision.getImageX(), targetVision.getImageY()
 		);
 		updateVisionView(moveVision);
 		
-		final double moveX = moveVision.getVisionX() / moveVision.getGroundDistance();
-		final double moveY = moveVision.getVisionZ() / moveVision.getGroundDistance();
+		final double moveX = moveVision.getVisionX() * VISION_PACKET_X_MULT;
+		final double moveY = moveVision.getVisionZ();
+		final double moveMagnitude = hypot(moveX, moveY);
 		
 		final double yawTurnAmount = max(-1, min(1, targetVision.getVisionYaw() / -30)); // moveVision has same yaw so it doesn't matter // to make the yaw go to 0
-		final double zeroGroundAngle = MathUtil.minChange(targetVision.getGroundAngle(), 90, 360); // we want this to get close to 0 // we want to face the target
+		final double zeroGroundAngle = MathUtil.minChange(faceVision.getGroundAngle(), 90, 360); // we want this to get close to 0 // we want to face the target
 		final double faceTurnAmount = max(-1, min(1, zeroGroundAngle / -90)); // to face the target
 		SmartDashboard.putNumber("yawTurnAmount", yawTurnAmount);
 		SmartDashboard.putNumber("faceTurnAmount", faceTurnAmount);
@@ -162,37 +171,45 @@ class LineUpAction extends SimpleAction implements DistanceAwayLinkedAction {
 //		} else {
 //			turnAmount = yawTurnAmount;
 //		}
-		turnAmount = yawTurnAmount;
+		turnAmount = faceTurnAmount * .8 + yawTurnAmount * .2;
 		
 		
-		driveSupplier.get().setControl(moveX, moveY, turnAmount, MAX_SPEED, perspective);
+		driveSupplier.get().setControl(moveX / moveMagnitude, moveY / moveMagnitude, turnAmount, MAX_SPEED, perspective);
 		SmartDashboard.putNumber("ground distance", groundDistance);
 		if(moveVision.getGroundDistance() < 5){
-			final double x = targetVision.getVisionX();
-			final double y = targetVision.getVisionZ();
-			nextAction = Actions.createLinkedAction(new GoStraight(hypot(x, y), .3, x / targetVision.getGroundDistance(), y / targetVision.getGroundDistance(), null, driveSupplier, orientationSupplier), successAction);
-//			nextAction = successAction;
-			System.out.println("going straight now");
+//			final double x = targetVision.getVisionX();
+//			final double y = targetVision.getVisionZ();
+//			final double magnitude = targetVision.getGroundDistance();
+//			nextAction = Actions.createLinkedAction(
+//					new GoStraight(hypot(x, y), .3, x / magnitude, y / magnitude, null, driveSupplier, orientationSupplier),
+//					successAction
+//			);
+			nextAction = successAction;
+			System.out.println("success!");
 			setDone(true);
 		}
+		SmartDashboard.putString("Vision Movement", "packet");
 	}
 	private void useVisionView(VisionView visionView){
 		Objects.requireNonNull(visionView);
+		SmartDashboard.putString("Vision Movement", "view");
 		final double orientation = orientationSupplier.get().getOrientation();
 		final double direction = visionView.getDirectionToTarget() - orientation; // forward is 90 degrees
 		final double directionRadians = toRadians(direction);
 		final double visionYaw = MathUtil.minChange(visionView.getTargetOrientation() - orientation, 0, 360); // perfect is 0 degrees
 		final double distance = visionView.getDistanceToTarget();
 		
-		final double moveX = cos(directionRadians);
+		final double moveX = cos(directionRadians) * VISION_VIEW_X_MULT;
 		final double moveY = sin(directionRadians);
+		final double moveMagnitude = hypot(moveX, moveY);
 		
 		final double distanceLeft = distance - visionView.getTracker().calculateDistance();
-		if(distanceLeft <= 0){
-			driveSupplier.get().setControl(moveX, moveY, 0, 0, perspective); // stay still, wait to detect target again
+		if(distanceLeft <= 5){
+			driveSupplier.get().setControl(moveX / moveMagnitude, moveY / moveMagnitude, 0, 0, perspective); // stay still, wait to detect target again
 			System.out.println("Using vision view. We went the distance we needed to");
+			setDone(true);
 		} else {
-			driveSupplier.get().setControl(moveX, moveY, .5 * max(-1, min(1, visionYaw / -30)), MAX_SPEED, perspective);
+			driveSupplier.get().setControl(moveX / moveMagnitude, moveY / moveMagnitude, .5 * max(-1, min(1, visionYaw / -30)), MAX_SPEED, perspective);
 		}
 		distanceAway = max(0, distanceLeft + TARGET_IN_FRONT_INCHES);
 	}

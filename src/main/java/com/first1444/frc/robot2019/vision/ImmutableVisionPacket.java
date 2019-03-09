@@ -120,6 +120,8 @@ public class ImmutableVisionPacket implements VisionPacket{
 				", yaw=" + yaw +
 				", pitch=" + pitch +
 				", roll=" + roll +
+				", groundDistance=" + groundDistance +
+				", groundAngle=" + groundAngle +
 				'}';
 	}
 	

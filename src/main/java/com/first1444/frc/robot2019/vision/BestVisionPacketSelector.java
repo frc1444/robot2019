@@ -34,7 +34,7 @@ public class BestVisionPacketSelector implements PreferredTargetSelector {
 		VisionPacket closest = null;
 		double closestDistance = 0;
 		for(VisionPacket packet : visionPackets){
-			final double distance = hypot(packet.getRobotX() * 1.05, packet.getRobotY()); // multiply by 1.05 to make targets off on the x axis by a lot be filtered out
+			final double distance = hypot(packet.getRobotX() * 1.05, packet.getRobotZ()); // multiply by 1.05 to make targets off on the x axis by a lot be filtered out
 			if(closest == null || closestDistance > distance){
 				closest = packet;
 				closestDistance = distance;
