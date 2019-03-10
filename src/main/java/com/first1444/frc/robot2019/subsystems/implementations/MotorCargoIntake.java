@@ -48,6 +48,7 @@ public class MotorCargoIntake extends SimpleAction implements CargoIntake {
 	protected void onUpdate() {
 		super.onUpdate();
 		intake.set(ControlMode.PercentOutput, intakeSpeed);
+		intakeSpeed = 0;
 		
 		final boolean forwardLimitSwitch = !pivot.getSensorCollection().isFwdLimitSwitchClosed(); // normally closed
 		final long now = System.currentTimeMillis();

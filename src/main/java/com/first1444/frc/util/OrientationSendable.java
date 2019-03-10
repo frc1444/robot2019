@@ -17,7 +17,7 @@ public class OrientationSendable extends SendableBase {
 		this.orientationSupplier = orientationSupplier;
 	}
 	public static void addOrientation(ShuffleboardContainer container, Supplier<Orientation> orientationSupplier){
-		final ShuffleboardLayout layout = container.getLayout("Orientation", BuiltInLayouts.kList).withSize(2, 3).withPosition(8, 1);
+		final ShuffleboardLayout layout = container.getLayout("Orientation", BuiltInLayouts.kList).withSize(2, 3).withPosition(9, 1);
 		layout.add("Gyro", new OrientationSendable(orientationSupplier)).withProperties(Map.of("Major tick spacing", 360));
 		layout.add("Value", new SendableBase() {
 			@Override

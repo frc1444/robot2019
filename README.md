@@ -6,11 +6,11 @@ When you first clone this project from the internet, make sure that you run
 Some times you must run ```gradlew downloadAll``` to get everything.
 ### TODO
 * Rumble driver controller when operator places hatch/cargo
-* Add option in auto modes so you can choose whether or not to use vision
 * Make vision work
-* Test the MatchScheduler class
 ### Done
 * Fixed switching camera
+* Test the MatchScheduler class
+* Add option in auto modes so you can choose whether or not to use vision
 ### TODO at competition
 * Put gyro on robot
 * Make sure RPi is on right power port (5V 2A)
@@ -29,3 +29,8 @@ Some times you must run ```gradlew downloadAll``` to get everything.
 * Parameters involving left and right should be in the order: left, right
 * Only use ```this.``` when necessary
 * Use Shuffleboard for as much as possible and use SmartDashboard for unimportant debugging
+
+
+### TODO Next year
+* Create helper library
+* Create interface to be used for all motors

@@ -48,6 +48,7 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import me.retrodaredevil.action.*;
 import me.retrodaredevil.controller.ControllerManager;
 import me.retrodaredevil.controller.DefaultControllerManager;
@@ -126,19 +127,24 @@ public class Robot extends TimedRobot {
 		gyro.SetMode(BNO055.IMUMode.NDOF);
 //		final Gyro gyro = new DummyGyro(0);
 		
-		dimensions = Constants.Dimensions.INSTANCE;
+		final SendableChooser<Boolean> cameraIDSwitchedChooser = new SendableChooser<>();
+		cameraIDSwitchedChooser.setDefaultOption("NOT FLIPPED", false);
+		cameraIDSwitchedChooser.setDefaultOption("FLIPPED", true);
+		shuffleboardMap.getDevTab().add("Camera IDs Flipped", cameraIDSwitchedChooser);
+		dimensions = new DynamicRobotDimensions(Constants.Dimensions.INSTANCE, cameraIDSwitchedChooser::getSelected);
 
 		orientationSystem = new OrientationSystem(shuffleboardMap, gyro, robotInput);
 		
 		OrientationSendable.addOrientation(shuffleboardMap.getUserTab(), this::getOrientation);
 		
 		autonomousPerspectiveChooser = new DynamicSendableChooser<>();
-		autonomousPerspectiveChooser.setDefaultOption("Hatch Cam", dimensions.getHatchManipulatorPerspective());
+		autonomousPerspectiveChooser.setDefaultOption("Auto Cam", null);
+		autonomousPerspectiveChooser.addOption("Hatch Cam", dimensions.getHatchManipulatorPerspective());
 		autonomousPerspectiveChooser.addOption("Cargo Cam", dimensions.getCargoManipulatorPerspective());
 		autonomousPerspectiveChooser.addOption("Driver Station (blind field centric)", Perspective.DRIVER_STATION);
 		autonomousPerspectiveChooser.addOption("Jumbotron on Right", Perspective.JUMBOTRON_ON_RIGHT);
 		autonomousPerspectiveChooser.addOption("Jumbotron on Left", Perspective.JUMBOTRON_ON_LEFT);
-		shuffleboardMap.getUserTab().add("Autonomous Perspective", autonomousPerspectiveChooser).withSize(2, 1).withPosition(8, 4);
+		shuffleboardMap.getUserTab().add("Autonomous Perspective", autonomousPerspectiveChooser).withSize(2, 1).withPosition(9, 4);
 
 		final MutableValueMapSendable<PidKey> drivePidSendable = new MutableValueMapSendable<>(PidKey.class);
 		final MutableValueMapSendable<PidKey> steerPidSendable = new MutableValueMapSendable<>(PidKey.class);
@@ -201,7 +207,7 @@ public class Robot extends TimedRobot {
 		final var hatchIntake = new DummyHatchIntake(reportMap);
 //		final var hatchIntake = new MotorHatchIntake(new TalonSRX(Constants.HATCH_GRAB_ID), new TalonSRX(Constants.HATCH_STOW_ID), new TalonSRX(Constants.HATCH_PIVOT_ID));
 		final var taskSystem = new DefaultTaskSystem(robotInput);
-		final var matchScheduler = new DefaultMatchScheduler();
+		final var matchScheduler = new DefaultMatchScheduler(DefaultMatchScheduler.DriverStationTimeGetter.INSTANCE);
 		this.drive = drive;
 		this.cargoIntake = cargoIntake;
 		this.climber = climber;
@@ -306,18 +312,22 @@ public class Robot extends TimedRobot {
 		swerveDriveAction.setPerspective(Perspective.DRIVER_STATION);
 		soundSender.sendEvent(SoundEvents.TELEOP_ENABLE);
 		matchScheduler.schedule(Actions.createRunOnce(() -> {
+			System.out.println("Stowing cargo intake"); // good
 			cargoIntake.stow();
 		}), MatchTime.of(1.2, MatchTime.Mode.TELEOP, MatchTime.Type.FROM_END));
-		matchScheduler.schedule(new TimedCargoIntake(400, this::getCargoIntake, 1), MatchTime.of(.5, MatchTime.Mode.TELEOP, MatchTime.Type.FROM_END));
+		matchScheduler.schedule(new TimedCargoIntake(400, this::getCargoIntake, 1), MatchTime.of(.5, MatchTime.Mode.TELEOP, MatchTime.Type.FROM_END)); // good
 		matchScheduler.schedule(Actions.createRunOnce(() -> {
+			System.out.println("Dropping hatch"); // good
 			hatchIntake.drop();
 		}), MatchTime.of(.5, MatchTime.Mode.TELEOP, MatchTime.Type.FROM_END));
 		matchScheduler.schedule(Actions.createRunOnce(() -> {
+			System.out.println("rumbling"); // good
 			final var rumble = robotInput.getDriverRumble();
 			if(rumble.isConnected()){
 				rumble.rumbleTime(150, .6);
 			}
 		}), MatchTime.of(7, MatchTime.Mode.TELEOP, MatchTime.Type.FROM_END));
+		System.out.println("Scheduled some stuff for end of teleop!");
 		lastMode = RobotMode.TELEOP;
 	}
 	@Override public void teleopPeriodic() { }
@@ -361,7 +371,7 @@ public class Robot extends TimedRobot {
 //				new TurnToOrientation(-90, this::getDrive, this::getOrientation),
 //				new GoStraight(10, .2, 0, 1, 90.0, this::getDrive, this::getOrientation),
 				LineUpCreator.createLineUpAction(
-						packetListener, dimensions.getHatchCameraID(), Perspective.ROBOT_FORWARD_CAM,
+						packetListener, dimensions.getHatchCameraID(), dimensions.getHatchManipulatorPerspective(),
 						new BestVisionPacketSelector(), this::getDrive, this::getOrientation,
 						Actions.createRunOnce(() -> System.out.println("Failed!")), Actions.createRunOnce(() -> System.out.println("Success!")),
 						getSoundSender()

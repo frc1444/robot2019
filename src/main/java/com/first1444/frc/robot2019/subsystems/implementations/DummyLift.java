@@ -9,9 +9,14 @@ import java.util.Objects;
 
 public class DummyLift extends SimpleAction implements Lift {
 	private static final String LIFT = "Lift";
+	private static final String LIFT_REACHED = "Lift Position Reached";
+	private static final long TIME_UNTIL_REACH = 1000;
 	private final ReportMap reportMap;
 	
 	private LiftMode liftMode = LiftMode.SPEED;
+	private double position;
+	private long lastPositionChange = 0;
+	private boolean positionReached = false;
 	
 	public DummyLift(ReportMap reportMap) {
 		super(true);
@@ -25,15 +30,42 @@ public class DummyLift extends SimpleAction implements Lift {
 	}
 	
 	@Override
+	protected void onUpdate() {
+		super.onUpdate();
+		final String infoString;
+		if(liftMode == LiftMode.POSITION){
+			if(lastPositionChange + TIME_UNTIL_REACH <= System.currentTimeMillis()){
+				positionReached = true;
+				infoString = "YES - Reached";
+			} else {
+				positionReached = false;
+				infoString = "NO - Going";
+			}
+		} else {
+			positionReached = false;
+			infoString = "NO - Speed Mode";
+		}
+		reportMap.report(LIFT_REACHED, infoString);
+	}
+	
+	@Override
 	protected void onEnd(boolean peacefullyEnded) {
 		super.onEnd(peacefullyEnded);
 		reportMap.report(LIFT, "robot disabled");
+		reportMap.report(LIFT_REACHED, "NO - disabled");
+		liftMode = LiftMode.SPEED;
+		position = 0;
+		positionReached = false;
 	}
 	
 	@Override
 	public void setDesiredPosition(double desiredPosition) {
 		reportMap.report(LIFT, "position " + Constants.DECIMAL_FORMAT.format(desiredPosition));
 		liftMode = LiftMode.POSITION;
+		if(desiredPosition != position){
+			position = desiredPosition;
+			onNewPosition();
+		}
 	}
 	
 	@Override
@@ -41,6 +73,14 @@ public class DummyLift extends SimpleAction implements Lift {
 		Objects.requireNonNull(desiredPosition);
 		reportMap.report(LIFT, "position " + desiredPosition.toString());
 		liftMode = LiftMode.POSITION;
+		final double newPosition = MotorLift.POSITION_MAP.get(desiredPosition);
+		if(newPosition != position){
+			position = newPosition;
+			onNewPosition();
+		}
+	}
+	private void onNewPosition(){
+		lastPositionChange = System.currentTimeMillis();
 	}
 	
 	@Override
@@ -62,6 +102,6 @@ public class DummyLift extends SimpleAction implements Lift {
 	
 	@Override
 	public boolean isDesiredPositionReached() {
-		return true;
+		return liftMode == LiftMode.POSITION && positionReached;
 	}
 }

@@ -193,16 +193,15 @@ public final class Constants {
 			return 10;
 		}
 		
-		// TODO change these values
 		@Override
 		public double getHatchSideWidth() {
-			return 35;
+			return 31;
 		}
 		@Override public double getCargoSideWidth() { return getHatchSideWidth(); }
 		
 		@Override
 		public double getHatchSideDepth() {
-			return 30;
+			return 28;
 		}
 		@Override public double getCargoSideDepth() { return getHatchSideDepth(); }
 	}

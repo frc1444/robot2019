@@ -40,7 +40,7 @@ public class TurnToOrientation extends SimpleAction {
 			turnAmount = MAX_SPEED * signum(turnAmount);
 		}
 		drive.setControl(0, 0, 1, turnAmount, Perspective.DRIVER_STATION);
-		if(abs(minChange) < 7.5){
+		if(abs(minChange) < 3){
 			setDone(true);
 		}
 	}

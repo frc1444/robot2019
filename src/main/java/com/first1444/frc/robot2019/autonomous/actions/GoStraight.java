@@ -60,8 +60,8 @@ public class GoStraight extends SimpleAction {
 		} else {
 			minChange = 0;
 		}
-		final double turnAmount = max(-1, min(1, minChange / -20));
-		drive.setControl(x, y, turnAmount, speed, Perspective.DRIVER_STATION);
+		final double turnAmount = .75 * max(-1, min(1, minChange / -40));
+		drive.setControl(x * speed, y * speed, turnAmount, 1, Perspective.DRIVER_STATION);
 		
 		setDone(tracker.calculateDistance() >= distance);
 

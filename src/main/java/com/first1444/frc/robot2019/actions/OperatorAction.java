@@ -61,9 +61,11 @@ public class OperatorAction extends SimpleAction {
 		}
 		{ // cargo intake
 			final double speed = input.getCargoIntakeSpeed().getZonedPosition();
-			cargoIntake.setSpeed(speed);
-			if(speed < 0){ // if we're intaking, set to cargo task
-				taskSystem.setCurrentTask(TaskSystem.Task.CARGO);
+			if(speed != 0) {
+				cargoIntake.setSpeed(speed);
+				if(speed < 0){ // if we're intaking, set to cargo task
+					taskSystem.setCurrentTask(TaskSystem.Task.CARGO);
+				}
 			}
 			if(cargoPickupPreset){
 				cargoIntake.pickup();
@@ -72,7 +74,7 @@ public class OperatorAction extends SimpleAction {
 		{ // hatch intake
 			final HatchIntake hatchIntake = robot.getHatchIntake();
 			
-			if(isDefense || input.getHatchPivotStowedPreset().isDown()){
+			if(isDefense || cargoPickupPreset || input.getHatchPivotStowedPreset().isDown()){
 				hatchIntake.stowedPosition();
 			} else if(input.getHatchPivotReadyPreset().isDown()){
 				hatchIntake.readyPosition();
@@ -82,12 +84,14 @@ public class OperatorAction extends SimpleAction {
 				taskSystem.setCurrentTask(TaskSystem.Task.HATCH);
 			}
 			
-			if(input.getHatchDrop().isDown()){
-				hatchIntake.drop();
-				taskSystem.setCurrentTask(TaskSystem.Task.HATCH);
-			} else if(input.getHatchGrab().isDown()){
+			if(input.getHatchGrab().isDown()) {
 				hatchIntake.hold();
 				taskSystem.setCurrentTask(TaskSystem.Task.HATCH);
+			} else if(input.getHatchDrop().isDown()) {
+				hatchIntake.drop();
+				taskSystem.setCurrentTask(TaskSystem.Task.HATCH);
+			} else if(cargoPickupPreset){
+				hatchIntake.drop();
 			}
 			
 		}

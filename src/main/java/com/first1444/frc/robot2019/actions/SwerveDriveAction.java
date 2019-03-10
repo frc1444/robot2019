@@ -29,6 +29,8 @@ public class SwerveDriveAction extends SimpleAction {
 	private final ActionChooser actionChooser;
 	private final VisionSupplier visionSupplier;
 	private final RobotDimensions dimensions;
+	
+	/** The perspective or null to automatically choose the perspective based on the task */
 	private Perspective perspective = Perspective.DRIVER_STATION;
 	
 	public SwerveDriveAction(Supplier<SwerveDrive> driveSupplier, Supplier<Orientation> orientationSupplier, Supplier<TaskSystem> taskSystemSupplier, RobotInput input, VisionSupplier visionSupplier, RobotDimensions dimensions) {
@@ -41,8 +43,13 @@ public class SwerveDriveAction extends SimpleAction {
 		this.visionSupplier = visionSupplier;
 		this.dimensions = dimensions;
 	}
+	
+	/**
+	 *
+	 * @param perspective The perspective or null to automatically choose the perspective based on the task
+	 */
 	public void setPerspective(Perspective perspective){
-		this.perspective = Objects.requireNonNull(perspective);
+		this.perspective = perspective;
 	}
 
 	@Override
@@ -59,13 +66,15 @@ public class SwerveDriveAction extends SimpleAction {
 		super.onUpdate();
 		final Perspective perspective;
 		final TaskSystem.Task task = taskSystemSupplier.get().getCurrentTask();
-		if(input.getFirstPersonHoldButton().isDown()){
+		if(input.getFirstPersonHoldButton().isDown() || this.perspective == null){
 			perspective = task == TaskSystem.Task.HATCH
 					? dimensions.getHatchManipulatorPerspective()
 					: dimensions.getCargoManipulatorPerspective();
 		} else {
 			perspective = this.perspective;
 		}
+		Objects.requireNonNull(perspective);
+		
 		if(input.getVisionAlign().isDown()){
 			if(input.getVisionAlign().isPressed()){
 				actionChooser.setNextAction(LineUpCreator.createLineUpAction(

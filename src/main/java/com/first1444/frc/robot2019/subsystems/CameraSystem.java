@@ -44,7 +44,7 @@ public class CameraSystem extends SimpleAction {
 			videoSink.setCompression(COMPRESSION_LEVEL);
 			videoSink.setDefaultCompression(COMPRESSION_LEVEL);
 		}
-		shuffleboardMap.getUserTab().add("My Toggle Camera", source).withSize(6, 5).withPosition(2, 0);
+		shuffleboardMap.getUserTab().add("My Toggle Camera", source).withSize(7, 5).withPosition(2, 0);
 	}
 	private void setupCamera(UsbCamera camera){
 		final double ratio = camera.getVideoMode().height / (double) camera.getVideoMode().width;
@@ -59,15 +59,15 @@ public class CameraSystem extends SimpleAction {
 		final TaskSystem taskSystem = taskSystemSupplier.get();
 		Objects.requireNonNull(taskSystem);
 		final TaskSystem.Task newTask = taskSystem.getCurrentTask();
-		SmartDashboard.putString("current task from camera system", newTask.toString());
+//		SmartDashboard.putString("current task from camera system", newTask.toString());
 		if(newTask != lastTask){
 			lastTask = newTask;
 			if(newTask == TaskSystem.Task.CARGO){
 				videoSink.setSource(cargo);
-				System.out.println("Source is now cargo. Is connected: " + (cargo == null ? "null" : cargo.isConnected()));
+//				System.out.println("Source is now cargo. Is connected: " + (cargo == null ? "null" : cargo.isConnected()));
 			} else if(newTask == TaskSystem.Task.HATCH){
 				videoSink.setSource(hatch);
-				System.out.println("Source is now hatch. Is connected: " + (hatch == null ? "null" : hatch.isConnected()));
+//				System.out.println("Source is now hatch. Is connected: " + (hatch == null ? "null" : hatch.isConnected()));
 			} else {
 				throw new UnsupportedOperationException("Unsupported task: " + newTask);
 			}

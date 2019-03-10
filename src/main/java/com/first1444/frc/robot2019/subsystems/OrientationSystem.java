@@ -27,7 +27,7 @@ public class OrientationSystem extends SimpleAction {
 		startingOrientationChooser.addOption("right (0)", 0.0);
 		startingOrientationChooser.addOption("left (180)", 180.0);
 		startingOrientationChooser.addOption("backwards (270)", 270.0);
-		shuffleboardMap.getUserTab().add("Starting Orientation", startingOrientationChooser).withSize(2, 1).withPosition(8, 0);
+		shuffleboardMap.getUserTab().add("Starting Orientation", startingOrientationChooser).withSize(2, 1).withPosition(9, 0);
 		
 		orientation = new DefaultOrientation(gyro, this::getStartingOrientation);
 	}

@@ -154,8 +154,8 @@ class LineUpAction extends SimpleAction implements DistanceAwayLinkedAction {
 		final double yawTurnAmount = max(-1, min(1, targetVision.getVisionYaw() / -30)); // moveVision has same yaw so it doesn't matter // to make the yaw go to 0
 		final double zeroGroundAngle = MathUtil.minChange(faceVision.getGroundAngle(), 90, 360); // we want this to get close to 0 // we want to face the target
 		final double faceTurnAmount = max(-1, min(1, zeroGroundAngle / -90)); // to face the target
-		SmartDashboard.putNumber("yawTurnAmount", yawTurnAmount);
-		SmartDashboard.putNumber("faceTurnAmount", faceTurnAmount);
+//		SmartDashboard.putNumber("yawTurnAmount", yawTurnAmount);
+//		SmartDashboard.putNumber("faceTurnAmount", faceTurnAmount);
 		
 //		final double turnAmount = .5 * max(-1, min(1,
 //				max(-1, min(1, vision.getVisionYaw() / -30))
@@ -175,7 +175,7 @@ class LineUpAction extends SimpleAction implements DistanceAwayLinkedAction {
 		
 		
 		driveSupplier.get().setControl(moveX / moveMagnitude, moveY / moveMagnitude, turnAmount, MAX_SPEED, perspective);
-		SmartDashboard.putNumber("ground distance", groundDistance);
+//		SmartDashboard.putNumber("ground distance", groundDistance);
 		if(moveVision.getGroundDistance() < 5){
 //			final double x = targetVision.getVisionX();
 //			final double y = targetVision.getVisionZ();
@@ -188,11 +188,11 @@ class LineUpAction extends SimpleAction implements DistanceAwayLinkedAction {
 			System.out.println("success!");
 			setDone(true);
 		}
-		SmartDashboard.putString("Vision Movement", "packet");
+//		SmartDashboard.putString("Vision Movement", "packet");
 	}
 	private void useVisionView(VisionView visionView){
 		Objects.requireNonNull(visionView);
-		SmartDashboard.putString("Vision Movement", "view");
+//		SmartDashboard.putString("Vision Movement", "view");
 		final double orientation = orientationSupplier.get().getOrientation();
 		final double direction = visionView.getDirectionToTarget() - orientation; // forward is 90 degrees
 		final double directionRadians = toRadians(direction);

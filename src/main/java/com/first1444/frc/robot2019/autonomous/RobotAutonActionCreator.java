@@ -123,11 +123,14 @@ public class RobotAutonActionCreator implements AutonActionCreator {
 					}
 				},
 				Actions.createDynamicActionRunner(() -> {
+					final Action action;
 					if(finalActionSuccess[0]){
-						return successAction;
+						final Action releaseAction = hatch ? createDropHatch() : createReleaseCargo();
+						action = Actions.createLinkedAction(releaseAction, successAction);
 					} else {
-						return failAction;
+						action = failAction;
 					}
+					return Actions.createLinkedActionRunner(action, WhenDone.CLEAR_ACTIVE_AND_BE_DONE, true);
 				})
 		).immediatelyDoNextWhenDone(true).build();
 	}

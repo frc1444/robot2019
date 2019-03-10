@@ -15,7 +15,11 @@ import me.retrodaredevil.action.Actions;
 
 import java.util.Objects;
 
+import static java.lang.Math.sin;
+import static java.lang.Math.toRadians;
+
 public class AutonomousModeCreator {
+	private static final double SIDE_CARGO_SHIP_LONG_DISTANCE_ANGLE = 4.5;
 	private final AutonActionCreator actionCreator;
 	private final RobotDimensions dimensions;
 	
@@ -147,26 +151,28 @@ public class AutonomousModeCreator {
 			} else {
 				throw new IllegalArgumentException("Side Cargo Ship doesn't support starting position: " + startingPosition);
 			}
-			double distance = 212.8 - FieldDimensions.HAB_FLAT_DISTANCE; //we need to go this distance
-			actionQueue.add(actionCreator.createGoStraight(40, .3, 90, startingOrientation));
-			distance -= 40;
-			actionQueue.add(actionCreator.createGoStraight(130, .7, 90, startingOrientation));
-			distance -= 130;
-			actionQueue.add(actionCreator.createGoStraight(distance, .3, 90, startingOrientation));
+			final double longDistanceAngle = isLeft ? 90 + SIDE_CARGO_SHIP_LONG_DISTANCE_ANGLE : 90 - SIDE_CARGO_SHIP_LONG_DISTANCE_ANGLE;
 			
 			final double towardsCargoShipAngle = (isLeft ? 0 : 180);
 			final double faceAngle = towardsCargoShipAngle + getManipulatorOffset(gamePieceType); // face the manipulator towards the cargo ship
-			final double distanceDegreesToFaceAngle = MathUtil.minDistance(faceAngle, startingOrientation, 360);
+			final double distanceDegreesToFaceAngle = MathUtil.minDistance(faceAngle, startingOrientation, 360); // in range [0..180]
+			
+			double distance = 212.8 - FieldDimensions.HAB_FLAT_DISTANCE - 22; //we need to go this distance // 22 is random, but I measured it
+			if(distanceDegreesToFaceAngle > 135 || distanceDegreesToFaceAngle < 45){ // turn 180 or turn 0
+				distance += getManipulatorSideWidth(gamePieceType) / 2.0;
+			} else {
+				distance += getManipulatorSideDepth(gamePieceType) / 2.0;
+			}
+			System.out.println("We will go a distance of " + distance);
+			actionQueue.add(actionCreator.createGoStraight(40, .3, 90, startingOrientation));
+			distance -= 40;
+			actionQueue.add(actionCreator.createGoStraight(115 / sin(toRadians(longDistanceAngle)), .7, longDistanceAngle, startingOrientation));
+			distance -= 115;
+			actionQueue.add(actionCreator.createGoStraight(distance, .3, 90, startingOrientation));
+			
 			if (distanceDegreesToFaceAngle > 5) { // only rotate if we need to
-				if(distanceDegreesToFaceAngle > 135){ // we have to turn 180
-					actionQueue.add(actionCreator.createGoStraight(getManipulatorSideWidth(gamePieceType) / 2.0, .3, 90, startingOrientation));
-				} else { // we have to turn 90
-					actionQueue.add(actionCreator.createGoStraight(getManipulatorSideDepth(gamePieceType) / 2.0, .3, 90, startingOrientation));
-				}
 				actionQueue.add(actionCreator.createTurnToOrientation(faceAngle));
 				System.out.println("Creating a side cargo auto mode where we have to rotate! Why not just start the robot in the correct orientation?");
-			} else {
-				actionQueue.add(actionCreator.createGoStraight(getManipulatorSideWidth(gamePieceType) / 2.0, .3, 90, startingOrientation));
 			}
 			final Action cargoShipSuccess = new Actions.ActionQueueBuilder(
 					Actions.createRunOnce(actionCreator.createLogMessageAction("We successfully placed something on the cargo ship. TODO: Write code to make this do more stuff."))
@@ -216,8 +222,8 @@ public class AutonomousModeCreator {
 			} else {
 				throw new IllegalArgumentException("Side Rocket doesn't support starting position: " + startingPosition);
 			}
-			actionQueue.add(actionCreator.createGoStraight(69.56, .3, sideRocketIsLeft ? 180 : 0, startingOrientation));
-			actionQueue.add(actionCreator.createGoStraight(201.13 - 95.28 - 60, .5, 90, startingOrientation)); // the 60 is random
+			actionQueue.add(actionCreator.createGoStraight(69.56 + 6, .3, sideRocketIsLeft ? 180 : 0, startingOrientation)); // the 6 is random
+			actionQueue.add(actionCreator.createGoStraight(201.13 - 95.28 - FieldDimensions.HAB_LIP_DISTANCE - 60, .5, 90, startingOrientation)); // the 60 is random
 			
 			final Action rocketSuccess = new Actions.ActionQueueBuilder(
 					Actions.createRunOnce(actionCreator.createLogMessageAction("We successfully placed something on the rocket. TODO: Write code to make this do more stuff."))
@@ -230,10 +236,10 @@ public class AutonomousModeCreator {
 						rocketSuccess
 				));
 			} else {
-				actionQueue.add(actionCreator.createGoStraight(60, .3, 90, startingOrientation));
-				final double driveAngle = 90 - (sideRocketIsLeft ? -20 : 20);
+				actionQueue.add(actionCreator.createGoStraight(60 - 1, .3, 90, startingOrientation)); // the 3 is random
+				final double driveAngle = 90 - (sideRocketIsLeft ? -25 : 25);
 				actionQueue.add(actionCreator.createTurnToOrientation(driveAngle));
-				actionQueue.add(actionCreator.createGoStraight(20, .2, driveAngle, driveAngle));
+				actionQueue.add(actionCreator.createGoStraight(30, .2, driveAngle, driveAngle));
 				actionQueue.add(actionCreator.createDropHatch());
 			}
 		} else {

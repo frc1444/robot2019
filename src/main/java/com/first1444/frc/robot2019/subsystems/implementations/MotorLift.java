@@ -26,7 +26,7 @@ public class MotorLift extends SimpleAction implements Lift {
 	private static final double HIGH_POSITION_SCALE_START = .9;
 	private static final double DESIRED_REACHED_POSITION_DEADZONE = .1;
 	private static final TalonSRXConfiguration MASTER_CONFIG;
-	private static final Map<Position, Double> POSITION_MAP;
+	static final Map<Position, Double> POSITION_MAP;
 	
 	static {
 		MASTER_CONFIG = new TalonSRXConfiguration();

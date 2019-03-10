@@ -3,6 +3,7 @@ package com.first1444.frc.robot2019.matchrun;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import me.retrodaredevil.action.Action;
 import me.retrodaredevil.action.ActionMultiplexer;
 import me.retrodaredevil.action.Actions;
@@ -19,6 +20,10 @@ public class DefaultMatchScheduler extends SimpleAction implements MatchSchedule
 	private Double modeStartTimestamp = null;
 	private MatchTime.Mode mode = null;
 	
+	/**
+	 *
+	 * @param timeGetter The TimeGetter
+	 */
 	public DefaultMatchScheduler(TimeGetter timeGetter) {
 		super(false);
 		this.timeGetter = timeGetter;
@@ -52,6 +57,8 @@ public class DefaultMatchScheduler extends SimpleAction implements MatchSchedule
 		final double modeStartTimestamp = this.modeStartTimestamp;
 		Double timeRemaining = timeGetter.getRemainingTimeInPeriod(modeStartTimestamp);
 		double timeTotal = timeGetter.getTimeInPeriod(modeStartTimestamp);
+//		SmartDashboard.putString("remaining time", "" + timeRemaining);
+//		SmartDashboard.putNumber("Match time", DriverStation.getInstance().getMatchTime());
 		
 		final MatchTime.Mode currentMode = timeGetter.getCurrentMode();
 		
@@ -118,21 +125,25 @@ public class DefaultMatchScheduler extends SimpleAction implements MatchSchedule
 		
 		@Override
 		public Double getRemainingTimeInPeriod(double modeStartTimestamp) {
-			if(DriverStation.getInstance().isFMSAttached()) {
-				return DriverStation.getInstance().getMatchTime();
+			final double r = DriverStation.getInstance().getMatchTime();
+			if(r == -1){
+				return null;
 			}
-			return null;
+			return r;
 		}
 		
 		@Override
 		public double getTimeInPeriod(double modeStartTimestamp) {
-			if(DriverStation.getInstance().isFMSAttached()) {
-				if (isAutonomous()) {
-					return 15 - DriverStation.getInstance().getMatchTime();
-				} else if (isTeleop()) {
-					return 135 - DriverStation.getInstance().getMatchTime();
+			if(DriverStation.getInstance().isFMSAttached()) { // if this is the real deal
+				final Double remainingTime = getRemainingTimeInPeriod(modeStartTimestamp);
+				if(remainingTime != null) {
+					if (isAutonomous()) {
+						return 15 - remainingTime;
+					} else if (isTeleop()) {
+						return 135 - remainingTime;
+					}
+					return 0.0;
 				}
-				return 0.0;
 			}
 			return getTimestamp() - modeStartTimestamp;
 		}

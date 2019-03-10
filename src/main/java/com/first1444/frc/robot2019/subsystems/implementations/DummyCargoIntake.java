@@ -10,9 +10,19 @@ public class DummyCargoIntake extends SimpleAction implements CargoIntake {
 	private static final String PIVOT = "Cargo Intake Pivot";
 	private final ReportMap reportMap;
 	
+	
+	private double intakeSpeed = 0;
+	
 	public DummyCargoIntake(ReportMap reportMap) {
 		super(true);
 		this.reportMap = reportMap;
+	}
+	
+	@Override
+	protected void onUpdate() {
+		super.onUpdate();
+		reportMap.report(INTAKE_SPEED, Constants.DECIMAL_FORMAT.format(intakeSpeed));
+		intakeSpeed = 0;
 	}
 	
 	@Override
@@ -31,7 +41,7 @@ public class DummyCargoIntake extends SimpleAction implements CargoIntake {
 	
 	@Override
 	public void setSpeed(double speed) {
-		reportMap.report(INTAKE_SPEED, Constants.DECIMAL_FORMAT.format(speed));
+		intakeSpeed = speed;
 	}
 	
 	@Override
