@@ -35,6 +35,7 @@ public interface AutonActionCreator {
 	 * @return An action that is will be done once the hatch intake is in the ready position
 	 */
 	Action createExtendHatch();
+	Action createStowHatch();
 	
 	Action createDropHatch();
 	Action createGrabHatch();

@@ -141,6 +141,11 @@ public class RobotAutonActionCreator implements AutonActionCreator {
 	}
 	
 	@Override
+	public Action createStowHatch() {
+		return HatchPositionAction.createStow(robot::getHatchIntake);
+	}
+	
+	@Override
 	public Action createDropHatch() {
 		return HatchIntakeAction.createDrop(robot::getHatchIntake);
 	}

@@ -3,6 +3,7 @@ package com.first1444.frc.robot2019.autonomous;
 import com.first1444.frc.robot2019.Constants;
 import com.first1444.frc.robot2019.ShuffleboardMap;
 import com.first1444.frc.robot2019.autonomous.actions.AutonomousInputWaitAction;
+import com.first1444.frc.robot2019.autonomous.options.AfterComplete;
 import com.first1444.frc.robot2019.autonomous.options.AutonomousType;
 import com.first1444.frc.robot2019.autonomous.options.LineUpType;
 import com.first1444.frc.robot2019.deepspace.GamePieceType;
@@ -29,6 +30,7 @@ public class AutonomousChooserState {
 	private final DynamicSendableChooser<GamePieceType> gamePieceChooser;
 	private final DynamicSendableChooser<SlotLevel> levelChooser;
 	private final DynamicSendableChooser<LineUpType> lineUpChooser;
+	private final DynamicSendableChooser<AfterComplete> afterCompleteChooser;
 	private final ValueMap<AutonConfig> autonConfig;
 
 	public AutonomousChooserState(ShuffleboardMap shuffleboardMap, AutonomousModeCreator autonomousModeCreator, RobotInput robotInput){
@@ -43,6 +45,7 @@ public class AutonomousChooserState {
 		gamePieceChooser = new DynamicSendableChooser<>();
 		levelChooser = new DynamicSendableChooser<>();
 		lineUpChooser = new DynamicSendableChooser<>();
+		afterCompleteChooser = new DynamicSendableChooser<>();
 		final var valueMapSendable = new MutableValueMapSendable<>(AutonConfig.class);
 		layout.add("Config", valueMapSendable).withProperties(Constants.ROBOT_PREFERENCES_PROPERTIES);
 		autonConfig = valueMapSendable.getMutableValueMap();
@@ -52,17 +55,20 @@ public class AutonomousChooserState {
 		updateGamePieceChooser();
 		updateLevelChooser();
 		updateLineUpChooser();
+		updateAfterCompleteChooser();
 
 		layout.add("Autonomous Chooser", autonomousChooser).withSize(2, 1).withPosition(0, 0);
 		layout.add("Starting Position Chooser", startingPositionChooser).withSize(2, 1).withPosition(0, 1);
 		layout.add("Game Piece Chooser", gamePieceChooser).withSize(2, 1).withPosition(0, 2);
 		layout.add("Level Chooser", levelChooser).withSize(2, 1).withPosition(0, 3);
 		layout.add("Line Up Chooser", lineUpChooser).withSize(2, 1).withPosition(0, 4);
+		layout.add("After Complete Chooser", afterCompleteChooser).withSize(2, 1).withPosition(0, 5);
 		autonomousChooser.addListener(newSelectionKey -> {
 			updateStartingPositionChooser();
 			updateGamePieceChooser();
 			updateLevelChooser();
 			updateLineUpChooser();
+			updateAfterCompleteChooser();
 		});
 	}
 	public Action createAutonomousAction(double startingOrientation){
@@ -74,6 +80,7 @@ public class AutonomousChooserState {
 		final GamePieceType gamePiece = gamePieceChooser.getSelected();
 		final SlotLevel slotLevel = levelChooser.getSelected();
 		final LineUpType lineUpType = lineUpChooser.getSelected();
+		final AfterComplete afterComplete = afterCompleteChooser.getSelected();
 		try {
 			return Actions.createLogAndEndTryCatchAction(
 					new Actions.ActionQueueBuilder(
@@ -82,7 +89,7 @@ public class AutonomousChooserState {
 									() -> robotInput.getAutonomousWaitButton().isDown(),
 									() -> robotInput.getAutonomousStartButton().isDown()
 							),
-							autonomousModeCreator.createAction(type, startingPosition, gamePiece, slotLevel, lineUpType, startingOrientation)
+							autonomousModeCreator.createAction(type, startingPosition, gamePiece, slotLevel, lineUpType, afterComplete, startingOrientation)
 					).canRecycle(false).canBeDone(true).immediatelyDoNextWhenDone(true).build(),
 					Throwable.class, new PrintWriter(System.err)
 			);
@@ -148,6 +155,16 @@ public class AutonomousChooserState {
 		}
 		if(lineUpTypes.contains(LineUpType.NO_VISION)){
 			lineUpChooser.setDefaultOption(LineUpType.NO_VISION.toString(), LineUpType.NO_VISION);
+		}
+	}
+	private void updateAfterCompleteChooser(){
+		afterCompleteChooser.reset();
+		final AutonomousType type = autonomousChooser.getSelected();
+		final Collection<AfterComplete> afterCompleteOptions = type.getAfterCompleteOptions();
+		
+		afterCompleteChooser.setDefaultOption("Do nothing", null);
+		for(AfterComplete afterComplete : afterCompleteOptions){
+			afterCompleteChooser.addOption(afterComplete.toString(), afterComplete);
 		}
 	}
 	

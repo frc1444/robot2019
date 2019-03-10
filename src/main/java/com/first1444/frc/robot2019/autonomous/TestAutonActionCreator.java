@@ -88,6 +88,11 @@ public class TestAutonActionCreator implements AutonActionCreator {
 	}
 	
 	@Override
+	public Action createStowHatch() {
+		return createLogMessageAction("Hatch intake going to stow");
+	}
+	
+	@Override
 	public Action createDropHatch() {
 		return createLogMessageAction("Dropping hatch!");
 	}

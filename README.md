@@ -7,6 +7,7 @@ Some times you must run ```gradlew downloadAll``` to get everything.
 ### TODO
 * Rumble driver controller when operator places hatch/cargo
 * Make vision work
+* Update CTRE firmware on Talons
 ### Done
 * Fixed switching camera
 * Test the MatchScheduler class
@@ -15,6 +16,7 @@ Some times you must run ```gradlew downloadAll``` to get everything.
 * Put gyro on robot
 * Make sure RPi is on right power port (5V 2A)
 * Put 4 cameras on the robot
+* Update CTRE firmware on Talons and Victors
 ### Changes made after bag 'n tag
 * Deactivated hatch stow forward limit switch
 * Made sure that after manual boom is released, it locks the position
