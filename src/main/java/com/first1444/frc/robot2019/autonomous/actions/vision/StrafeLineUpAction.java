@@ -1,42 +1,35 @@
 package com.first1444.frc.robot2019.autonomous.actions.vision;
 
-import com.first1444.frc.robot2019.Perspective;
 import com.first1444.frc.robot2019.autonomous.actions.DistanceAwayLinkedAction;
 import com.first1444.frc.robot2019.event.EventSender;
 import com.first1444.frc.robot2019.event.SoundEvents;
 import com.first1444.frc.robot2019.sensors.Orientation;
 import com.first1444.frc.robot2019.subsystems.swerve.SwerveDrive;
-import com.first1444.frc.robot2019.vision.*;
+import com.first1444.frc.robot2019.vision.ImmutableVisionPacket;
+import com.first1444.frc.robot2019.vision.VisionPacket;
+import com.first1444.frc.robot2019.vision.VisionPacketProvider;
 import com.first1444.frc.util.MathUtil;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import me.retrodaredevil.action.Action;
 import me.retrodaredevil.action.SimpleAction;
 
-import java.util.Collection;
-import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.function.Supplier;
 
 import static java.lang.Math.*;
 
-@Deprecated
-class LineUpAction2 extends SimpleAction implements DistanceAwayLinkedAction {
+public class StrafeLineUpAction extends SimpleAction implements DistanceAwayLinkedAction {
 	public static final double MAX_SPEED = .3;
 	private static final long FAIL_NOTIFY_TIME = 100;
-	private static final long MAX_FAIL_TIME = 500;
+	private static final long MAX_FAIL_TIME = 1000;
 	
-	private final VisionSupplier visionSupplier;
-	private final int cameraID;
-	private final Perspective perspective;
-	private final PreferredTargetSelector selector;
+	private final VisionPacketProvider packetProvider;
 	private final Supplier<SwerveDrive> driveSupplier;
 	private final Supplier<Orientation> orientationSupplier;
 	
 	private final Action successAction;
-	/** The EventSender for sending sounds. May be null*/
 	private final EventSender eventSender;
 	
-	private VisionPacket lastVisionPacket = null;
+	private VisionView visionView = null;
 	/** Used for sending sounds. Set to true once we found it. Set to false when we lose it.*/
 	private boolean hasFound = false;
 	private Action nextAction;
@@ -45,14 +38,11 @@ class LineUpAction2 extends SimpleAction implements DistanceAwayLinkedAction {
 	
 	private double distanceAway = Double.MAX_VALUE;
 	
-	LineUpAction2(VisionSupplier visionSupplier, int cameraID, Perspective perspective, PreferredTargetSelector selector,
-						 Supplier<SwerveDrive> driveSupplier, Supplier<Orientation> orientationSupplier,
-						 Action failAction, Action successAction, EventSender eventSender) {
+	StrafeLineUpAction(VisionPacketProvider packetProvider,
+						Supplier<SwerveDrive> driveSupplier, Supplier<Orientation> orientationSupplier,
+						Action failAction, Action successAction, EventSender eventSender) {
 		super(false);
-		this.visionSupplier = Objects.requireNonNull(visionSupplier);
-		this.cameraID = cameraID;
-		this.perspective = Objects.requireNonNull(perspective);
-		this.selector = Objects.requireNonNull(selector);
+		this.packetProvider = Objects.requireNonNull(packetProvider);
 		this.driveSupplier = Objects.requireNonNull(driveSupplier);
 		this.orientationSupplier = Objects.requireNonNull(orientationSupplier);
 		
@@ -65,36 +55,24 @@ class LineUpAction2 extends SimpleAction implements DistanceAwayLinkedAction {
 	@Override
 	protected void onUpdate() {
 		super.onUpdate();
-		final VisionInstant visionInstant;
-		try{
-			visionInstant = visionSupplier.getInstant(cameraID);
-		} catch(NoSuchElementException ex){
-			ex.printStackTrace();
-			System.out.println("No vision with cameraID of: " + cameraID);
-			setDone(true);
-			return;
-		}
+		final VisionPacket vision = packetProvider.getPacket();
 		final boolean failed;
-		if(visionInstant != null && visionInstant.getTimeMillis() + 750 >= System.currentTimeMillis()){ // not null and packet within .75 seconds
-			final Collection<? extends VisionPacket> packets = visionInstant.getVisiblePackets();
-			if(!packets.isEmpty()){
-				if(!hasFound){
-					if(eventSender != null) {
-						eventSender.sendEvent(SoundEvents.TARGET_FOUND);
-					}
-					hasFound = true;
+		if(vision != null){
+			if(!hasFound){
+				if(eventSender != null) {
+					eventSender.sendEvent(SoundEvents.TARGET_FOUND);
 				}
-				failed = false;
-				final VisionPacket vision = selector.getPreferredTarget(packets);
-				usePacket(vision);
-			} else {
-				System.out.println("No visible packets!");
-				failed = true;
+				hasFound = true;
 			}
+			failed = false;
+			usePacket(vision);
 		} else {
 			failed = true;
 		}
 		if(failed){
+			if(visionView != null){
+				useVisionView(visionView);
+			}
 			if(failureStartTime == null){
 				failureStartTime = System.currentTimeMillis();
 			}
@@ -112,43 +90,36 @@ class LineUpAction2 extends SimpleAction implements DistanceAwayLinkedAction {
 			failureStartTime = null;
 		}
 	}
+	private void updateVisionView(VisionPacket vision){
+		final double orientation = orientationSupplier.get().getOrientation();
+		final double visionYaw = vision.getVisionYaw() + orientation;
+		
+		final double direction = vision.getGroundAngle() + orientation;
+		visionView = new VisionView(direction, vision.getGroundDistance(), visionYaw, driveSupplier.get());
+	}
 	private void usePacket(final VisionPacket targetVision){
 		Objects.requireNonNull(targetVision);
-		
 		distanceAway = targetVision.getGroundDistance();
-		final VisionPacket moveVision = new ImmutableVisionPacket(
-				targetVision.getRobotX() * 1.2,
+		updateVisionView(targetVision);
+		
+		final VisionPacket faceVision = new ImmutableVisionPacket(
+				targetVision.getRobotX(),
 				targetVision.getRobotY(),
-				targetVision.getRobotZ(),
+				targetVision.getRobotZ() - 15, // make it further away
 				targetVision.getVisionYaw(), targetVision.getVisionPitch(), targetVision.getVisionRoll(), targetVision.getImageX(), targetVision.getImageY()
 		);
-		
-		final double moveX = moveVision.getVisionX() / moveVision.getGroundDistance();
-		final double moveY = moveVision.getVisionZ() / moveVision.getGroundDistance();
-		
 		final double yawTurnAmount = max(-1, min(1, targetVision.getVisionYaw() / -30)); // moveVision has same yaw so it doesn't matter // to make the yaw go to 0
-		final double zeroGroundAngle = MathUtil.minChange(targetVision.getGroundAngle(), 90, 360); // we want this to get close to 0 // we want to face the target
+		final double zeroGroundAngle = MathUtil.minChange(faceVision.getGroundAngle(), 90, 360); // we want this to get close to 0 // we want to face the target
 		final double faceTurnAmount = max(-1, min(1, zeroGroundAngle / -90)); // to face the target
-		SmartDashboard.putNumber("yawTurnAmount", yawTurnAmount);
-		SmartDashboard.putNumber("faceTurnAmount", faceTurnAmount);
+		final double turnAmount = faceTurnAmount * .8 + yawTurnAmount * .2;
 		
-//		final double turnAmount = .5 * max(-1, min(1,
-//				max(-1, min(1, vision.getVisionYaw() / -30))
-//						+ .5 * vision.getImageX()
-//		));
-		final double turnAmount;
-		final double groundDistance = moveVision.getGroundDistance();
-		turnAmount = yawTurnAmount;
-		
-		
-		driveSupplier.get().setControl(moveX, moveY, turnAmount, MAX_SPEED, perspective);
-		SmartDashboard.putNumber("ground distance", moveVision.getGroundDistance());
-		if(moveVision.getGroundDistance() < 2){
-			final double x = targetVision.getVisionX();
-			final double y = targetVision.getVisionZ();
-//			nextAction = Actions.createLinkedAction(new GoStraight(hypot(x, y), .3, x / targetVision.getGroundDistance(), y / targetVision.getGroundDistance(), null, driveSupplier, orientationSupplier), successAction);
+		final double moveY = 1;
+		final double moveX = min(5, targetVision.getRobotX() / -10);
+		final double moveMagnitude = hypot(moveX, moveY);
+		driveSupplier.get().setControl(moveX / moveMagnitude, moveY / moveMagnitude, turnAmount, MAX_SPEED, packetProvider.getPerspective());
+		if(targetVision.getRobotZ() > -5){
 			nextAction = successAction;
-			System.out.println("going straight now");
+			System.out.println("strafe success!");
 			setDone(true);
 		}
 	}
@@ -164,11 +135,11 @@ class LineUpAction2 extends SimpleAction implements DistanceAwayLinkedAction {
 		final double moveY = sin(directionRadians);
 		
 		final double distanceLeft = distance - visionView.getTracker().calculateDistance();
-		if(distanceLeft <= 0){
-			driveSupplier.get().setControl(moveX, moveY, 0, 0, perspective); // stay still, wait to detect target again
+		if(distanceLeft <= 3){
 			System.out.println("Using vision view. We went the distance we needed to");
+			setDone(true);
 		} else {
-			driveSupplier.get().setControl(moveX, moveY, .5 * max(-1, min(1, visionYaw / -30)), MAX_SPEED, perspective);
+			driveSupplier.get().setControl(moveX, moveY, .5 * max(-1, min(1, visionYaw / -30)), MAX_SPEED, packetProvider.getPerspective());
 		}
 		distanceAway = max(0, distanceLeft);
 	}

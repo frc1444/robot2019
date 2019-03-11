@@ -32,6 +32,7 @@ import com.first1444.frc.robot2019.subsystems.*;
 import com.first1444.frc.robot2019.subsystems.implementations.*;
 import com.first1444.frc.robot2019.subsystems.swerve.*;
 import com.first1444.frc.robot2019.vision.BestVisionPacketSelector;
+import com.first1444.frc.robot2019.vision.DefaultVisionPacketProvider;
 import com.first1444.frc.robot2019.vision.PacketListener;
 import com.first1444.frc.robot2019.vision.VisionSupplier;
 import com.first1444.frc.util.DynamicSendableChooser;
@@ -371,8 +372,14 @@ public class Robot extends TimedRobot {
 //				new TurnToOrientation(-90, this::getDrive, this::getOrientation),
 //				new GoStraight(10, .2, 0, 1, 90.0, this::getDrive, this::getOrientation),
 				LineUpCreator.createLineUpAction(
-						packetListener, dimensions.getHatchCameraID(), dimensions.getHatchManipulatorPerspective(),
-						new BestVisionPacketSelector(), this::getDrive, this::getOrientation,
+						new DefaultVisionPacketProvider(
+								dimensions.getHatchManipulatorPerspective(),
+								getVisionSupplier(),
+								dimensions.getHatchCameraID(),
+								new BestVisionPacketSelector(),
+								Constants.VISION_PACKET_VALIDITY_TIME
+						),
+						this::getDrive, this::getOrientation,
 						Actions.createRunOnce(() -> System.out.println("Failed!")), Actions.createRunOnce(() -> System.out.println("Success!")),
 						getSoundSender()
 				),

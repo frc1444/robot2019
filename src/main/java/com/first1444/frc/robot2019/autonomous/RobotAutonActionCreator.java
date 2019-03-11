@@ -1,11 +1,13 @@
 package com.first1444.frc.robot2019.autonomous;
 
+import com.first1444.frc.robot2019.Constants;
 import com.first1444.frc.robot2019.Robot;
 import com.first1444.frc.robot2019.autonomous.actions.*;
 import com.first1444.frc.robot2019.autonomous.actions.vision.LineUpCreator;
 import com.first1444.frc.robot2019.deepspace.SlotLevel;
 import com.first1444.frc.robot2019.subsystems.Lift;
 import com.first1444.frc.robot2019.vision.BestVisionPacketSelector;
+import com.first1444.frc.robot2019.vision.DefaultVisionPacketProvider;
 import edu.wpi.first.wpilibj.DriverStation;
 import me.retrodaredevil.action.Action;
 import me.retrodaredevil.action.Actions;
@@ -80,10 +82,14 @@ public class RobotAutonActionCreator implements AutonActionCreator {
 		final boolean[] fail = {false};
 		
 		final var lineUp = LineUpCreator.createLinkedLineUpAction(
-				robot.getVisionSupplier(),
-				hatch ? robot.getDimensions().getHatchCameraID() : robot.getDimensions().getCargoCameraID(),
-				hatch ? robot.getDimensions().getHatchManipulatorPerspective() : robot.getDimensions().getCargoManipulatorPerspective(),
-				new BestVisionPacketSelector(), robot::getDrive, robot::getOrientation,
+				new DefaultVisionPacketProvider(
+						hatch ? robot.getDimensions().getHatchManipulatorPerspective() : robot.getDimensions().getCargoManipulatorPerspective(),
+						robot.getVisionSupplier(),
+						hatch ? robot.getDimensions().getHatchCameraID() : robot.getDimensions().getCargoCameraID(),
+						new BestVisionPacketSelector(),
+						Constants.VISION_PACKET_VALIDITY_TIME
+				),
+				robot::getDrive, robot::getOrientation,
 				Actions.createRunOnce(() -> fail[0] = true),
 				Actions.createRunOnce(() -> success[0] = true),
 				robot.getSoundSender()

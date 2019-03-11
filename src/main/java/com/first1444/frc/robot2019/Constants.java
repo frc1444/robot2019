@@ -11,6 +11,7 @@ public final class Constants {
 	private Constants(){ throw new UnsupportedOperationException(); }
 	
 	public static final Map<String, Object> ROBOT_PREFERENCES_PROPERTIES = Map.of("Show search box", false);
+	public static final long VISION_PACKET_VALIDITY_TIME = 500;
 	
 	// region CAN IDs
 	/** ID for the Climb Drive wheels Victor SPX*/

@@ -1,5 +1,6 @@
 package com.first1444.frc.robot2019.actions;
 
+import com.first1444.frc.robot2019.Constants;
 import com.first1444.frc.robot2019.Perspective;
 import com.first1444.frc.robot2019.RobotDimensions;
 import com.first1444.frc.robot2019.autonomous.actions.vision.LineUpCreator;
@@ -8,6 +9,7 @@ import com.first1444.frc.robot2019.sensors.Orientation;
 import com.first1444.frc.robot2019.subsystems.TaskSystem;
 import com.first1444.frc.robot2019.subsystems.swerve.SwerveDrive;
 import com.first1444.frc.robot2019.vision.BestVisionPacketSelector;
+import com.first1444.frc.robot2019.vision.DefaultVisionPacketProvider;
 import com.first1444.frc.robot2019.vision.VisionSupplier;
 import com.first1444.frc.util.MathUtil;
 import me.retrodaredevil.action.*;
@@ -78,10 +80,13 @@ public class SwerveDriveAction extends SimpleAction {
 		if(input.getVisionAlign().isDown()){
 			if(input.getVisionAlign().isPressed()){
 				actionChooser.setNextAction(LineUpCreator.createLineUpAction(
-						visionSupplier,
-						task == TaskSystem.Task.CARGO ? dimensions.getCargoCameraID() : dimensions.getHatchCameraID(),
-						task == TaskSystem.Task.CARGO ? dimensions.getCargoManipulatorPerspective() : dimensions.getHatchManipulatorPerspective(),
-						new BestVisionPacketSelector(),
+						new DefaultVisionPacketProvider(
+								task == TaskSystem.Task.CARGO ? dimensions.getCargoManipulatorPerspective() : dimensions.getHatchManipulatorPerspective(),
+								visionSupplier,
+								task == TaskSystem.Task.CARGO ? dimensions.getCargoCameraID() : dimensions.getHatchCameraID(),
+								new BestVisionPacketSelector(),
+								Constants.VISION_PACKET_VALIDITY_TIME
+						),
 						driveSupplier, orientationSupplier,  null, null, null
 				));
 			}

@@ -47,10 +47,15 @@ public class CameraSystem extends SimpleAction {
 		shuffleboardMap.getUserTab().add("My Toggle Camera", source).withSize(7, 5).withPosition(2, 0);
 	}
 	private void setupCamera(UsbCamera camera){
-		final double ratio = camera.getVideoMode().height / (double) camera.getVideoMode().width;
-		camera.setVideoMode(VIDEO_MODE.pixelFormat, VIDEO_MODE.width, (int) (VIDEO_MODE.width * ratio), VIDEO_MODE.fps);
 		camera.setConnectVerbose(0); // so it doesn't spam the console with annoying messages if it's disconnected
-		camera.setConnectionStrategy(VideoSource.ConnectionStrategy.kKeepOpen);
+		if(camera.isConnected()){
+			final double ratio = camera.getVideoMode().height / (double) camera.getVideoMode().width;
+			camera.setVideoMode(VIDEO_MODE.pixelFormat, VIDEO_MODE.width, (int) (VIDEO_MODE.width * ratio), VIDEO_MODE.fps);
+			camera.setConnectionStrategy(VideoSource.ConnectionStrategy.kKeepOpen);
+		} else {
+			System.err.println("One of the cameras isn't plugged in. Not initializing");
+			camera.close();
+		}
 	}
 	
 	@Override
@@ -63,14 +68,27 @@ public class CameraSystem extends SimpleAction {
 		if(newTask != lastTask){
 			lastTask = newTask;
 			if(newTask == TaskSystem.Task.CARGO){
-				videoSink.setSource(cargo);
+				if(cargo.isValid()) {
+					videoSink.setSource(cargo);
+				}
 //				System.out.println("Source is now cargo. Is connected: " + (cargo == null ? "null" : cargo.isConnected()));
 			} else if(newTask == TaskSystem.Task.HATCH){
-				videoSink.setSource(hatch);
+				if(hatch.isValid()) {
+					videoSink.setSource(hatch);
+				}
 //				System.out.println("Source is now hatch. Is connected: " + (hatch == null ? "null" : hatch.isConnected()));
 			} else {
 				throw new UnsupportedOperationException("Unsupported task: " + newTask);
 			}
 		}
+	}
+	
+	@Override
+	protected void onEnd(boolean peacefullyEnded) {
+		super.onEnd(peacefullyEnded);
+		System.out.println("Even though when I created this method I never expected it to be called... It's being called now. Hopefully you have good intentions");
+		hatch.close();
+		cargo.close();
+		videoSink.close();
 	}
 }

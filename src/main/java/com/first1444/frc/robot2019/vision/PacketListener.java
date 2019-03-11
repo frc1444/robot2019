@@ -9,6 +9,9 @@ import org.zeromq.ZMQ;
 
 import java.util.*;
 
+import static java.lang.Math.max;
+import static java.lang.Math.min;
+
 public class PacketListener extends Thread implements VisionSupplier{
 	private static final double MILLIMETERS_IN_INCH = 25.4;
 	private final int port;
@@ -73,8 +76,8 @@ public class PacketListener extends Thread implements VisionSupplier{
 						packetObject.get("yaw").getAsDouble(),
 						packetObject.get("pitch").getAsDouble(),
 						packetObject.get("roll").getAsDouble(),
-						packetObject.get("imageX").getAsDouble(),
-						packetObject.get("imageY").getAsDouble()
+						max(-1, min(1, packetObject.get("imageX").getAsDouble())),
+						max(-1, min( 1, packetObject.get("imageY").getAsDouble()))
 				);
 				packets.add(packet);
 			}
