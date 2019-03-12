@@ -13,6 +13,11 @@ public class BestVisionPacketSelector implements PreferredTargetSelector {
 		if(visiblePackets.isEmpty())
 			throw new IllegalArgumentException();
 		
+		visiblePackets = goodFilter(visiblePackets);
+		if(visiblePackets.isEmpty()){
+			return null;
+		}
+		
 		List<? extends VisionPacket> packets = filterAngles(visiblePackets);
 		if(packets.size() == 1){
 			return packets.get(0);
@@ -22,9 +27,14 @@ public class BestVisionPacketSelector implements PreferredTargetSelector {
 		}
 		return filterDistance(packets);
 	}
+	private List<? extends VisionPacket> goodFilter(Collection<? extends VisionPacket> visionPackets){
+		final List<VisionPacket> packets = new ArrayList<>(visionPackets);
+		packets.removeIf(packet -> abs(packet.getVisionYaw()) > 50);
+		return packets;
+	}
 	private List<? extends VisionPacket> filterAngles(Collection<? extends VisionPacket> visionPackets){
 		final List<VisionPacket> packets = new ArrayList<>(visionPackets);
-		packets.removeIf(packet -> abs(packet.getVisionYaw()) > 50 || abs(packet.getVisionPitch()) > 90 || abs(packet.getVisionRoll()) > 45);
+		packets.removeIf(packet -> abs(packet.getVisionYaw()) > 45 || abs(packet.getVisionPitch()) > 90 || abs(packet.getVisionRoll()) > 45);
 		if(packets.isEmpty()){
 			return new ArrayList<>(visionPackets);
 		}

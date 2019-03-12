@@ -47,6 +47,9 @@ repositories {
         dirs './libs/'
     }
 }
+wpi {
+    opencvVersion = "3.4.4-5" // temporary fix until new WPILib release
+}
 
 // Defining my dependencies. In this case, WPILib (+ friends), and vendor libraries.
 dependencies {

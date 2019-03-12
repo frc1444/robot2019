@@ -26,6 +26,9 @@ public class DefaultVisionPacketProvider implements VisionPacketProvider{
 	@Override
 	public VisionPacket getPacket() {
 		final VisionInstant visionInstant = visionSupplier.getInstant(cameraID);
+		if(visionInstant == null){
+			return null;
+		}
 		if(visionInstant.getTimeMillis() + packetValidityTimeMillis < System.currentTimeMillis()){
 			return null;
 		}

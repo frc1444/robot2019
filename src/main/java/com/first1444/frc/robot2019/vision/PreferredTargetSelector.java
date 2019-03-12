@@ -6,7 +6,7 @@ public interface PreferredTargetSelector {
 	/**
 	 *
 	 * @param visiblePackets The visible vision packets. This cannot be empty
-	 * @return The preferred vision target.
+	 * @return The preferred vision target. Possibly null if none of the packets were good
 	 * @throws IllegalArgumentException If visiblePackets is empty. Optional.
 	 */
 	VisionPacket getPreferredTarget(Collection<? extends VisionPacket> visiblePackets);

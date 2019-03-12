@@ -117,8 +117,6 @@ public class MotorHatchIntake extends SimpleAction implements HatchIntake {
 				break;
 			case NORMAL:
 				stowMotor.set(ControlMode.Position, STOW_MOTOR_MAX_ENCODER_COUNTS);
-//				System.out.println("going out now");
-//				stowMotor.set(ControlMode.PercentOutput, STOW_SPEED_OUT);
 				if(pivotBack){
 					pivotMotor.set(ControlMode.Disabled, 0);
 				} else {

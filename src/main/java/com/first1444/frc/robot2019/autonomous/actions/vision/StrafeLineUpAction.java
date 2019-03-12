@@ -20,7 +20,8 @@ import static java.lang.Math.*;
 public class StrafeLineUpAction extends SimpleAction implements DistanceAwayLinkedAction {
 	public static final double MAX_SPEED = .3;
 	private static final long FAIL_NOTIFY_TIME = 100;
-	private static final long MAX_FAIL_TIME = 1000;
+	private static final long MAX_FAIL_TIME = 2000;
+	private static final double MAX_MOVE_X = 5;
 	
 	private final VisionPacketProvider packetProvider;
 	private final Supplier<SwerveDrive> driveSupplier;
@@ -57,7 +58,7 @@ public class StrafeLineUpAction extends SimpleAction implements DistanceAwayLink
 		super.onUpdate();
 		final VisionPacket vision = packetProvider.getPacket();
 		final boolean failed;
-		if(vision != null){
+		if(vision != null && vision.getRobotZ() <= 0){
 			if(!hasFound){
 				if(eventSender != null) {
 					eventSender.sendEvent(SoundEvents.TARGET_FOUND);
@@ -110,17 +111,20 @@ public class StrafeLineUpAction extends SimpleAction implements DistanceAwayLink
 		);
 		final double yawTurnAmount = max(-1, min(1, targetVision.getVisionYaw() / -30)); // moveVision has same yaw so it doesn't matter // to make the yaw go to 0
 		final double zeroGroundAngle = MathUtil.minChange(faceVision.getGroundAngle(), 90, 360); // we want this to get close to 0 // we want to face the target
-		final double faceTurnAmount = max(-1, min(1, zeroGroundAngle / -90)); // to face the target
-		final double turnAmount = faceTurnAmount * .8 + yawTurnAmount * .2;
+		final double faceTurnAmount = max(-1, min(1, zeroGroundAngle / -70)); // to face the target
+		final double turnAmount = faceTurnAmount * .5 + yawTurnAmount * .5;
 		
+//		final double moveY = min(1, Math.pow(40 / -targetVision.getRobotZ(), .5)); // go from 0 up to 1 as it gets close
 		final double moveY = 1;
-		final double moveX = min(5, targetVision.getRobotX() / -10);
+		final double moveX = max(-MAX_MOVE_X, min(MAX_MOVE_X, (targetVision.getRobotX()) / -30)) * (abs(targetVision.getGroundDistance() < 30 ? 1.4 : 1));
 		final double moveMagnitude = hypot(moveX, moveY);
-		driveSupplier.get().setControl(moveX / moveMagnitude, moveY / moveMagnitude, turnAmount, MAX_SPEED, packetProvider.getPerspective());
-		if(targetVision.getRobotZ() > -5){
+		if(targetVision.getRobotZ() >= -3 && abs(moveX) < 6){
 			nextAction = successAction;
 			System.out.println("strafe success!");
+//			driveSupplier.get().setControl(0, 0, 0, 0, packetProvider.getPerspective());
 			setDone(true);
+		} else {
+			driveSupplier.get().setControl(moveX / moveMagnitude, moveY / moveMagnitude, turnAmount, MAX_SPEED, packetProvider.getPerspective());
 		}
 	}
 	private void useVisionView(VisionView visionView){
@@ -135,7 +139,11 @@ public class StrafeLineUpAction extends SimpleAction implements DistanceAwayLink
 		final double moveY = sin(directionRadians);
 		
 		final double distanceLeft = distance - visionView.getTracker().calculateDistance();
+		if(distanceLeft > 30){
+			System.out.println("We must have lost vision. Using distanceLeft with more than 30 inches");
+		}
 		if(distanceLeft <= 3){
+			nextAction = successAction;
 			System.out.println("Using vision view. We went the distance we needed to");
 			setDone(true);
 		} else {

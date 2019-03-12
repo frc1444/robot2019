@@ -1,5 +1,7 @@
 package com.first1444.frc.util;
 
+import static java.lang.Math.*;
+
 /**
  * Most code stolen from https://github.com/retrodaredevil/track-shooter/blob/master/core/src/me/retrodaredevil/game/trackshooter/util/MathUtil.java
  */
@@ -45,7 +47,7 @@ public final class MathUtil {
 		a = mod(a, wrap);
 		b = mod(b, wrap);
 		double change = a - b;
-		if(Math.abs(change) > wrap / 2.0f){
+		if(abs(change) > wrap / 2.0f){
 			if(change < 0){
 				change += wrap;
 			} else {
@@ -59,7 +61,7 @@ public final class MathUtil {
 	 * @return return Math.abs(minChange(a, b, wrap));
 	 */
 	public static double minDistance(double a, double b, double wrap){
-		return Math.abs(minChange(a, b, wrap));
+		return abs(minChange(a, b, wrap));
 	}
 
 	/**
@@ -75,6 +77,6 @@ public final class MathUtil {
 	}
 	
 	public static double conservePow(double a, double b){
-		return Math.abs(Math.pow(a, b)) * Math.signum(a);
+		return abs(pow(abs(a), b)) * signum(a);
 	}
 }

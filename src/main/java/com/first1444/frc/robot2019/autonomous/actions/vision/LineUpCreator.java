@@ -29,6 +29,6 @@ public final class LineUpCreator {
 	public static DistanceAwayLinkedAction createLinkedLineUpAction(VisionPacketProvider packetProvider,
 																	Supplier<SwerveDrive> driveSupplier, Supplier<Orientation> orientationSupplier,
 																	Action failAction, Action successAction, EventSender eventSender){
-		return new LineUpAction(packetProvider, driveSupplier, orientationSupplier, failAction, successAction, eventSender);
+		return new StrafeLineUpAction(packetProvider, driveSupplier, orientationSupplier, failAction, successAction, eventSender);
 	}
 }

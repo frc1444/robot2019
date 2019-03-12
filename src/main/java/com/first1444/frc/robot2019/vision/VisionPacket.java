@@ -7,6 +7,7 @@ public interface VisionPacket {
 	/** @return The x position of the robot relative to the vision target (left and right)*/
 	double getRobotX();
 	/** @return The y position of the robot relative to the vision target (up and down)*/
+	@Deprecated
 	double getRobotY();
 	/** @return The z position of the robot relative to the vision target (depth). This should be negative*/
 	double getRobotZ();
@@ -14,6 +15,7 @@ public interface VisionPacket {
 	/** @return the x position of the vision relative to the robot where the camera's perspective is forward*/
 	double getVisionX();
 	/** @return the y position of the vision relative to the robot where the camera's perspective is forward*/
+	@Deprecated
 	double getVisionY();
 	/** @return the z position of the vision relative to the robot where the camera's perspective is forward. Should be positive*/
 	double getVisionZ();

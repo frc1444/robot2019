@@ -195,7 +195,6 @@ public class AutonomousModeCreator {
 			} else {
 				distance += getManipulatorSideDepth(gamePieceType) / 2.0;
 			}
-			System.out.println("We will go a distance of " + distance);
 			actionQueue.add(actionCreator.createGoStraight(40, .3, 90, startingOrientation));
 			distance -= 40;
 			actionQueue.add(actionCreator.createGoStraight(115 / sin(toRadians(longDistanceAngle)), .7, longDistanceAngle, startingOrientation));
@@ -213,12 +212,12 @@ public class AutonomousModeCreator {
 			if(lineUpType == LineUpType.USE_VISION) {
 				if (gamePieceType == GamePieceType.HATCH) {
 					actionQueue.add(actionCreator.createCargoShipPlaceHatchUseVision(
-							Actions.createRunOnce(() -> System.out.println("Failed to place Hatch!")),
+							Actions.createRunOnce(actionCreator.createLogWarningAction("Failed to place Hatch!")),
 							successQueue
 					));
 				} else {
 					actionQueue.add(actionCreator.createCargoShipPlaceCargoUseVision(
-							Actions.createRunOnce(() -> System.out.println("Failed to place Cargo!")),
+							Actions.createRunOnce(actionCreator.createLogWarningAction("Failed to place Cargo!")),
 							successQueue
 					));
 				}
@@ -279,27 +278,30 @@ public class AutonomousModeCreator {
 			actionQueue.add(actionCreator.createGoStraight(201.13 - 95.28 - FieldDimensions.HAB_LIP_DISTANCE - 60, .5, 90, startingOrientation)); // the 60 is random
 			
 			final ActionQueue successQueue = new Actions.ActionQueueBuilder(
-					Actions.createRunOnce(actionCreator.createLogMessageAction("We successfully placed something on the rocket. TODO: Write code to make this do more stuff."))
+					Actions.createRunOnce(actionCreator.createLogMessageAction("We successfully placed something on the rocket. If you choose an AfterComplete, this should do something now"))
 			).immediatelyDoNextWhenDone(true).canBeDone(true).canRecycle(false).build();
 			
+			final double driveAngle = 90 - (sideRocketIsLeft ? -25 : 25); // the angle to drive towards the rocket at if lined up perpendicular to slot
+			final double towardsCenter = sideRocketIsLeft ? 0 : 180;
 			if(lineUpType == LineUpType.USE_VISION) {
 				actionQueue.add(actionCreator.createRocketPlaceHatchUseVision(
 						slotLevel,
-						Actions.createRunOnce(() -> System.out.println("Failed to place hatch on rocket")),
+						actionCreator.createLogWarningAction("Failed to place " + gamePieceType + " on rocket."),
 						successQueue
 				));
+				successQueue.add(actionCreator.createGoStraight(10, .3, driveAngle + 180, driveAngle));
+				successQueue.add(actionCreator.createGoStraight(20, .3, towardsCenter, driveAngle));
 			} else {
 				actionQueue.add(actionCreator.createGoStraight(60 - 1, .3, 90, startingOrientation)); // the 3 is random
-				final double driveAngle = 90 - (sideRocketIsLeft ? -25 : 25);
 				actionQueue.add(actionCreator.createTurnToOrientation(driveAngle));
 				actionQueue.add(actionCreator.createGoStraight(30, .2, driveAngle, driveAngle));
 				actionQueue.add(actionCreator.createDropHatch());
 				actionQueue.add(actionCreator.createGoStraight(10, .2, driveAngle + 180, driveAngle));
+				actionQueue.add(actionCreator.createGoStraight(20, .3, towardsCenter, driveAngle));
 				actionQueue.add(successQueue);
 			}
 			if(afterComplete != null) {
 				if (afterComplete == AfterComplete.PREPARE_FOR_DEFENSE) {
-					final double towardsCenter = sideRocketIsLeft ? 0 : 180;
 					successQueue.add(actionCreator.createGoStraight(40, .3, towardsCenter));
 					successQueue.add(actionCreator.createTurnToOrientation(90));
 					successQueue.add(new Actions.ActionMultiplexerBuilder(
@@ -316,10 +318,13 @@ public class AutonomousModeCreator {
 						throw new IllegalArgumentException("Unsupported AfterComplete: " + afterComplete);
 					}
 					final GamePieceType afterGamePieceType = hatch ? GamePieceType.HATCH : GamePieceType.CARGO;
+					successQueue.add(actionCreator.createLogMessageAction("going to go back 30 inches"));
 					successQueue.add(actionCreator.createGoStraight(30, .3, -90));
+					successQueue.add(actionCreator.createLogMessageAction("going to rotate"));
 					final double faceDirection = getManipulatorOffset(afterGamePieceType) - 90;
 					successQueue.add(actionCreator.createTurnToOrientation(faceDirection));
-					successQueue.add(actionCreator.createGoStraight(150, .4, -90, faceDirection));
+					successQueue.add(actionCreator.createLogMessageAction("Going to go straight"));
+					successQueue.add(actionCreator.createGoStraight(100, .4, -90, faceDirection));
 				}
 			}
 		} else {
