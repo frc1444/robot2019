@@ -106,13 +106,13 @@ public class StrafeLineUpAction extends SimpleAction implements DistanceAwayLink
 		final VisionPacket faceVision = new ImmutableVisionPacket(
 				targetVision.getRobotX(),
 				targetVision.getRobotY(),
-				targetVision.getRobotZ() - 15, // make it further away
+				targetVision.getRobotZ() - 30, // make it further away
 				targetVision.getVisionYaw(), targetVision.getVisionPitch(), targetVision.getVisionRoll(), targetVision.getImageX(), targetVision.getImageY()
 		);
 		final double yawTurnAmount = max(-1, min(1, targetVision.getVisionYaw() / -30)); // moveVision has same yaw so it doesn't matter // to make the yaw go to 0
 		final double zeroGroundAngle = MathUtil.minChange(faceVision.getGroundAngle(), 90, 360); // we want this to get close to 0 // we want to face the target
 		final double faceTurnAmount = max(-1, min(1, zeroGroundAngle / -70)); // to face the target
-		final double turnAmount = faceTurnAmount * .5 + yawTurnAmount * .5;
+		final double turnAmount = faceTurnAmount * .6 + yawTurnAmount * .4;
 		
 //		final double moveY = min(1, Math.pow(40 / -targetVision.getRobotZ(), .5)); // go from 0 up to 1 as it gets close
 		final double moveY = 1;
@@ -142,7 +142,7 @@ public class StrafeLineUpAction extends SimpleAction implements DistanceAwayLink
 		if(distanceLeft > 30){
 			System.out.println("We must have lost vision. Using distanceLeft with more than 30 inches");
 		}
-		if(distanceLeft <= 3){
+		if(distanceLeft <= 5){
 			nextAction = successAction;
 			System.out.println("Using vision view. We went the distance we needed to");
 			setDone(true);

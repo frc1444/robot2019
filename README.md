@@ -16,7 +16,8 @@ Some times you must run ```gradlew downloadAll``` to get everything.
 * Put gyro on robot
 * Make sure RPi is on right power port (5V 2A)
 * Put 4 cameras on the robot
-* Update CTRE firmware on Talons and Victors
+* Change offsets on cameras
+* Update CTRE firmware on Talons and Victors (If we have time (not super important))
 ### Changes made after bag 'n tag
 * Deactivated hatch stow forward limit switch
 * Made sure that after manual boom is released, it locks the position
