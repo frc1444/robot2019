@@ -7,6 +7,8 @@
 
 package com.first1444.frc.robot2019;
 
+import com.ctre.phoenix.motorcontrol.can.TalonSRX;
+import com.ctre.phoenix.motorcontrol.can.VictorSPX;
 import com.first1444.frc.input.DualShockRumble;
 import com.first1444.frc.input.WPIInputCreator;
 import com.first1444.frc.robot2019.actions.OperatorAction;
@@ -164,9 +166,9 @@ public class Robot extends TimedRobot {
 				.setDouble(PidKey.I, .03);
 
 		final ShuffleboardTab talonDebug = shuffleboardMap.getDebugTab();
-		final ReportMap reportMap = new ShuffleboardReportMap(shuffleboardMap.getDebugTab().getLayout("Report Map", BuiltInLayouts.kList));
-//		final SwerveSetup swerve = Constants.Swerve2019.INSTANCE;
-		final SwerveSetup swerve = Constants.Swerve2018.INSTANCE;
+//		final ReportMap reportMap = new ShuffleboardReportMap(shuffleboardMap.getDebugTab().getLayout("Report Map", BuiltInLayouts.kList));
+		final SwerveSetup swerve = Constants.Swerve2019.INSTANCE;
+//		final SwerveSetup swerve = Constants.Swerve2018.INSTANCE;
 		final int quadCounts = swerve.getQuadCountsPerRevolution();
 		final FourWheelSwerveDrive drive;
 		if(isSimulation()){
@@ -199,14 +201,15 @@ public class Robot extends TimedRobot {
 					swerve.getWheelBase(), swerve.getTrackWidth()
 			);
 		}
-		final var lift = new DummyLift(reportMap);
-//		final var lift = new MotorLift();
-		final var cargoIntake = new DummyCargoIntake(reportMap);
-//		final var cargoIntake = new MotorCargoIntake(new VictorSPX(Constants.CARGO_INTAKE_ID), new TalonSRX(Constants.CARGO_PIVOT_ID));
-		final var climber = new DummyClimber(reportMap);
-//		final var climber = new MotorClimber(new TalonSRX(Constants.CLIMB_LIFT_PIVOT_ID), new VictorSPX(Constants.CLIMB_DRIVE_ID));
-		final var hatchIntake = new DummyHatchIntake(reportMap);
-//		final var hatchIntake = new MotorHatchIntake(new TalonSRX(Constants.HATCH_GRAB_ID), new TalonSRX(Constants.HATCH_STOW_ID), new TalonSRX(Constants.HATCH_PIVOT_ID));
+//		final var lift = new DummyLift(reportMap);
+		final var lift = new MotorLift();
+//		final var cargoIntake = new DummyCargoIntake(reportMap);
+		final var cargoIntake = new MotorCargoIntake(new VictorSPX(Constants.CARGO_INTAKE_ID), new TalonSRX(Constants.CARGO_PIVOT_ID));
+//		final var climber = new DummyClimber(reportMap);
+		final var climber = new MotorClimber(new TalonSRX(Constants.CLIMB_LIFT_PIVOT_ID), new VictorSPX(Constants.CLIMB_DRIVE_ID));
+//		final var hatchIntake = new DummyHatchIntake(reportMap);
+		final var hatchIntake = new MotorHatchIntake(new TalonSRX(Constants.HATCH_GRAB_ID), new TalonSRX(Constants.HATCH_STOW_ID), new TalonSRX(Constants.HATCH_PIVOT_ID));
+		
 		final var taskSystem = new DefaultTaskSystem(robotInput);
 		final var matchScheduler = new DefaultMatchScheduler(DefaultMatchScheduler.DriverStationTimeGetter.INSTANCE);
 		this.drive = drive;
