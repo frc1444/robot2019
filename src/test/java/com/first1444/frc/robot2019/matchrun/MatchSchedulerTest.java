@@ -60,6 +60,29 @@ final class MatchSchedulerTest {
 		assertEquals(3, value[0]);
 	}
 	
+	@Test
+	void testTeleopSchedulingInAuto(){
+		final var timeGetter = new DummyTimeGetter();
+		timeGetter.mode = MatchTime.Mode.AUTONOMOUS;
+		
+		int[] value = {0};
+		final DefaultMatchScheduler scheduler = new DefaultMatchScheduler(timeGetter);
+		scheduler.schedule(Actions.createRunOnce(() -> value[0]++), MatchTime.of(1, MatchTime.Mode.TELEOP, MatchTime.Type.AFTER_START)); // TODO make this from end
+		
+		timeGetter.timestamp = 0;
+		scheduler.update();
+		assertEquals(0, value[0]);
+		
+		timeGetter.timestamp = .5;
+		scheduler.update();
+		assertEquals(0, value[0]);
+		
+		timeGetter.timestamp = 1;
+		scheduler.update();
+		assertEquals(0, value[0]);
+		
+	}
+	
 	class DummyTimeGetter implements DefaultMatchScheduler.TimeGetter {
 		private MatchTime.Mode mode = null;
 		private double timestamp = 0;

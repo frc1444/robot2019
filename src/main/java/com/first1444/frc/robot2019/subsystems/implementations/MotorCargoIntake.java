@@ -55,7 +55,8 @@ public class MotorCargoIntake extends SimpleAction implements CargoIntake {
 		if(forwardLimitSwitch){
 			lastForwardLimit = now;
 		}
-		final boolean forwardLimit = forwardLimitSwitch || lastForwardLimit + 2000 > now; // limit switch pressed within 2 second
+//		final boolean forwardLimit = forwardLimitSwitch || lastForwardLimit + 2000 > now; // limit switch pressed within 2 second
+		final boolean forwardLimit = forwardLimitSwitch;
 		switch (preset){
 			case STOW:
 				pivot.set(ControlMode.PercentOutput, STOW_SPEED); // rely on the limit switch
@@ -84,10 +85,12 @@ public class MotorCargoIntake extends SimpleAction implements CargoIntake {
 	@Override
 	public void stow() {
 		preset = Preset.STOW;
+		System.out.println("stowing");
 	}
 	
 	@Override
 	public void pickup() {
 		preset = Preset.PICKUP;
+		System.out.println("picking up");
 	}
 }

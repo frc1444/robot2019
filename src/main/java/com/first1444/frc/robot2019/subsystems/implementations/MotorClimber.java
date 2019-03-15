@@ -10,7 +10,7 @@ import com.first1444.frc.robot2019.subsystems.Climber;
 import me.retrodaredevil.action.SimpleAction;
 
 public class MotorClimber extends SimpleAction implements Climber {
-	private final double MAX_STALL_SPEED = .7;
+	private static final double MAX_STALL_SPEED = .5;
 	
 	private final TalonSRX climbMotor;
 	private final BaseMotorController driveMotor;
@@ -31,6 +31,7 @@ public class MotorClimber extends SimpleAction implements Climber {
 		climbMotor.overrideLimitSwitchesEnable(false);
 		climbMotor.configPeakCurrentDuration(0, Constants.INIT_TIMEOUT);
 		climbMotor.configPeakCurrentLimit(35, Constants.INIT_TIMEOUT);
+		climbMotor.configClosedloopRamp(1.0, Constants.INIT_TIMEOUT);
 	}
 	
 	/** @param speed The speed of the climber. A positive value raises the robot by pushing the climber down, a negative value retracts. */

@@ -227,7 +227,7 @@ public class Robot extends TimedRobot {
 				drive, lift, cargoIntake, climber, hatchIntake
 		).clearAllOnEnd(false).canRecycle(true).build();
 		
-		constantSubsystemUpdater = new Actions.ActionMultiplexerBuilder( // NOTE, as of 2019.2.15 the current version of action-lib doesn't update these in order
+		constantSubsystemUpdater = new Actions.ActionMultiplexerBuilder( // NOTE, without forceUpdateInOrder(true), these will not update in order
 				orientationSystem,
 				taskSystem,
 				matchScheduler,

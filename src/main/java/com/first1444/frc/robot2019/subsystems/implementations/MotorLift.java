@@ -21,7 +21,9 @@ import java.util.function.BooleanSupplier;
 import static java.lang.Math.*;
 
 public class MotorLift extends SimpleAction implements Lift {
-	private static final int ENCODER_COUNTS = 24000; // max is 24786
+//	private static final int ENCODER_COUNTS = 24000; // max is 24786
+//	private static final int ENCODER_COUNTS = 24786; // max is 24786
+	private static final int ENCODER_COUNTS = 26000; // max is 24786
 	private static final double LOW_POSITION_SCALE_START = .35;
 	private static final double HIGH_POSITION_SCALE_START = .9;
 	private static final double DESIRED_REACHED_POSITION_DEADZONE = .1;
@@ -39,8 +41,8 @@ public class MotorLift extends SimpleAction implements Lift {
 		
 		POSITION_MAP = Map.of(
 				Position.LEVEL1, 0.0,
-				Position.CARGO_CARGO_SHIP, .45,
-				Position.LEVEL2, .60,
+				Position.CARGO_CARGO_SHIP, .32, // TODO maybe make .30
+				Position.LEVEL2, .60 * (24000.0 / ENCODER_COUNTS),
 				Position.LEVEL3, 1.0
 		);
 	}
