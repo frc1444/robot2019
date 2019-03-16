@@ -37,11 +37,10 @@ public class MotorLift extends SimpleAction implements Lift {
 		MASTER_CONFIG.forwardSoftLimitEnable = true;
 		MASTER_CONFIG.forwardSoftLimitThreshold = ENCODER_COUNTS;
 		
-		MASTER_CONFIG.clearPositionOnLimitR = true; // this works as long as we're using normally open
 		
 		POSITION_MAP = Map.of(
 				Position.LEVEL1, 0.0,
-				Position.CARGO_CARGO_SHIP, .32, // TODO maybe make .30
+				Position.CARGO_CARGO_SHIP, .29,
 				Position.LEVEL2, .60 * (24000.0 / ENCODER_COUNTS),
 				Position.LEVEL3, 1.0
 		);

@@ -57,6 +57,10 @@ public class AutonomousModeCreator {
 				.immediatelyDoNextWhenDone(true) // once an action is finished, do the next one immediately
 				.build();
 		
+		if(gamePieceType == GamePieceType.HATCH){
+			actionQueue.add(Actions.createRunOnce(actionCreator.createGrabHatch()));
+		}
+		
 		if (autonomousType == AutonomousType.DO_NOTHING) {
 			if(startingPosition != null || gamePieceType != null || slotLevel != null)
 				throw new IllegalArgumentException("All should be null! startingPosition: " + startingPosition + " gamePieceType: " + gamePieceType + " slotLevel" + slotLevel);

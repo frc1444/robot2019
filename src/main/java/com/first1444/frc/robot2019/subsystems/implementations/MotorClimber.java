@@ -30,7 +30,7 @@ public class MotorClimber extends SimpleAction implements Climber {
 		climbMotor.configForwardLimitSwitchSource(LimitSwitchSource.FeedbackConnector, LimitSwitchNormal.NormallyClosed, Constants.INIT_TIMEOUT); // this is important so normally closed
 		climbMotor.overrideLimitSwitchesEnable(false);
 		climbMotor.configPeakCurrentDuration(0, Constants.INIT_TIMEOUT);
-		climbMotor.configPeakCurrentLimit(35, Constants.INIT_TIMEOUT);
+		climbMotor.configPeakCurrentLimit(80, Constants.INIT_TIMEOUT);
 		climbMotor.configClosedloopRamp(1.0, Constants.INIT_TIMEOUT);
 	}
 	

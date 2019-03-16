@@ -12,6 +12,7 @@ import com.first1444.frc.util.pid.PidKey;
 import com.first1444.frc.util.valuemap.MutableValueMap;
 import com.first1444.frc.util.valuemap.ValueMap;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import me.retrodaredevil.action.Action;
 import me.retrodaredevil.action.SimpleAction;
 
@@ -50,6 +51,7 @@ public class TalonSwerveModule extends SimpleAction implements SwerveModule {
 		
 		drive = new TalonSRX(driveID);
 		steer = new TalonSRX(steerID);
+		System.out.println("encoder " + name + " " + steer.getSensorCollection().getAnalogInRaw());
 		this.moduleConfig = moduleConfig;
 
 		drive.configFactoryDefault(Constants.INIT_TIMEOUT);
@@ -108,6 +110,7 @@ public class TalonSwerveModule extends SimpleAction implements SwerveModule {
 	@Override
 	protected void onUpdate() {
 		super.onUpdate();
+		SmartDashboard.putNumber("encoder " + name, steer.getSensorCollection().getAnalogInRaw());
 		final double speedMultiplier;
 		
 		{ // steer code

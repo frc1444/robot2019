@@ -139,7 +139,7 @@ public final class Constants {
 		
 		@Override
 		public MutableValueMap<ModuleConfig> setupFL(MutableValueMap<ModuleConfig> config) {
-			return config.setDouble(ModuleConfig.ABS_ENCODER_OFFSET, 611) // or 88
+			return config.setDouble(ModuleConfig.ABS_ENCODER_OFFSET, 772)
 					.setDouble(ModuleConfig.MAX_ENCODER_VALUE, 883)
 					.setDouble(ModuleConfig.MIN_ENCODER_VALUE, 10);
 		}
@@ -153,7 +153,7 @@ public final class Constants {
 		
 		@Override
 		public MutableValueMap<ModuleConfig> setupRL(MutableValueMap<ModuleConfig> config) {
-			return config.setDouble(ModuleConfig.ABS_ENCODER_OFFSET, 170)
+			return config.setDouble(ModuleConfig.ABS_ENCODER_OFFSET, 627)
 					.setDouble(ModuleConfig.MAX_ENCODER_VALUE, 896)
 					.setDouble(ModuleConfig.MIN_ENCODER_VALUE, 10);
 		}

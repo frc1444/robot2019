@@ -139,7 +139,7 @@ public class MotorHatchIntake extends SimpleAction implements HatchIntake {
 				}
 				break;
 			case NEUTRAL:
-				System.out.println("In neutral mode!!! The hatch intake might fall");
+//				System.out.println("In neutral mode!!! The hatch intake might fall");
 				desiredPositionReached = false;
 				break;
 			default:
