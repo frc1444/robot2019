@@ -35,7 +35,10 @@ public class MotorLift extends SimpleAction implements Lift {
 		
 		// forward limit switch
 		MASTER_CONFIG.forwardSoftLimitEnable = true;
-		MASTER_CONFIG.forwardSoftLimitThreshold = ENCODER_COUNTS;
+		MASTER_CONFIG.forwardSoftLimitThreshold = 24786;
+		
+		MASTER_CONFIG.reverseSoftLimitEnable = true;
+		MASTER_CONFIG.reverseSoftLimitThreshold = 1000;
 		
 		
 		POSITION_MAP = Map.of(
