@@ -90,6 +90,7 @@ public class MotorHatchIntake extends SimpleAction implements HatchIntake {
 		if(stowReverseLimit){
 			stowMotor.setSelectedSensorPosition(0);
 		}
+		final boolean stowForward = isStowFullyForward();
 		final boolean pivotBack = !pivotMotor.getSensorCollection().isRevLimitSwitchClosed(); // normally closed
 		final boolean pivotDown = !pivotMotor.getSensorCollection().isFwdLimitSwitchClosed(); // normally closed
 		if(pivotDown){ // if we start with it down or if it's down, assume all the way out
@@ -97,8 +98,11 @@ public class MotorHatchIntake extends SimpleAction implements HatchIntake {
 		}
 		switch(preset){
 			case GROUND:
-				stowMotor.set(ControlMode.Position, STOW_MOTOR_MAX_ENCODER_COUNTS);
-//				stowMotor.set(ControlMode.PercentOutput, STOW_SPEED_OUT);
+				if(stowForward){
+					stowMotor.set(ControlMode.Disabled, 0);
+				} else {
+					stowMotor.set(ControlMode.Position, STOW_MOTOR_MAX_ENCODER_COUNTS);
+				}
 				if(isStowFullyForward()){ // only bring down pivot if fully forward
 					if(pivotDown) {
 						pivotMotor.set(ControlMode.PercentOutput, PIVOT_DOWN_STALL);
@@ -116,13 +120,17 @@ public class MotorHatchIntake extends SimpleAction implements HatchIntake {
 				}
 				break;
 			case NORMAL:
-				stowMotor.set(ControlMode.Position, STOW_MOTOR_MAX_ENCODER_COUNTS);
+				if(stowForward){
+					stowMotor.set(ControlMode.Disabled, 0);
+				} else {
+					stowMotor.set(ControlMode.Position, STOW_MOTOR_MAX_ENCODER_COUNTS);
+				}
 				if(pivotBack){
 					pivotMotor.set(ControlMode.Disabled, 0);
 				} else {
 					pivotMotor.set(ControlMode.PercentOutput, PIVOT_SPEED_BACK);
 				}
-				desiredPositionReached = isStowFullyForward() && isPivotBack();
+				desiredPositionReached = stowForward && isPivotBack();
 				break;
 			case STOWED:
 				if(pivotBack){
