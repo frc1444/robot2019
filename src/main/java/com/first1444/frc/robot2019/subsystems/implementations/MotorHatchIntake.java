@@ -19,6 +19,7 @@ public class MotorHatchIntake extends SimpleAction implements HatchIntake {
 	
 	private static final int STOW_MOTOR_MAX_ENCODER_COUNTS = 10000;
 	private static final int STOW_MOTOR_IS_OUT_ENCODER_COUNTS = 9000;
+	private static final int STOW_MOTOR_IS_OUT_ENCODER_COUNTS_DEADZONE = 8500;
 //	private static final int STOW_MOTOR_MAX_ENCODER_COUNTS = 11082;
 	private enum GrabMode {NEUTRAL, GRAB, DROP}
 	private enum Preset {GROUND, NORMAL, STOWED, NEUTRAL}
@@ -32,6 +33,8 @@ public class MotorHatchIntake extends SimpleAction implements HatchIntake {
 	
 	private GrabMode grabMode = GrabMode.NEUTRAL;
 	private Preset preset = Preset.NEUTRAL;
+	
+	private boolean isStowOut = false;
 	
 	private boolean desiredPositionReached = false;
 	
@@ -91,10 +94,16 @@ public class MotorHatchIntake extends SimpleAction implements HatchIntake {
 			stowMotor.setSelectedSensorPosition(0);
 		}
 		final boolean stowForward = isStowFullyForward();
+		final boolean stowPastDeadzone = stowMotor.getSelectedSensorPosition(Constants.PID_INDEX) >= STOW_MOTOR_IS_OUT_ENCODER_COUNTS_DEADZONE;
 		final boolean pivotBack = !pivotMotor.getSensorCollection().isRevLimitSwitchClosed(); // normally closed
 		final boolean pivotDown = !pivotMotor.getSensorCollection().isFwdLimitSwitchClosed(); // normally closed
 		if(pivotDown){ // if we start with it down or if it's down, assume all the way out
 			stowMotor.setSelectedSensorPosition(STOW_MOTOR_MAX_ENCODER_COUNTS);
+		}
+		if(stowForward){
+			isStowOut = true;
+		} else if(!stowPastDeadzone){
+			isStowOut = false;
 		}
 		switch(preset){
 			case GROUND:
@@ -120,7 +129,7 @@ public class MotorHatchIntake extends SimpleAction implements HatchIntake {
 				}
 				break;
 			case NORMAL:
-				if(stowForward){
+				if(stowForward || (stowPastDeadzone && isStowOut)){
 					stowMotor.set(ControlMode.Disabled, 0);
 				} else {
 					stowMotor.set(ControlMode.Position, STOW_MOTOR_MAX_ENCODER_COUNTS);
