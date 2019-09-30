@@ -90,16 +90,16 @@ public class MotorHatchIntake extends SimpleAction implements HatchIntake {
 				break;
 		}
 		final boolean stowReverseLimit = !stowMotor.getSensorCollection().isRevLimitSwitchClosed(); // normally closed
-		if(stowReverseLimit){
-			stowMotor.setSelectedSensorPosition(0);
-		}
+//		if(stowReverseLimit){
+//			stowMotor.setSelectedSensorPosition(0);
+//		}
 		final boolean stowForward = isStowFullyForward();
 		final boolean stowPastDeadzone = stowMotor.getSelectedSensorPosition(Constants.PID_INDEX) >= STOW_MOTOR_IS_OUT_ENCODER_COUNTS_DEADZONE;
 		final boolean pivotBack = !pivotMotor.getSensorCollection().isRevLimitSwitchClosed(); // normally closed
 		final boolean pivotDown = !pivotMotor.getSensorCollection().isFwdLimitSwitchClosed(); // normally closed
-		if(pivotDown){ // if we start with it down or if it's down, assume all the way out
-			stowMotor.setSelectedSensorPosition(STOW_MOTOR_MAX_ENCODER_COUNTS);
-		}
+//		if(pivotDown){ // if we start with it down or if it's down, assume all the way out
+//			stowMotor.setSelectedSensorPosition(STOW_MOTOR_MAX_ENCODER_COUNTS);
+//		}
 		if(stowForward){
 			isStowOut = true;
 		} else if(!stowPastDeadzone){
