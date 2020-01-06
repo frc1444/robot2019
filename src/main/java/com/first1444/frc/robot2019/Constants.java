@@ -139,14 +139,14 @@ public final class Constants {
 		
 		@Override
 		public MutableValueMap<ModuleConfig> setupFL(MutableValueMap<ModuleConfig> config) {
-			return config.setDouble(ModuleConfig.ABS_ENCODER_OFFSET, 786)
+			return config.setDouble(ModuleConfig.ABS_ENCODER_OFFSET, 776)
 					.setDouble(ModuleConfig.MAX_ENCODER_VALUE, 883)
 					.setDouble(ModuleConfig.MIN_ENCODER_VALUE, 10);
 		}
 		
 		@Override
 		public MutableValueMap<ModuleConfig> setupFR(MutableValueMap<ModuleConfig> config) {
-			return config.setDouble(ModuleConfig.ABS_ENCODER_OFFSET, 708)
+			return config.setDouble(ModuleConfig.ABS_ENCODER_OFFSET, 743)
 					.setDouble(ModuleConfig.MAX_ENCODER_VALUE, 891)
 					.setDouble(ModuleConfig.MIN_ENCODER_VALUE, 10);
 		}
@@ -160,7 +160,7 @@ public final class Constants {
 		
 		@Override
 		public MutableValueMap<ModuleConfig> setupRR(MutableValueMap<ModuleConfig> config) {
-			return config.setDouble(ModuleConfig.ABS_ENCODER_OFFSET, 840)
+			return config.setDouble(ModuleConfig.ABS_ENCODER_OFFSET, 744)
 					.setDouble(ModuleConfig.MAX_ENCODER_VALUE, 858)
 					.setDouble(ModuleConfig.MIN_ENCODER_VALUE, 10);
 		}
